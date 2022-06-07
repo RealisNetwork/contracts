@@ -1,0 +1,15 @@
+[package]
+name = "lis-token"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+near-contract-standards = "4.0.0"
+near-sdk = "4.0.0"
+hex = "0.4.3"
+
+[dev-dependencies]
+hex = "0.4.3"
