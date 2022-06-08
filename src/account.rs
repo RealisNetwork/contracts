@@ -34,6 +34,6 @@ impl From<Account> for VAccount {
 
 impl Default for Account {
     fn default() -> Self {
-        todo!()
+        Self::new(0)
     }
 }

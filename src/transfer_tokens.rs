@@ -70,9 +70,9 @@ impl Contract {
         // Increase beneficials ballance
         beneficials_account.free += fee;
         self.accounts
-            .insert(&self.beneficiary_id, &beneficials_account);
+            .insert(&self.beneficiary_id, &beneficiary_account.into());
 
-        sender_account.free
+        free
     }
 }
 
@@ -103,10 +103,7 @@ mod tests {
         let sender_id = "gregory.testnet";
         contract.accounts.insert(
             &AccountId::from_str(sender_id).unwrap(),
-            &Account {
-                free: 250,
-                nfts: LookupSet::new(StorageKey::NftId),
-            },
+            &Account::new(250).into(),
         ); // Will be 228
 
         // reciever
