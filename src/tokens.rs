@@ -120,7 +120,7 @@ mod tests {
             .accounts
             .insert(&receiver_id, &Account::new(9).into()); // Will be 29
 
-        contract.internal_transfer(sender_id, receiver_id.clone(), 20);
+        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 20);
 
         let account: Account = contract
             .accounts
@@ -140,100 +140,30 @@ mod tests {
         let mut contract = get_contract();
 
         // Sender
-        let sender_id = "gregory.testnet";
-        contract.accounts.insert(
-            &AccountId::from_str(sender_id).unwrap(),
-            &Account::new(250).into(),
-        ); // Will be 228
+        let sender_id = accounts(0);
+        contract
+            .accounts
+            .insert(&sender_id, &Account::new(250).into()); // Will be 250
 
         // receiver
-        let receiver_id = "mike.testnet";
-        contract.accounts.insert(
-            &AccountId::from_str(receiver_id).unwrap(),
-            &Account::new(9).into(),
-        ); // Will be 29
+        let receiver_id = accounts(1);
+        contract
+            .accounts
+            .insert(&receiver_id, &Account::new(9).into()); // Will be 9
 
-        contract.internal_transfer(
-            AccountId::from_str(sender_id).unwrap(),
-            AccountId::from_str(receiver_id.clone()).unwrap(),
-            251,
-        );
+        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 251);
 
-        assert_eq!(
-            contract
-                .accounts
-                .get(&contract.beneficiary_id.clone())
-                .unwrap()
-                .free,
-            0
-        );
-        assert_eq!(
-            contract
-                .accounts
-                .get(&AccountId::from_str(sender_id).unwrap())
-                .unwrap()
-                .free,
-            250
-        );
-        assert_eq!(
-            contract
-                .accounts
-                .get(&AccountId::from_str(receiver_id).unwrap())
-                .unwrap()
-                .free,
-            9
-        );
-    }
+        let account: Account = contract
+            .accounts
+            .get(&contract.beneficiary_id.clone())
+            .unwrap()
+            .into();
+        assert_eq!(account.free, 0);
+        let account: Account = contract.accounts.get(&sender_id).unwrap().into();
+        assert_eq!(account.free, 250);
+        let account: Account = contract.accounts.get(&receiver_id).unwrap().into();
+        assert_eq!(account.free, 9);
 
-    #[test]
-    #[should_panic = "Can't pay some fees"]
-    fn transfer_cant_pay_fees() {
-        let mut contract = get_contract();
-
-        // Sender
-        let sender_id = "gregory.testnet";
-        contract.accounts.insert(
-            &AccountId::from_str(sender_id).unwrap(),
-            &Account::new(250).into(),
-        ); // Will be 228
-
-        // receiver
-        let receiver_id = "mike.testnet";
-        contract.accounts.insert(
-            &AccountId::from_str(receiver_id).unwrap(),
-            &Account::new(9).into(),
-        ); // Will be 29
-
-        contract.internal_transfer(
-            AccountId::from_str(sender_id).unwrap(),
-            AccountId::from_str(receiver_id.clone()).unwrap(),
-            250,
-        );
-
-        assert_eq!(
-            contract
-                .accounts
-                .get(&contract.beneficiary_id.clone())
-                .unwrap()
-                .free,
-            0
-        );
-        assert_eq!(
-            contract
-                .accounts
-                .get(&AccountId::from_str(sender_id).unwrap())
-                .unwrap()
-                .free,
-            250
-        );
-        assert_eq!(
-            contract
-                .accounts
-                .get(&AccountId::from_str(receiver_id).unwrap())
-                .unwrap()
-                .free,
-            9
-        );
     }
 
     #[test]
@@ -242,97 +172,60 @@ mod tests {
         let mut contract = get_contract();
 
         // Sender
-        let sender_id = "gregory.testnet";
-        // THERE NO SENDER ACCOUNT
+        let sender_id = AccountId::from_str("").unwrap();// THERE IS NO SENDER
+
 
         // receiver
-        let receiver_id = "mike.testnet";
-        contract.accounts.insert(
-            &AccountId::from_str(receiver_id).unwrap(),
-            &Account::new(9).into(),
-        ); // Will be 29
+        let receiver_id = accounts(1);
+        contract
+            .accounts
+            .insert(&receiver_id, &Account::new(9).into()); // Will be 9
 
-        contract.internal_transfer(
-            AccountId::from_str(sender_id).unwrap(),
-            AccountId::from_str(receiver_id.clone()).unwrap(),
-            250,
-        );
+        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 250);
 
-        assert_eq!(
-            contract
-                .accounts
-                .get(&contract.beneficiary_id.clone())
-                .unwrap()
-                .free,
-            0
-        );
-        assert_eq!(
-            contract
-                .accounts
-                .get(&AccountId::from_str(sender_id).unwrap())
-                .unwrap()
-                .free,
-            250
-        );
-        assert_eq!(
-            contract
-                .accounts
-                .get(&AccountId::from_str(receiver_id).unwrap())
-                .unwrap()
-                .free,
-            9
-        );
+        let account: Account = contract
+            .accounts
+            .get(&contract.beneficiary_id.clone())
+            .unwrap()
+            .into();
+
+        assert_eq!(account.free, 0);
+        let account: Account = contract.accounts.get(&sender_id).unwrap().into();
+        assert_eq!(account.free, 250);
+        let account: Account = contract.accounts.get(&receiver_id).unwrap().into();
+        assert_eq!(account.free, 9);
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic = "You can't transfer 0 tokens"]
     fn transfer_zero() {
         let mut contract = get_contract();
 
         // Sender
-        let sender_id = "gregory.testnet";
-        contract.accounts.insert(
-            &AccountId::from_str(sender_id).unwrap(),
-            &Account::new(250).into(),
-        );
+        let sender_id = accounts(0);
+        contract
+            .accounts
+            .insert(&sender_id, &Account::new(250).into()); // Will be 250
 
         // receiver
-        let receiver_id = "mike.testnet";
-        contract.accounts.insert(
-            &AccountId::from_str(receiver_id).unwrap(),
-            &Account::new(9).into(),
-        ); // Will be 29
+        let receiver_id = accounts(1);
+        contract
+            .accounts
+            .insert(&receiver_id, &Account::new(9).into()); // Will be 9
 
-        contract.internal_transfer(
-            AccountId::from_str(sender_id).unwrap(),
-            AccountId::from_str(receiver_id.clone()).unwrap(),
-            0,
-        ); // TRY SEND INVALID BALANCE
+        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 0);
 
-        assert_eq!(
-            contract
-                .accounts
-                .get(&contract.beneficiary_id.clone())
-                .unwrap()
-                .free,
-            0
-        );
-        assert_eq!(
-            contract
-                .accounts
-                .get(&AccountId::from_str(sender_id).unwrap())
-                .unwrap()
-                .free,
-            250
-        );
-        assert_eq!(
-            contract
-                .accounts
-                .get(&AccountId::from_str(receiver_id).unwrap())
-                .unwrap()
-                .free,
-            9
-        );
+        let account: Account = contract
+            .accounts
+            .get(&contract.beneficiary_id.clone())
+            .unwrap()
+            .into(); // TRY SEND INVALID BALANCE
+
+        assert_eq!(account.free, 0);
+        let account: Account = contract.accounts.get(&sender_id).unwrap().into();
+        assert_eq!(account.free, 250);
+        let account: Account = contract.accounts.get(&receiver_id).unwrap().into();
+        assert_eq!(account.free, 9);
     }
 
     #[test]
@@ -340,45 +233,59 @@ mod tests {
         let mut contract = get_contract();
 
         // Sender
-        let sender_id = "gregory.testnet";
-        contract.accounts.insert(
-            &AccountId::from_str(sender_id).unwrap(),
-            &Account::new(250).into(),
-        ); // Will be 228
+        let sender_id = accounts(0);
+        contract
+            .accounts
+            .insert(&sender_id, &Account::new(250).into()); // Will be 228
 
         // receiver
-        let receiver_id = "mike.testnet";
-        // THERE IS NO RECEIVER ACCOUNT
+        let receiver_id = AccountId::from_str("mike.testnet").unwrap();
 
-        contract.internal_transfer(
-            AccountId::from_str(sender_id).unwrap(),
-            AccountId::from_str(receiver_id.clone()).unwrap(),
-            20,
-        );
 
-        assert_eq!(
-            contract
-                .accounts
-                .get(&contract.beneficiary_id.clone())
-                .unwrap()
-                .free,
-            2
-        );
-        assert_eq!(
-            contract
-                .accounts
-                .get(&AccountId::from_str(sender_id).unwrap())
-                .unwrap()
-                .free,
-            228
-        );
-        assert_eq!(
-            contract
-                .accounts
-                .get(&AccountId::from_str(receiver_id).unwrap())
-                .unwrap()
-                .free,
-            20
-        );
+        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 20);
+
+        let account: Account = contract
+            .accounts
+            .get(&contract.beneficiary_id.clone())
+            .unwrap()
+            .into();
+
+
+        assert_eq!(account.free, 2);
+        let account: Account = contract.accounts.get(&sender_id).unwrap().into();
+        assert_eq!(account.free, 228);
+        let account: Account = contract.accounts.get(&receiver_id).unwrap().into();
+        assert_eq!(account.free, 20);
+    }
+
+    #[test]
+    #[should_panic = "Can't pay some fees"]
+    fn transfer_cant_pay_fees() {
+        let mut contract = get_contract();
+
+        // Sender
+        let sender_id = accounts(0);
+        contract
+            .accounts
+            .insert(&sender_id, &Account::new(250).into()); // Will be 250
+
+        // receiver
+        let receiver_id = accounts(1);
+        contract
+            .accounts
+            .insert(&receiver_id, &Account::new(9).into()); // Will be 9
+
+        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 250);
+
+        let account: Account = contract
+            .accounts
+            .get(&contract.beneficiary_id.clone())
+            .unwrap()
+            .into();
+        assert_eq!(account.free, 0);
+        let account: Account = contract.accounts.get(&sender_id).unwrap().into();
+        assert_eq!(account.free, 250);
+        let account: Account = contract.accounts.get(&receiver_id).unwrap().into();
+        assert_eq!(account.free, 9);
     }
 }
