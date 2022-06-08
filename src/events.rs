@@ -10,7 +10,6 @@ use near_sdk::serde_json;
 pub const NFT_METADATA_SPEC: &str = "1.0.0";
 pub const NFT_STANDARD_NAME: &str = "nep171";
 
-
 /// `EventLogVariant` help to use several variants of logging events.
 /// `NftMint` using for log event about creating new nft.
 #[derive(Serialize, Deserialize, Debug)]
@@ -31,7 +30,6 @@ pub struct EventLog {
     #[serde(flatten)]
     pub event: EventLogVariant,
 }
-
 
 impl From<EventLogVariant> for EventLog {
     fn from(event: EventLogVariant) -> Self {

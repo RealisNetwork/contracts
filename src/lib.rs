@@ -1,5 +1,6 @@
 mod account;
 mod backend_api;
+mod events;
 mod nft;
 mod owner;
 mod public_api;
@@ -36,6 +37,7 @@ pub struct Contract {
     pub backend_id: AccountId,
     pub beneficiary_id: AccountId,
     pub state: State,
+    pub nft_id_counter: u128,
 }
 
 #[derive(BorshStorageKey, BorshSerialize, BorshDeserialize)]
@@ -69,6 +71,7 @@ impl Contract {
             beneficiary_id: beneficiary_id.unwrap_or(owner_id),
             state: State::Running,
             accounts,
+            nft_id_counter: 0,
         }
     }
 }

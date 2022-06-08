@@ -1,12 +1,11 @@
 use near_contract_standards::non_fungible_token::refund_deposit;
-use near_sdk::{AccountId, env, StorageUsage, Timestamp};
 use near_sdk::json_types::U128;
 use near_sdk::require;
+use near_sdk::{env, AccountId, StorageUsage, Timestamp};
 
-use crate::*;
-use crate::events::{EventLog, EventLogVariant, NftMintLog};
 use crate::events::EventLogVariant::NftMint;
-use crate::utils::assert_owner;
+use crate::events::{EventLog, EventLogVariant, NftMintLog};
+use crate::*;
 
 #[near_bindgen]
 impl Contract {
@@ -21,7 +20,7 @@ impl Contract {
     ///  * `nft_metadata`-specific for new nft metadata.
 
     pub fn mint(&mut self, recipient_id: AccountId, nft_metadata: String) -> u128 {
-        assert_owner();
+        self.assert_owner();
 
         if u128::MAX == self.nft_id_counter {
             self.nft_id_counter = 0;
@@ -38,18 +37,14 @@ impl Contract {
         let VAccount::V1(mut set_of_nft) = self.accounts.get(&recipient_id).unwrap_or_default();
         set_of_nft.nfts.insert(&self.nft_id_counter);
 
-        EventLog::from(EventLogVariant::NftMint(
-            vec![
-                NftMintLog {
-                    owner_id: String::from(account_id),
-                    meta_data: nft_metadata,
-                }]
-        ));
+        let mint_log = EventLog::from(EventLogVariant::NftMint(vec![NftMintLog {
+            owner_id: String::from(recipient_id),
+            meta_data: nft_metadata,
+        }]));
         env::log_str(&mint_log.to_string());
 
         self.nft_id_counter
     }
-
 
     pub fn change_state(&mut self, state: State) {
         todo!()
@@ -75,8 +70,8 @@ impl Contract {
 
 #[cfg(test)]
 mod tests {
-    use near_sdk::{testing_env, VMContext};
     use near_sdk::test_utils::VMContextBuilder;
+    use near_sdk::{testing_env, VMContext};
 
     use super::*;
 

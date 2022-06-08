@@ -32,7 +32,6 @@ pub struct Account {
     pub nfts: LookupSet<NftId>,
 }
 
-
 impl Account {
     pub fn new(balance: Balance) -> Self {
         Self {
