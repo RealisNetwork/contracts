@@ -39,11 +39,11 @@ impl Contract {
     /// and increases beneficiary balance by constant_fee, where constant_fee >= 0
     pub fn take_fee(&mut self, sender: AccountId, amount: Option<u128>) -> u128 {
         // Calculate total charged amount
-        let (charge, fee) = if amount.is_some() {
+        let (charge, fee) = if let Some(amount) = amount {
             // TODO: use U256
             (
-                (amount.unwrap() * (self.percent_fee as u128 + 100)) / 100,
-                (amount.unwrap() * self.percent_fee as u128) / 100,
+                (amount * (self.percent_fee as u128 + 100)) / 100,
+                (amount * self.percent_fee as u128) / 100,
             )
         } else {
             (self.constant_fee, self.constant_fee)
@@ -163,7 +163,6 @@ mod tests {
         assert_eq!(account.free, 250);
         let account: Account = contract.accounts.get(&receiver_id).unwrap().into();
         assert_eq!(account.free, 9);
-
     }
 
     #[test]
@@ -172,8 +171,7 @@ mod tests {
         let mut contract = get_contract();
 
         // Sender
-        let sender_id = AccountId::from_str("").unwrap();// THERE IS NO SENDER
-
+        let sender_id = AccountId::from_str("").unwrap(); // THERE IS NO SENDER
 
         // receiver
         let receiver_id = accounts(1);
@@ -241,7 +239,6 @@ mod tests {
         // receiver
         let receiver_id = AccountId::from_str("mike.testnet").unwrap();
 
-
         contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 20);
 
         let account: Account = contract
@@ -249,7 +246,6 @@ mod tests {
             .get(&contract.beneficiary_id.clone())
             .unwrap()
             .into();
-
 
         assert_eq!(account.free, 2);
         let account: Account = contract.accounts.get(&sender_id).unwrap().into();
