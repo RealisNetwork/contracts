@@ -5,6 +5,15 @@ use crate::*;
 
 #[near_bindgen]
 impl Contract {
+    /// `fn mint` creates new nft with uniq id.
+    /// `fn mint` could be used only by the contract owner.
+    ///  # Examples
+    /// ```
+    /// self.only_owner();
+    /// ```
+    /// # Arguments
+    ///  * `recipient_id`- `AccountId` of future nft owner.
+    ///  * `nft_metadata`-specific for new nft metadata.
 
     pub fn mint(&mut self, recipient_id: AccountId, nft_metadata: String) -> String {
         self.only_owner();
