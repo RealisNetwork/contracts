@@ -10,3 +10,5 @@ crate-type = ["cdylib"]
 near-contract-standards = "4.0.0"
 near-sdk = "4.0.0"
 hex = "0.4.3"
+serde = "1.0.137"
+borsh = "0.9.3"

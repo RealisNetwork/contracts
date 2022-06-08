@@ -861,9 +861,11 @@ dependencies = [
 name = "realis-near"
 version = "0.1.0"
 dependencies = [
+ "borsh",
  "hex",
  "near-contract-standards",
  "near-sdk",
+ "serde",
 ]
 
 [[package]]
