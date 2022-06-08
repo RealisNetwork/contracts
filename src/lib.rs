@@ -1,10 +1,9 @@
 mod account;
-mod account_manager;
 mod backend_api;
-mod events;
 mod nft;
 mod owner;
 mod public_api;
+mod transfer_tokens;
 mod types;
 mod utils;
 
@@ -13,10 +12,10 @@ use crate::nft::Nft;
 use crate::types::NftId;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::LookupMap;
-use near_sdk::env::predecessor_account_id;
 use near_sdk::json_types::U128;
 use near_sdk::serde::{Deserialize, Serialize};
-use near_sdk::{env, near_bindgen, AccountId, BorshStorageKey, PanicOnDefault, PublicKey};
+use near_sdk::{env, AccountId};
+use near_sdk::{near_bindgen, BorshStorageKey, PanicOnDefault};
 
 #[near_bindgen]
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize)]
@@ -29,23 +28,22 @@ pub enum State {
 #[near_bindgen]
 #[derive(BorshSerialize, BorshDeserialize, PanicOnDefault)]
 pub struct Contract {
-    pub nft_id_counter: u128,
+    pub constant_fee: u128,
+    pub percent_fee: u8, // Commission in percents over transferring amount. for example, 10 (like 10%)
+    pub accounts: LookupMap<AccountId, VAccount>,
     pub nfts: LookupMap<NftId, Nft>,
     pub owner_id: AccountId,
     pub backend_id: AccountId,
     pub beneficiary_id: AccountId,
-    pub fee: u8,
     pub state: State,
-    pub accounts: LookupMap<AccountId, VAccount>,
-    pub registered_accounts: LookupMap<PublicKey, AccountId>,
 }
 
-#[derive(BorshStorageKey, BorshSerialize)]
+#[derive(BorshStorageKey, BorshSerialize, BorshDeserialize)]
 pub(crate) enum StorageKey {
     Accounts,
     Nfts,
-    RegisteredAccounts,
     NftId,
+    RegisteredAccounts,
 }
 
 #[near_bindgen]
@@ -63,15 +61,14 @@ impl Contract {
         accounts.insert(&owner_id, &Account::new(total_supply.0).into());
 
         Self {
-            nft_id_counter: 0,
+            constant_fee: 0, // TODO: get from args
+            percent_fee: fee,
             nfts: LookupMap::new(StorageKey::Nfts),
             owner_id: owner_id.clone(),
             backend_id: backend_id.unwrap_or(owner_id.clone()),
             beneficiary_id: beneficiary_id.unwrap_or(owner_id),
-            fee,
             state: State::Running,
             accounts,
-            registered_accounts: LookupMap::new(StorageKey::RegisteredAccounts),
         }
     }
 }

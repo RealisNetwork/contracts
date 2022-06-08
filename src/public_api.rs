@@ -5,27 +5,27 @@ use near_sdk::AccountId;
 
 #[near_bindgen]
 impl Contract {
-    pub fn transfer(&mut self, recipient_id: AccountId, amount: U128) -> U128 {
+    pub fn transfer(&mut self, _recipient_id: AccountId, _amount: U128) -> U128 {
         todo!()
     }
 
-    pub fn burn(&mut self, nft_id: NftId) {
+    pub fn burn(&mut self, _nft_id: NftId) {
         todo!()
     }
 
-    pub fn transfer_nft(&mut self, recipient_id: AccountId, nft_id: NftId) {
+    pub fn transfer_nft(&mut self, _recipient_id: AccountId, _nft_id: NftId) {
         todo!()
     }
 
-    pub fn sell_nft(&mut self, nft_id: NftId, price: U128) {
+    pub fn sell_nft(&mut self, _nft_id: NftId, _price: U128) {
         todo!()
     }
 
-    pub fn buy_nft(&mut self, nft_id: NftId) -> U128 {
+    pub fn buy_nft(&mut self, _nft_id: NftId) -> U128 {
         todo!()
     }
 
-    pub fn change_price(&mut self, nft_id: NftId, price: U128) {
+    pub fn change_price(&mut self, _nft_id: NftId, _price: U128) {
         todo!()
     }
 
