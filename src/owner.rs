@@ -15,24 +15,20 @@ impl Contract {
     ///  * `recipient_id`- `AccountId` of future nft owner.
     ///  * `nft_metadata`-specific for new nft metadata.
 
-    pub fn mint(&mut self, recipient_id: AccountId, nft_metadata: String) -> String {
+    pub fn mint(&mut self, recipient_id: AccountId, nft_metadata: String) {
         self.only_owner();
 
-        let nft_id = env::sha256(nft_metadata.as_bytes());
-        let nft_id = &hex::encode(nft_id);
-
-        assert!(self.nft_ids.insert(nft_id), "Nft already exist");
-
+        assert!(self.nft_ids.insert(&nft_metadata), "Nft already exist");
         match self.users_nft.get(&recipient_id) {
-            Some(mut set_of_nft) =>
-                assert!(set_of_nft.insert(nft_id), "User already have this nft "),
+            Some(mut set_of_nft) => {
+                let _ = set_of_nft.insert(&nft_metadata) ;
+            },
             None => {
                 let mut new_set = LookupSet::new(env::sha256(recipient_id.as_bytes()));
-                new_set.insert(nft_id);
+                new_set.insert(&nft_metadata);
                 self.users_nft.insert(&recipient_id, &new_set);
             }
-        }
-        nft_id.to_string()
+        };
     }
     fn only_owner(&mut self) {
         assert_eq!(env::predecessor_account_id(), self.owner_id.clone(), "Only owner can mint nft");
