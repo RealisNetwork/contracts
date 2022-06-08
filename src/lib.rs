@@ -10,7 +10,7 @@ mod nft;
 use near_sdk::{PanicOnDefault, BorshStorageKey, near_bindgen, AccountId, PublicKey, env};
 use near_sdk::borsh::{self, BorshSerialize, BorshDeserialize};
 use near_sdk::serde::{Serialize, Deserialize};
-use near_sdk::collections::{LookupMap, LookupSet, UnorderedMap};
+use near_sdk::collections::{LookupMap};
 use near_sdk::env::predecessor_account_id;
 use near_sdk::json_types::U128;
 use crate::account::{Account, VAccount};
@@ -28,6 +28,7 @@ pub enum State {
 #[near_bindgen]
 #[derive(BorshSerialize, BorshDeserialize, PanicOnDefault)]
 pub struct Contract {
+    pub nft_id_counter: u128,
     pub nfts: LookupMap<NftId, Nft>,
     pub owner_id: AccountId,
     pub backend_id: AccountId,
@@ -56,6 +57,7 @@ impl Contract {
         accounts.insert(&owner_id, &Account::new(total_supply.0).into());
 
         Self {
+            nft_id_counter: 0,
             nfts: LookupMap::new(StorageKey::Nfts),
             owner_id: owner_id.clone(),
             backend_id: backend_id.unwrap_or(owner_id.clone()),
