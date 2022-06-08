@@ -2,6 +2,7 @@ use crate::{NftId, Serialize, StorageKey};
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::LookupSet;
 use near_sdk::Balance;
+use crate::Lock::Lock;
 
 #[derive(BorshSerialize, BorshDeserialize)]
 pub enum VAccount {
@@ -10,8 +11,9 @@ pub enum VAccount {
 
 impl Default for VAccount {
     fn default() -> Self {
-        VAccount::V1(Account {
+        VAccount::V1( Account {
             free: 0,
+            lockups: vec![],
             nfts: LookupSet::new(StorageKey::NftId),
         })
     }
@@ -28,7 +30,7 @@ impl From<VAccount> for Account {
 #[derive(BorshSerialize, BorshDeserialize)]
 pub struct Account {
     pub free: Balance,
-    // pub lockups: Vec<Lock>,
+    pub lockups: Vec<Lock>,
     pub nfts: LookupSet<NftId>,
 }
 
@@ -36,7 +38,7 @@ impl Account {
     pub fn new(balance: Balance) -> Self {
         Self {
             free: balance,
-            // lockups: vec![],
+            lockups: vec![],
             nfts: LookupSet::new(StorageKey::NftId),
         }
     }
