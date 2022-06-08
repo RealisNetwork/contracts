@@ -1,11 +1,12 @@
 use near_contract_standards::non_fungible_token::refund_deposit;
+use near_sdk::{AccountId, env, StorageUsage, Timestamp};
 use near_sdk::json_types::U128;
 use near_sdk::require;
-use near_sdk::{env, AccountId, StorageUsage, Timestamp};
 
-use crate::events::EventLogVariant::NftMint;
-use crate::events::{EventLog, NftMintLog};
 use crate::*;
+use crate::events::{EventLog, EventLogVariant, NftMintLog};
+use crate::events::EventLogVariant::NftMint;
+use crate::utils::assert_owner;
 
 #[near_bindgen]
 impl Contract {
@@ -13,17 +14,14 @@ impl Contract {
     /// `fn mint` could be used only by the contract owner.
     ///  # Examples
     /// ```
-    /// self.only_owner();
+    /// assert_owner();
     /// ```
     /// # Arguments
     ///  * `recipient_id`- `AccountId` of future nft owner.
     ///  * `nft_metadata`-specific for new nft metadata.
 
     pub fn mint(&mut self, recipient_id: AccountId, nft_metadata: String) -> u128 {
-        self.only_owner();
-
-        /// we need this?
-        let storage_usage = env::storage_usage();
+        assert_owner();
 
         if u128::MAX == self.nft_id_counter {
             self.nft_id_counter = 0;
@@ -40,39 +38,18 @@ impl Contract {
         let VAccount::V1(mut set_of_nft) = self.accounts.get(&recipient_id).unwrap_or_default();
         set_of_nft.nfts.insert(&self.nft_id_counter);
 
-        Self::event_mint_nft(recipient_id, nft_metadata, storage_usage);
+        EventLog::from(EventLogVariant::NftMint(
+            vec![
+                NftMintLog {
+                    owner_id: String::from(account_id),
+                    meta_data: nft_metadata,
+                }]
+        ));
+        env::log_str(&mint_log.to_string());
 
         self.nft_id_counter
     }
 
-    fn only_owner(&mut self) {
-        require!(
-            env::predecessor_account_id() == self.owner_id.clone(),
-            "Only owner can mint nft"
-        );
-    }
-
-    /// `fn event_mint_nft` make log of mint nft,
-    /// for getting to know `Near` about it.
-    /// # Arguments
-    /// * `account_id` AccountId of new owner.
-    /// * `nft_metadata` some specific nft data.
-    /// * `initial_storage_usage` measure the initial storage being used on the contract
-    fn event_mint_nft(
-        account_id: AccountId,
-        nft_metadata: String,
-        initial_storage_usage: StorageUsage,
-    ) {
-        let mint_log = EventLog::new(NftMint(vec![NftMintLog {
-            owner_id: String::from(account_id),
-            /// what should in logs , except ac_id ?
-            meta_data: nft_metadata,
-        }]));
-        env::log_str(&mint_log.to_string());
-        /// we need this logic?
-        let required_storage_in_bytes = env::storage_usage() - initial_storage_usage;
-        refund_deposit(required_storage_in_bytes);
-    }
 
     pub fn change_state(&mut self, state: State) {
         todo!()
@@ -98,8 +75,8 @@ impl Contract {
 
 #[cfg(test)]
 mod tests {
-    use near_sdk::test_utils::VMContextBuilder;
     use near_sdk::{testing_env, VMContext};
+    use near_sdk::test_utils::VMContextBuilder;
 
     use super::*;
 

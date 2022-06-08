@@ -32,8 +32,9 @@ pub struct EventLog {
     pub event: EventLogVariant,
 }
 
-impl EventLog {
-    pub fn new(event: EventLogVariant) -> Self {
+
+impl From<EventLogVariant> for EventLog {
+    fn from(event: EventLogVariant) -> Self {
         Self {
             standard: NFT_STANDARD_NAME.to_string(),
             version: NFT_METADATA_SPEC.to_string(),
