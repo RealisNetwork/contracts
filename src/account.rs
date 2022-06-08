@@ -1,6 +1,6 @@
 use crate::{NftId, Serialize, StorageKey};
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::collections::{LookupMap, LookupSet};
+use near_sdk::collections::LookupSet;
 use near_sdk::Balance;
 
 #[derive(BorshSerialize, BorshDeserialize)]
