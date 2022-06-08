@@ -9,7 +9,12 @@ mod account_manager;
 use near_sdk::{PanicOnDefault, near_bindgen, AccountId, PublicKey};
 use near_sdk::borsh::{self, BorshSerialize, BorshDeserialize};
 use near_sdk::serde::{Serialize, Deserialize};
-use near_sdk::collections::LookupMap;
+use near_sdk::collections::{LookupMap, LookupSet, UnorderedMap};
+use near_sdk::env::predecessor_account_id;
+use near_sdk::json_types::U128;
+use crate::account::{Account, VAccount};
+use crate::nft::Nft;
+use crate::types::NftId;
 
 #[near_bindgen]
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize)]
@@ -30,6 +35,14 @@ pub struct Contract {
     // fee: ???
     // state: Running|Paused
     pub registered_accounts: LookupMap<PublicKey, AccountId>,
+}
+
+#[derive(BorshStorageKey, BorshSerialize)]
+pub(crate) enum StorageKey {
+    Accounts,
+    Nfts,
+    RegisteredAccounts,
+    NftId,
 }
 
 #[near_bindgen]

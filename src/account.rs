@@ -11,6 +11,12 @@ pub struct Account {
     // pub nfts: Vec<NftId>
 }
 
+impl From<Account> for VAccount {
+    fn from(account: Account) -> Self {
+        VAccount::V1(account)
+    }
+}
+
 impl Default for Account {
     fn default() -> Self {
         todo!()
