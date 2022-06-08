@@ -5,8 +5,9 @@ mod backend_api;
 mod types;
 mod owner;
 mod account_manager;
+mod nft;
 
-use near_sdk::{PanicOnDefault, near_bindgen, AccountId, PublicKey};
+use near_sdk::{PanicOnDefault, BorshStorageKey, near_bindgen, AccountId, PublicKey, env};
 use near_sdk::borsh::{self, BorshSerialize, BorshDeserialize};
 use near_sdk::serde::{Serialize, Deserialize};
 use near_sdk::collections::{LookupMap, LookupSet, UnorderedMap};
@@ -27,13 +28,13 @@ pub enum State {
 #[near_bindgen]
 #[derive(BorshSerialize, BorshDeserialize, PanicOnDefault)]
 pub struct Contract {
-    // AccountId -> Account
-    // NftId -> Nft
-    // owner_id: AccountId
-    // backend_id: AccountId
-    // beneficiary_id: AccountId
-    // fee: ???
-    // state: Running|Paused
+    pub nfts: LookupMap<NftId, Nft>,
+    pub owner_id: AccountId,
+    pub backend_id: AccountId,
+    pub beneficiary_id: AccountId,
+    pub fee: u8,
+    pub state: State,
+    pub accounts: LookupMap<AccountId, VAccount>,
     pub registered_accounts: LookupMap<PublicKey, AccountId>,
 }
 
@@ -48,7 +49,21 @@ pub(crate) enum StorageKey {
 #[near_bindgen]
 impl Contract {
     #[init]
-    pub fn new() -> Self {
-        todo!()
+    pub fn new(total_supply: U128, fee: u8, beneficiary_id: Option<AccountId>, backend_id: Option<AccountId>) -> Self {
+        let owner_id = env::signer_account_id();
+
+        let mut accounts = LookupMap::new(StorageKey::Accounts);
+        accounts.insert(&owner_id, &Account::new(total_supply.0).into());
+
+        Self {
+            nfts: LookupMap::new(StorageKey::Nfts),
+            owner_id: owner_id.clone(),
+            backend_id: backend_id.unwrap_or(owner_id.clone()),
+            beneficiary_id: beneficiary_id.unwrap_or(owner_id),
+            fee,
+            state: State::Running,
+            accounts,
+            registered_accounts: LookupMap::new(StorageKey::RegisteredAccounts)
+        }
     }
 }
