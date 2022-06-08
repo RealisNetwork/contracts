@@ -21,11 +21,13 @@ impl Contract {
         // Charge fee and amount
         let sender_balance_left = self.take_fee(sender, Some(amount));
         // Try to get recipient
-        let mut recipient_account = self.accounts.get(&recipient_id).unwrap_or_default();
+        let mut recipient_account: Account =
+            self.accounts.get(&recipient_id).unwrap_or_default().into();
 
         // Increase recipient balance
         recipient_account.free += amount;
-        self.accounts.insert(&recipient_id, &recipient_account);
+        self.accounts
+            .insert(&recipient_id, &recipient_account.into());
 
         sender_balance_left
     }
@@ -48,10 +50,11 @@ impl Contract {
         };
 
         // Check if user exists and get account, if user don't exist, rollback transfer
-        let mut sender_account = self
+        let mut sender_account: Account = self
             .accounts
             .get(&sender)
-            .unwrap_or_else(|| env::panic_str("User not found"));
+            .unwrap_or_else(|| env::panic_str("User not found"))
+            .into();
 
         // Check if user have enough tokens to send
         require!(
@@ -63,12 +66,17 @@ impl Contract {
         require!(sender_account.free >= charge, "Can't pay some fees");
 
         sender_account.free -= charge;
-        self.accounts.insert(&sender, &sender_account);
+        let free = sender_account.free;
+        self.accounts.insert(&sender, &sender_account.into());
 
-        // Try get beneficials account
-        let mut beneficials_account = self.accounts.get(&self.beneficiary_id).unwrap_or_default();
-        // Increase beneficials ballance
-        beneficials_account.free += fee;
+        // Try get beneficiary account
+        let mut beneficiary_account: Account = self
+            .accounts
+            .get(&self.beneficiary_id)
+            .unwrap_or_default()
+            .into();
+        // Increase beneficiary balance
+        beneficiary_account.free += fee;
         self.accounts
             .insert(&self.beneficiary_id, &beneficiary_account.into());
 
@@ -106,19 +114,16 @@ mod tests {
             &Account::new(250).into(),
         ); // Will be 228
 
-        // reciever
-        let reciever_id = "mike.testnet";
+        // receiver
+        let receiver_id = "mike.testnet";
         contract.accounts.insert(
-            &AccountId::from_str(reciever_id).unwrap(),
-            &Account {
-                free: 9,
-                nfts: LookupSet::new(StorageKey::NftId),
-            },
+            &AccountId::from_str(receiver_id).unwrap(),
+            &Account::new(9).into(),
         ); // Will be 29
 
         contract.internal_transfer(
             AccountId::from_str(sender_id).unwrap(),
-            AccountId::from_str(reciever_id.clone()).unwrap(),
+            AccountId::from_str(receiver_id.clone()).unwrap(),
             20,
         );
 
@@ -141,7 +146,7 @@ mod tests {
         assert_eq!(
             contract
                 .accounts
-                .get(&AccountId::from_str(reciever_id).unwrap())
+                .get(&AccountId::from_str(receiver_id).unwrap())
                 .unwrap()
                 .free,
             29
@@ -157,25 +162,19 @@ mod tests {
         let sender_id = "gregory.testnet";
         contract.accounts.insert(
             &AccountId::from_str(sender_id).unwrap(),
-            &Account {
-                free: 250,
-                nfts: LookupSet::new(StorageKey::NftId),
-            },
+            &Account::new(250).into(),
         ); // Will be 228
 
-        // reciever
-        let reciever_id = "mike.testnet";
+        // receiver
+        let receiver_id = "mike.testnet";
         contract.accounts.insert(
-            &AccountId::from_str(reciever_id).unwrap(),
-            &Account {
-                free: 9,
-                nfts: LookupSet::new(StorageKey::NftId),
-            },
+            &AccountId::from_str(receiver_id).unwrap(),
+            &Account::new(9).into(),
         ); // Will be 29
 
         contract.internal_transfer(
             AccountId::from_str(sender_id).unwrap(),
-            AccountId::from_str(reciever_id.clone()).unwrap(),
+            AccountId::from_str(receiver_id.clone()).unwrap(),
             251,
         );
 
@@ -198,7 +197,7 @@ mod tests {
         assert_eq!(
             contract
                 .accounts
-                .get(&AccountId::from_str(reciever_id).unwrap())
+                .get(&AccountId::from_str(receiver_id).unwrap())
                 .unwrap()
                 .free,
             9
@@ -214,25 +213,19 @@ mod tests {
         let sender_id = "gregory.testnet";
         contract.accounts.insert(
             &AccountId::from_str(sender_id).unwrap(),
-            &Account {
-                free: 250,
-                nfts: LookupSet::new(StorageKey::NftId),
-            },
+            &Account::new(250).int(),
         ); // Will be 228
 
-        // reciever
-        let reciever_id = "mike.testnet";
+        // receiver
+        let receiver_id = "mike.testnet";
         contract.accounts.insert(
-            &AccountId::from_str(reciever_id).unwrap(),
-            &Account {
-                free: 9,
-                nfts: LookupSet::new(StorageKey::NftId),
-            },
+            &AccountId::from_str(receiver_id).unwrap(),
+            &Account::new(9).into(),
         ); // Will be 29
 
         contract.internal_transfer(
             AccountId::from_str(sender_id).unwrap(),
-            AccountId::from_str(reciever_id.clone()).unwrap(),
+            AccountId::from_str(receiver_id.clone()).unwrap(),
             250,
         );
 
@@ -255,7 +248,7 @@ mod tests {
         assert_eq!(
             contract
                 .accounts
-                .get(&AccountId::from_str(reciever_id).unwrap())
+                .get(&AccountId::from_str(receiver_id).unwrap())
                 .unwrap()
                 .free,
             9
@@ -271,19 +264,16 @@ mod tests {
         let sender_id = "gregory.testnet";
         // THERE NO SENDER ACCOUNT
 
-        // reciever
-        let reciever_id = "mike.testnet";
+        // receiver
+        let receiver_id = "mike.testnet";
         contract.accounts.insert(
-            &AccountId::from_str(reciever_id).unwrap(),
-            &Account {
-                free: 9,
-                nfts: LookupSet::new(StorageKey::NftId),
-            },
+            &AccountId::from_str(receiver_id).unwrap(),
+            &Account::new(9).into(),
         ); // Will be 29
 
         contract.internal_transfer(
             AccountId::from_str(sender_id).unwrap(),
-            AccountId::from_str(reciever_id.clone()).unwrap(),
+            AccountId::from_str(receiver_id.clone()).unwrap(),
             250,
         );
 
@@ -306,7 +296,7 @@ mod tests {
         assert_eq!(
             contract
                 .accounts
-                .get(&AccountId::from_str(reciever_id).unwrap())
+                .get(&AccountId::from_str(receiver_id).unwrap())
                 .unwrap()
                 .free,
             9
@@ -322,25 +312,19 @@ mod tests {
         let sender_id = "gregory.testnet";
         contract.accounts.insert(
             &AccountId::from_str(sender_id).unwrap(),
-            &Account {
-                free: 250,
-                nfts: LookupSet::new(StorageKey::NftId),
-            },
+            &Account::new(250).into(),
         );
 
-        // reciever
-        let reciever_id = "mike.testnet";
+        // receiver
+        let receiver_id = "mike.testnet";
         contract.accounts.insert(
-            &AccountId::from_str(reciever_id).unwrap(),
-            &Account {
-                free: 9,
-                nfts: LookupSet::new(StorageKey::NftId),
-            },
+            &AccountId::from_str(receiver_id).unwrap(),
+            &Account::new(9).into(),
         ); // Will be 29
 
         contract.internal_transfer(
             AccountId::from_str(sender_id).unwrap(),
-            AccountId::from_str(reciever_id.clone()).unwrap(),
+            AccountId::from_str(receiver_id.clone()).unwrap(),
             0,
         ); // TRY SEND INVALID BALANCE
 
@@ -363,7 +347,7 @@ mod tests {
         assert_eq!(
             contract
                 .accounts
-                .get(&AccountId::from_str(reciever_id).unwrap())
+                .get(&AccountId::from_str(receiver_id).unwrap())
                 .unwrap()
                 .free,
             9
@@ -378,19 +362,16 @@ mod tests {
         let sender_id = "gregory.testnet";
         contract.accounts.insert(
             &AccountId::from_str(sender_id).unwrap(),
-            &Account {
-                free: 250,
-                nfts: LookupSet::new(StorageKey::NftId),
-            },
+            &Account::new(250).into(),
         ); // Will be 228
 
-        // reciever
-        let reciever_id = "mike.testnet";
+        // receiver
+        let receiver_id = "mike.testnet";
         // THERE IS NO RECEIVER ACCOUNT
 
         contract.internal_transfer(
             AccountId::from_str(sender_id).unwrap(),
-            AccountId::from_str(reciever_id.clone()).unwrap(),
+            AccountId::from_str(receiver_id.clone()).unwrap(),
             20,
         );
 
@@ -413,7 +394,7 @@ mod tests {
         assert_eq!(
             contract
                 .accounts
-                .get(&AccountId::from_str(reciever_id).unwrap())
+                .get(&AccountId::from_str(receiver_id).unwrap())
                 .unwrap()
                 .free,
             20
