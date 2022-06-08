@@ -7,7 +7,7 @@ mod transfer_tokens;
 mod types;
 mod utils;
 
-use crate::account::Account;
+use crate::account::{Account, VAccount};
 use crate::nft::Nft;
 use crate::types::NftId;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
@@ -30,7 +30,7 @@ pub enum State {
 pub struct Contract {
     pub constant_fee: u128,
     pub percent_fee: u8, // Commission in percents over transferring amount. for example, 10 (like 10%)
-    pub accounts: LookupMap<AccountId, Account>,
+    pub accounts: LookupMap<AccountId, VAccount>,
     pub nfts: LookupMap<NftId, Nft>,
     pub owner_id: AccountId,
     pub backend_id: AccountId,
@@ -42,8 +42,8 @@ pub struct Contract {
 pub(crate) enum StorageKey {
     Accounts,
     Nfts,
-    RegisteredAccounts,
     NftId,
+    RegisteredAccounts,
 }
 
 #[near_bindgen]
