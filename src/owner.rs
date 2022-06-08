@@ -1,6 +1,7 @@
 use near_sdk::{AccountId, Timestamp};
 use near_sdk::json_types::U128;
 use crate::*;
+use near_sdk::near_bindgen;
 
 #[near_bindgen]
 impl Contract {
