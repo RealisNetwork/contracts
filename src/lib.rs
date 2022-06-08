@@ -3,7 +3,7 @@ mod backend_api;
 mod nft;
 mod owner;
 mod public_api;
-mod transfer_tokens;
+mod tokens;
 mod types;
 mod utils;
 
