@@ -1,4 +1,4 @@
-use near_sdk::borsh::{self, BorshSerialize, BorshDeserialize};
+use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 #[derive(BorshSerialize, BorshDeserialize)]
 pub struct Nft {
     // TODO add fields

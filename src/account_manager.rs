@@ -1,8 +1,8 @@
-use near_sdk::{AccountId, env, Gas, Promise, PromiseOrValue, PublicKey, require};
+use crate::utils::{assert_owner, convert_pk_to_account_id};
+use crate::*;
 use near_sdk::env::predecessor_account_id;
 use near_sdk::ext_contract;
-use crate::*;
-use crate::utils::{assert_owner, convert_pk_to_account_id};
+use near_sdk::{env, require, AccountId, Gas, Promise, PromiseOrValue, PublicKey};
 
 pub const CREATE_AND_REGISTER_ACCOUNT_CALLBACK_GAS: Gas = Gas(20_000_000_000_000);
 pub const MIN_ACCOUNT_STORAGE_AMOUNT: u128 = 1_000_000_000_000_000_000_000;
@@ -24,9 +24,11 @@ impl Contract {
         let public_key = env::signer_account_pk();
 
         require!(
-			self.registered_accounts.insert(&public_key, &account_id).is_none(),
-			"This public key already registered"
-		)
+            self.registered_accounts
+                .insert(&public_key, &account_id)
+                .is_none(),
+            "This public key already registered"
+        )
     }
 
     /// User deny access for back-end to its assets
@@ -34,27 +36,29 @@ impl Contract {
     pub fn unregister_account(&mut self, public_key: PublicKey) {
         let account_id = predecessor_account_id();
 
-        let removed_account_id = self.registered_accounts
+        let removed_account_id = self
+            .registered_accounts
             .remove(&public_key)
             .unwrap_or_else(|| env::panic_str("Account not registered for this key"));
 
-        require!(
-			removed_account_id == account_id,
-			"Not allow"
-		);
+        require!(removed_account_id == account_id, "Not allow");
     }
 
     /// Create new account for implicit account
     /// Add new access key
     /// Move all assets to new account
-    pub fn create_and_register_account(&mut self, account_id: AccountId, new_public_key: PublicKey) -> PromiseOrValue<u8> {
+    pub fn create_and_register_account(
+        &mut self,
+        account_id: AccountId,
+        new_public_key: PublicKey,
+    ) -> PromiseOrValue<u8> {
         assert_owner();
 
         let old_public_key = env::signer_account_pk();
         require!(
-			!self.registered_accounts.contains_key(&old_public_key),
-			"This public key already registered"
-		);
+            !self.registered_accounts.contains_key(&old_public_key),
+            "This public key already registered"
+        );
 
         Promise::new(account_id.clone())
             .create_account()
@@ -63,10 +67,7 @@ impl Contract {
             .then(
                 ext_self_create_account::ext(env::current_account_id())
                     .with_static_gas(CREATE_AND_REGISTER_ACCOUNT_CALLBACK_GAS)
-                    .create_and_register_account_callback(
-                        old_public_key,
-                        account_id,
-                    )
+                    .create_and_register_account_callback(old_public_key, account_id),
             )
             .into()
     }
@@ -88,7 +89,7 @@ pub trait CreateAccount {
     fn create_and_register_account_callback(
         &mut self,
         old_public_key: PublicKey,
-        new_account_id: AccountId
+        new_account_id: AccountId,
     ) -> u8;
 }
 
@@ -99,11 +100,12 @@ impl Contract {
     pub fn create_and_register_account_callback(
         &mut self,
         old_public_key: PublicKey,
-        new_account_id: AccountId
+        new_account_id: AccountId,
     ) -> u8 {
-        self.registered_accounts.insert(&old_public_key, &new_account_id);
+        self.registered_accounts
+            .insert(&old_public_key, &new_account_id);
 
-        let old_account_id =  convert_pk_to_account_id(old_public_key);
+        let old_account_id = convert_pk_to_account_id(old_public_key);
         // TODO: move all assets from old_account_id to  new_account_id
         todo!()
     }
