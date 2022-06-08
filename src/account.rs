@@ -1,4 +1,4 @@
-use near_sdk::borsh::{BorshSerialize, BorshDeserialize};
+use near_sdk::borsh::{self, BorshSerialize, BorshDeserialize};
 
 pub enum VAccount {
     V1(Account),
