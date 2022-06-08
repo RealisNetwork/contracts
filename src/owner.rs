@@ -1,6 +1,7 @@
-use near_sdk::{AccountId, Timestamp};
-use near_sdk::json_types::U128;
 use crate::*;
+use near_sdk::json_types::U128;
+use near_sdk::near_bindgen;
+use near_sdk::{AccountId, Timestamp};
 
 #[near_bindgen]
 impl Contract {
@@ -16,7 +17,12 @@ impl Contract {
         todo!()
     }
 
-    pub fn create_lockup(&mut self, recipient_id: AccountId, amount: U128, duration: Option<Timestamp>) -> Timestamp {
+    pub fn create_lockup(
+        &mut self,
+        recipient_id: AccountId,
+        amount: U128,
+        duration: Option<Timestamp>,
+    ) -> Timestamp {
         todo!()
     }
 
