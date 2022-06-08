@@ -88,6 +88,7 @@ impl Contract {
 mod tests {
     use super::*;
     use near_sdk::collections::{LookupMap, LookupSet};
+    use near_sdk::test_utils::accounts;
     use std::str::FromStr;
 
     fn get_contract() -> Contract {
@@ -108,49 +109,29 @@ mod tests {
         let mut contract = get_contract();
 
         // Sender
-        let sender_id = "gregory.testnet";
-        contract.accounts.insert(
-            &AccountId::from_str(sender_id).unwrap(),
-            &Account::new(250).into(),
-        ); // Will be 228
+        let sender_id = accounts(0);
+        contract
+            .accounts
+            .insert(&sender_id, &Account::new(250).into()); // Will be 228
 
         // receiver
-        let receiver_id = "mike.testnet";
-        contract.accounts.insert(
-            &AccountId::from_str(receiver_id).unwrap(),
-            &Account::new(9).into(),
-        ); // Will be 29
+        let receiver_id = accounts(1);
+        contract
+            .accounts
+            .insert(&receiver_id, &Account::new(9).into()); // Will be 29
 
-        contract.internal_transfer(
-            AccountId::from_str(sender_id).unwrap(),
-            AccountId::from_str(receiver_id.clone()).unwrap(),
-            20,
-        );
+        contract.internal_transfer(sender_id, receiver_id.clone(), 20);
 
-        assert_eq!(
-            contract
-                .accounts
-                .get(&contract.beneficiary_id.clone())
-                .unwrap()
-                .free,
-            2
-        );
-        assert_eq!(
-            contract
-                .accounts
-                .get(&AccountId::from_str(sender_id).unwrap())
-                .unwrap()
-                .free,
-            228
-        );
-        assert_eq!(
-            contract
-                .accounts
-                .get(&AccountId::from_str(receiver_id).unwrap())
-                .unwrap()
-                .free,
-            29
-        );
+        let account: Account = contract
+            .accounts
+            .get(&contract.beneficiary_id.clone())
+            .unwrap()
+            .into();
+        assert_eq!(account.free, 2);
+        let account: Account = contract.accounts.get(&sender_id).unwrap().into();
+        assert_eq!(account.free, 228);
+        let account: Account = contract.accounts.get(&receiver_id).unwrap().into();
+        assert_eq!(account.free, 29);
     }
 
     #[test]
@@ -213,7 +194,7 @@ mod tests {
         let sender_id = "gregory.testnet";
         contract.accounts.insert(
             &AccountId::from_str(sender_id).unwrap(),
-            &Account::new(250).int(),
+            &Account::new(250).into(),
         ); // Will be 228
 
         // receiver
