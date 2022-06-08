@@ -1,48 +1,74 @@
-mod utils;
 mod account;
-mod public_api;
 mod backend_api;
-mod types;
+mod nft;
 mod owner;
+mod public_api;
 mod transfer_tokens;
-use near_sdk::{AccountId, serde};
-use near_sdk::borsh::{self, BorshSerialize, BorshDeserialize};
-use near_sdk::collections::LookupMap;
-use crate::account::Account;
-use near_sdk::{near_bindgen, PanicOnDefault};
-use near_sdk::serde::{Serialize, Serializer};
+mod types;
+mod utils;
 
-#[derive(BorshSerialize, BorshDeserialize)]
+use crate::account::Account;
+use crate::nft::Nft;
+use crate::types::NftId;
+use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
+use near_sdk::collections::LookupMap;
+use near_sdk::json_types::U128;
+use near_sdk::serde::{Deserialize, Serialize};
+use near_sdk::{env, AccountId};
+use near_sdk::{near_bindgen, BorshStorageKey, PanicOnDefault};
+
+#[near_bindgen]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize)]
+#[serde(crate = "near_sdk::serde")]
 pub enum State {
     Paused,
     Running,
 }
 
-impl Serialize for State {
-    fn serialize<S>(&self, serializer: S) -> Result<<S as near_sdk::serde::Serializer>::Ok, <S as near_sdk::serde::Serializer>::Error> where S: Serializer {
-        todo!()
-    }
-}
-
 #[near_bindgen]
 #[derive(BorshSerialize, BorshDeserialize, PanicOnDefault)]
 pub struct Contract {
-    // AccountId -> Account
-    // NftId -> Nft
-    // owner_id: AccountId
-    // backend_id: AccountId
-    beneficiary_id: AccountId,
-    // fee: ???
-    // state: Running|Paused
-    constant_fee: u128,
-    percent_fee: u8, // Commission in percents over transferring amount. for example, 10 (like 10%)
+    pub constant_fee: u128,
+    pub percent_fee: u8, // Commission in percents over transferring amount. for example, 10 (like 10%)
     pub accounts: LookupMap<AccountId, Account>,
+    pub nfts: LookupMap<NftId, Nft>,
+    pub owner_id: AccountId,
+    pub backend_id: AccountId,
+    pub beneficiary_id: AccountId,
+    pub state: State,
+}
+
+#[derive(BorshStorageKey, BorshSerialize, BorshDeserialize)]
+pub(crate) enum StorageKey {
+    Accounts,
+    Nfts,
+    RegisteredAccounts,
+    NftId,
 }
 
 #[near_bindgen]
 impl Contract {
     #[init]
-    pub fn new() -> Self {
-        todo!()
+    pub fn new(
+        total_supply: U128,
+        fee: u8,
+        beneficiary_id: Option<AccountId>,
+        backend_id: Option<AccountId>,
+    ) -> Self {
+        let owner_id = env::signer_account_id();
+
+        let mut accounts = LookupMap::new(StorageKey::Accounts);
+        accounts.insert(&owner_id, &Account::new(total_supply.0).into());
+
+        Self {
+            constant_fee: 0, // TODO: get from args
+            percent_fee: fee,
+            nfts: LookupMap::new(StorageKey::Nfts),
+            owner_id: owner_id.clone(),
+            backend_id: backend_id.unwrap_or(owner_id.clone()),
+            beneficiary_id: beneficiary_id.unwrap_or(owner_id),
+            state: State::Running,
+            accounts,
+        }
     }
 }
