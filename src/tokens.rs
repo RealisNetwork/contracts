@@ -18,6 +18,7 @@ impl Contract {
         amount: u128,
     ) -> u128 {
         require!(amount > 0, "You can't transfer 0 tokens");
+        require!(sender != recipient_id , "You can't transfer tokens to yourself");
 
         // Charge fee and amount
         let sender_balance_left = self.take_fee(sender, Some(amount));
@@ -91,14 +92,14 @@ impl Contract {
 }
 
 #[cfg(test)]
-mod tests {
+pub mod tests {
     use super::*;
     use near_sdk::collections::{LookupMap, LookupSet};
     use near_sdk::test_utils::accounts;
     use std::str::FromStr;
     use near_sdk::json_types::U64;
 
-    fn get_contract() -> Contract {
+    pub fn get_contract() -> Contract {
         Contract {
             beneficiary_id: AccountId::from_str("alice.testnet").unwrap(), // Will be 2
             constant_fee: 5,
@@ -139,6 +140,22 @@ mod tests {
         assert_eq!(account.free, 228);
         let account: Account = contract.accounts.get(&receiver_id).unwrap().into();
         assert_eq!(account.free, 29);
+    }
+
+    #[test]
+    #[should_panic = "You can't transfer tokens to yourself"]
+    fn transfer_tokens_to_itself() {
+        let mut contract = get_contract();
+
+        // Sender
+        let sender_id = accounts(0);
+        contract
+            .accounts
+            .insert(&sender_id, &Account::new(250).into());
+
+
+        contract.internal_transfer(sender_id.clone(), sender_id.clone(), 20);
+
     }
 
     #[test]
