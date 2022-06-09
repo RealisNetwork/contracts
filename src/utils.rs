@@ -12,7 +12,7 @@ impl Contract {
     pub fn assert_owner(&self) {
         require!(
             env::predecessor_account_id() == self.owner_id.clone(),
-            "Only owner can mint nft"
+            "Only owner can do this"
         );
     }
 }
