@@ -9,6 +9,7 @@ mod tokens;
 mod types;
 mod update;
 mod utils;
+mod metadata;
 
 use crate::account::{Account, VAccount};
 use crate::nft::Nft;
@@ -70,7 +71,7 @@ impl Contract {
         Self {
             constant_fee,
             percent_fee,
-            nfts: LookupMap::new(StorageKey::Nfts),
+            nfts: UnorderedMap::new(StorageKey::Nfts),
             owner_id: owner_id.clone(),
             backend_id: backend_id.unwrap_or(owner_id.clone()),
             beneficiary_id: beneficiary_id.unwrap_or(owner_id),

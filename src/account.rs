@@ -34,7 +34,7 @@ impl Account {
         Self {
             free: balance,
             // lockups: vec![],
-            nfts: LookupSet::new(StorageKey::NftId),
+
         }
     }
 }
