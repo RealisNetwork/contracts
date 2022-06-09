@@ -1,6 +1,4 @@
-use near_contract_standards::non_fungible_token::refund_deposit;
 use near_sdk::json_types::U128;
-use near_sdk::require;
 use near_sdk::{env, AccountId, StorageUsage, Timestamp};
 
 use crate::events::EventLogVariant::NftMint;
