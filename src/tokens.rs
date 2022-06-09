@@ -3,6 +3,7 @@ use crate::{Account, Contract};
 use near_sdk::env;
 use near_sdk::near_bindgen;
 use near_sdk::{require, AccountId};
+use crate::Lock::Lock;
 
 #[near_bindgen]
 impl Contract {
@@ -56,6 +57,11 @@ impl Contract {
             .unwrap_or_else(|| env::panic_str("User not found"))
             .into();
 
+        // Check if user have enough tokens to pay for transaction and to send
+        if sender_account.free < charge {
+            sender_account.check_lockups();
+        }
+
         // Check if user have enough tokens to send
         require!(
             sender_account.free >= amount.unwrap_or_default(),
@@ -90,6 +96,7 @@ mod tests {
     use near_sdk::collections::{LookupMap, LookupSet};
     use near_sdk::test_utils::accounts;
     use std::str::FromStr;
+    use near_sdk::json_types::U64;
 
     fn get_contract() -> Contract {
         Contract {
@@ -255,33 +262,152 @@ mod tests {
     }
 
     #[test]
-    #[should_panic = "Can't pay some fees"]
-    fn transfer_cant_pay_fees() {
+    fn transfer_whith_lockups() {
         let mut contract = get_contract();
 
         // Sender
         let sender_id = accounts(0);
-        contract
-            .accounts
-            .insert(&sender_id, &Account::new(250).into()); // Will be 250
+
+        let mut account_sender: Account = Account::new(250).into();
+
+        account_sender.lockups.insert(&Lock {
+            amount: 26,
+            expire_on: 1654762489,
+        });
+
+        contract.accounts.insert(&sender_id, &account_sender.into());
 
         // receiver
         let receiver_id = accounts(1);
+
         contract
             .accounts
             .insert(&receiver_id, &Account::new(9).into()); // Will be 9
 
-        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 250);
+
+        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 251);
 
         let account: Account = contract
             .accounts
             .get(&contract.beneficiary_id.clone())
             .unwrap()
             .into();
-        assert_eq!(account.free, 0);
+
+        assert_eq!(account.free, 25);
         let account: Account = contract.accounts.get(&sender_id).unwrap().into();
-        assert_eq!(account.free, 250);
+        assert_eq!(account.free, 0);
         let account: Account = contract.accounts.get(&receiver_id).unwrap().into();
-        assert_eq!(account.free, 9);
+        assert_eq!(account.free, 260);
+    }
+
+    #[test]
+    fn transfer_with_many_lockups() {
+        let mut contract = get_contract();
+
+        // Sender
+        let sender_id = accounts(0);
+
+        let mut account_sender: Account = Account::new(250).into();
+
+        account_sender.lockups.insert(&Lock {
+            amount: 10,
+            expire_on: 1654762489,
+        });
+
+        account_sender.lockups.insert(&Lock {
+            amount: 12,
+            expire_on: 1654762489,
+        });
+
+        account_sender.lockups.insert(&Lock {
+            amount: 4,
+            expire_on: 1654762489,
+        });
+
+        account_sender.lockups.insert(&Lock {
+            amount: 4,
+            expire_on: u64::MAX,
+        });
+
+        contract.accounts.insert(&sender_id, &account_sender.into());
+
+        // receiver
+        let receiver_id = accounts(1);
+
+        contract
+            .accounts
+            .insert(&receiver_id, &Account::new(9).into()); // Will be 9
+
+
+        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 251);
+
+        let account: Account = contract
+            .accounts
+            .get(&contract.beneficiary_id.clone())
+            .unwrap()
+            .into();
+
+        assert_eq!(account.free, 25);
+        let account: Account = contract.accounts.get(&sender_id).unwrap().into();
+        assert_eq!(account.free, 0);
+        let account: Account = contract.accounts.get(&receiver_id).unwrap().into();
+        assert_eq!(account.free, 260);
+    }
+
+    #[test]
+    #[should_panic]
+    fn transfer_with_many_but_not_enough_lockups() {
+        let mut contract = get_contract();
+
+        // Sender
+        let sender_id = accounts(0);
+
+        let mut account_sender: Account = Account::new(250).into();
+
+        account_sender.lockups.insert(&Lock {
+            amount: 10,
+            expire_on: 1654762489,
+        });
+
+        account_sender.lockups.insert(&Lock {
+            amount: 12,
+            expire_on: u64::MAX,
+        });
+
+        account_sender.lockups.insert(&Lock {
+            amount: 4,
+            expire_on: 1654762489,
+        });
+
+        account_sender.lockups.insert(&Lock {
+            amount: 4,
+            expire_on: u64::MAX,
+        });
+
+        contract.accounts.insert(&sender_id, &account_sender.into());
+
+        // receiver
+        let receiver_id = accounts(1);
+
+        contract
+            .accounts
+            .insert(&receiver_id, &Account::new(9).into()); // Will be 9
+
+
+        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 251);
+
+        let account: Account = contract
+            .accounts
+            .get(&contract.beneficiary_id.clone())
+            .unwrap()
+            .into();
+
+        assert_eq!(account.free, 25);
+        let account: Account = contract.accounts.get(&sender_id).unwrap().into();
+        assert_eq!(account.free, 0);
+        let account: Account = contract.accounts.get(&receiver_id).unwrap().into();
+        assert_eq!(account.free, 260);
     }
 }
+
+

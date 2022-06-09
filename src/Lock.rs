@@ -1,37 +1,34 @@
 use std::time::SystemTime;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
+use near_sdk::Timestamp;
 
-const LOCK_LIFE_TIME: u64 = 60 * 60 * 24 * 3; // secs * mins  * hours * days
+const DEFAULT_LOCK_LIFE_TIME: u64 = 60 * 60 * 24 * 3; // secs * mins  * hours * days
 
-#[derive(BorshSerialize, BorshDeserialize)]
+#[derive(BorshSerialize, BorshDeserialize, Debug)]
 pub struct Lock {
     pub amount: u128,
-    pub time_stamp: u64,
-}
-
-impl Default for Lock {
-    fn default() -> Self {
-        Self {
-            amount: 0,
-            time_stamp: Lock::get_current_timestamp(),
-        }
-    }
+    pub expire_on: Timestamp,
 }
 
 impl Lock {
 
     pub fn get_current_timestamp() -> u64 {
+        println!("Near TS: {}, Sys TS: {}", near_sdk::env::block_timestamp(), SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_secs());
+        near_sdk::env::block_timestamp()
+    }
+
+    pub fn get_current_timestamp_dev() -> u64 {
         SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_secs()
     }
 
-    pub fn new(amount: u128) -> Self {
+    pub fn new(amount: u128, live_time: Option<u64>) -> Self {
         Self {
             amount,
-            time_stamp: Lock::get_current_timestamp(),
+            expire_on: Lock::get_current_timestamp_dev() + live_time.unwrap_or(DEFAULT_LOCK_LIFE_TIME),
         }
     }
 
     pub fn is_expired(&self) -> bool {
-        Self::get_current_timestamp() - self.time_stamp >= LOCK_LIFE_TIME
+        Self::get_current_timestamp_dev() >= self.expire_on
     }
 }
