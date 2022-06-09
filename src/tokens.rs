@@ -167,12 +167,12 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic = "User not found"]
     fn transfer_sender_not_valid() {
         let mut contract = get_contract();
 
         // Sender
-        let sender_id = AccountId::from_str("").unwrap(); // THERE IS NO SENDER
+        let sender_id = AccountId::from_str("someone.testnet").unwrap(); // Sender is not registered
 
         // receiver
         let receiver_id = accounts(1);
