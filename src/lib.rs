@@ -6,8 +6,8 @@ mod owner;
 mod public_api;
 mod tokens;
 mod types;
-mod utils;
 mod update;
+mod utils;
 
 use crate::account::{Account, VAccount};
 use crate::nft::Nft;
@@ -54,7 +54,8 @@ impl Contract {
     #[init]
     pub fn new(
         total_supply: U128,
-        fee: u8,
+        constant_fee: u128,
+        percent_fee: u8,
         beneficiary_id: Option<AccountId>,
         backend_id: Option<AccountId>,
     ) -> Self {
@@ -64,8 +65,8 @@ impl Contract {
         accounts.insert(&owner_id, &Account::new(total_supply.0).into());
 
         Self {
-            constant_fee: 0, // TODO: get from args
-            percent_fee: fee,
+            constant_fee,
+            percent_fee,
             nfts: LookupMap::new(StorageKey::Nfts),
             owner_id: owner_id.clone(),
             backend_id: backend_id.unwrap_or(owner_id.clone()),
