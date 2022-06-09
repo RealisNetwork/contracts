@@ -39,7 +39,7 @@ pub struct Contract {
     pub beneficiary_id: AccountId,
     pub state: State,
 
-   pub nft_id_counter: u128,
+    pub nft_id_counter: u128,
     pub registered_accounts: LookupMap<PublicKey, AccountId>,
 
 }
