@@ -1,9 +1,9 @@
+use near_sdk::{AccountId, env, StorageUsage, Timestamp};
 use near_sdk::json_types::U128;
-use near_sdk::{env, AccountId, StorageUsage, Timestamp};
 
-use crate::events::EventLogVariant::NftMint;
-use crate::events::{EventLog, EventLogVariant, NftMintLog};
 use crate::*;
+use crate::events::{EventLog, EventLogVariant, NftMintLog};
+use crate::events::EventLogVariant::NftMint;
 
 #[near_bindgen]
 impl Contract {
@@ -35,11 +35,12 @@ impl Contract {
         let VAccount::V1(mut set_of_nft) = self.accounts.get(&recipient_id).unwrap_or_default();
         set_of_nft.nfts.insert(&self.nft_id_counter);
 
-        let mint_log = EventLog::from(EventLogVariant::NftMint(vec![NftMintLog {
-            owner_id: String::from(recipient_id),
-            meta_data: nft_metadata,
-        }]));
-        env::log_str(&mint_log.to_string());
+        EventLog::from(
+            EventLogVariant::NftMint(NftMintLog {
+                owner_id: String::from(recipient_id),
+                meta_data: nft_metadata,
+            }))
+            .emit();
 
         self.nft_id_counter
     }
@@ -68,8 +69,8 @@ impl Contract {
 
 #[cfg(test)]
 mod tests {
-    use near_sdk::test_utils::VMContextBuilder;
     use near_sdk::{testing_env, VMContext};
+    use near_sdk::test_utils::VMContextBuilder;
 
     use super::*;
 
