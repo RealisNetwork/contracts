@@ -87,7 +87,7 @@ impl Contract {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use near_sdk::collections::{LookupMap, LookupSet};
+    use near_sdk::collections::LookupMap;
     use near_sdk::test_utils::accounts;
     use std::str::FromStr;
 
