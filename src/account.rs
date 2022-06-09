@@ -44,12 +44,26 @@ impl Account {
         }
     }
 
-    pub fn check_lockups(&mut self) {
+    pub fn claim_all_lockups(&mut self) {
         let mut amount = 0;
         let mut collection = self.lockups.to_vec();
 
         collection.iter().for_each(|lock| {
             if lock.is_expired() {
+                amount += lock.amount;
+                self.lockups.remove(lock);
+            }
+        });
+        self.free += amount;
+    }
+
+    //TODO remember Use this method
+    pub fn claim_lockup(&mut self, expire_on_ts: u64) {
+        let mut amount = 0;
+        let mut collection = self.lockups.to_vec();
+
+        collection.iter().for_each(|lock| {
+            if lock.expire_on == expire_on_ts && lock.is_expired() {
                 amount += lock.amount;
                 self.lockups.remove(lock);
             }
@@ -88,7 +102,7 @@ mod tests {
     use super::*;
 
     #[test]
-    pub fn check_lock() {
+    pub fn check_lockups() {
         let mut account = Account::new(5); // Current balance
         account.lockups.insert(&Lockup::new(55, None)); // Just locked (will unlock in 3 days (default lifetime))
         account.lockups.insert(&Lockup {
@@ -96,11 +110,31 @@ mod tests {
             expire_on: 0,
         }); // Lock from 1970
 
-        account.check_lockups(); // Balance of lock from 1970 will be transferred to main balance
+        account.claim_all_lockups(); // Balance of lock from 1970 will be transferred to main balance
 
         println!("{:#?}", account.lockups.to_vec());
 
         assert_eq!(account.free, 10);
+    }
+
+    #[test]
+    pub fn check_lockup() {
+        let mut account = Account::new(5); // Current balance
+        account.lockups.insert(&Lockup::new(55, None)); // Just locked (will unlock in 3 days (default lifetime))
+        account.lockups.insert(&Lockup {
+            amount: 5,
+            expire_on: 0,
+        }); // Lock from 1970
+        account.lockups.insert(&Lockup {
+            amount: 8,
+            expire_on: 16457898,
+        }); // Lock from 1970
+
+        account.claim_lockup(16457898); // Balance of lock from 1970 will be transferred to main balance
+
+        println!("{:#?}", account.lockups.to_vec());
+
+        assert_eq!(account.free, 13);
     }
 }
 
