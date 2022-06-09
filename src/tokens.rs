@@ -101,6 +101,7 @@ mod tests {
             owner_id: env::predecessor_account_id(),
             backend_id: env::predecessor_account_id(),
             state: State::Running,
+            registered_accounts: LookupMap::new(StorageKey::RegisteredAccounts),
         }
     }
 

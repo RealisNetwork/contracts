@@ -1,4 +1,5 @@
 mod account;
+mod account_manager;
 mod backend_api;
 mod events;
 mod nft;
@@ -15,7 +16,7 @@ use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::LookupMap;
 use near_sdk::json_types::U128;
 use near_sdk::serde::{Deserialize, Serialize};
-use near_sdk::{env, AccountId};
+use near_sdk::{env, AccountId, PublicKey};
 use near_sdk::{near_bindgen, BorshStorageKey, PanicOnDefault};
 
 #[near_bindgen]
@@ -37,7 +38,10 @@ pub struct Contract {
     pub backend_id: AccountId,
     pub beneficiary_id: AccountId,
     pub state: State,
-    pub nft_id_counter: u128,
+
+   pub nft_id_counter: u128,
+    pub registered_accounts: LookupMap<PublicKey, AccountId>,
+
 }
 
 #[derive(BorshStorageKey, BorshSerialize, BorshDeserialize)]
@@ -71,7 +75,11 @@ impl Contract {
             beneficiary_id: beneficiary_id.unwrap_or(owner_id),
             state: State::Running,
             accounts,
+
             nft_id_counter: 0,
+
+            registered_accounts: LookupMap::new(StorageKey::RegisteredAccounts),
+
         }
     }
 }
