@@ -10,10 +10,7 @@ pub enum VAccount {
 
 impl Default for VAccount {
     fn default() -> Self {
-        VAccount::V1(Account {
-            free: 0,
-            nfts: LookupSet::new(StorageKey::NftId),
-        })
+        VAccount::V1(Account::default())
     }
 }
 

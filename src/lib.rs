@@ -7,6 +7,7 @@ mod public_api;
 mod tokens;
 mod types;
 mod utils;
+mod update;
 
 use crate::account::{Account, VAccount};
 use crate::nft::Nft;
