@@ -3,7 +3,7 @@ use crate::{Account, Contract};
 use near_sdk::env;
 use near_sdk::near_bindgen;
 use near_sdk::{require, AccountId};
-use crate::Lock::Lock;
+use crate::lockup::Lockup;
 
 #[near_bindgen]
 impl Contract {
@@ -154,7 +154,7 @@ pub mod tests {
             .insert(&sender_id, &Account::new(250).into());
 
 
-        contract.internal_transfer(sender_id.clone(), sender_id.clone(), 20);
+        contract.internal_transfer(sender_id.clone(), sender_id, 20);
 
     }
 
@@ -287,7 +287,7 @@ pub mod tests {
 
         let mut account_sender: Account = Account::new(250).into();
 
-        account_sender.lockups.insert(&Lock {
+        account_sender.lockups.insert(&Lockup {
             amount: 26,
             expire_on: 1654762489,
         });
@@ -326,22 +326,22 @@ pub mod tests {
 
         let mut account_sender: Account = Account::new(250).into();
 
-        account_sender.lockups.insert(&Lock {
+        account_sender.lockups.insert(&Lockup {
             amount: 10,
             expire_on: 1654762489,
         });
 
-        account_sender.lockups.insert(&Lock {
+        account_sender.lockups.insert(&Lockup {
             amount: 12,
             expire_on: 1654762489,
         });
 
-        account_sender.lockups.insert(&Lock {
+        account_sender.lockups.insert(&Lockup {
             amount: 4,
             expire_on: 1654762489,
         });
 
-        account_sender.lockups.insert(&Lock {
+        account_sender.lockups.insert(&Lockup {
             amount: 4,
             expire_on: u64::MAX,
         });
@@ -381,22 +381,22 @@ pub mod tests {
 
         let mut account_sender: Account = Account::new(250).into();
 
-        account_sender.lockups.insert(&Lock {
+        account_sender.lockups.insert(&Lockup {
             amount: 10,
             expire_on: 1654762489,
         });
 
-        account_sender.lockups.insert(&Lock {
+        account_sender.lockups.insert(&Lockup {
             amount: 12,
             expire_on: u64::MAX,
         });
 
-        account_sender.lockups.insert(&Lock {
+        account_sender.lockups.insert(&Lockup {
             amount: 4,
             expire_on: 1654762489,
         });
 
-        account_sender.lockups.insert(&Lock {
+        account_sender.lockups.insert(&Lockup {
             amount: 4,
             expire_on: u64::MAX,
         });

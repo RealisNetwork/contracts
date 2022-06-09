@@ -6,18 +6,19 @@ mod public_api;
 mod tokens;
 mod types;
 mod utils;
-mod Lock;
+mod lockup;
 
 use crate::account::{Account, VAccount};
 use crate::nft::Nft;
 use crate::types::NftId;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::collections::LookupMap;
+use near_sdk::collections::{LookupMap, Vector};
 use near_sdk::json_types::U128;
 use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::{env, AccountId, require};
 use near_sdk::{near_bindgen, BorshStorageKey, PanicOnDefault};
 use near_sdk::log;
+use crate::lockup::LockupInfo;
 
 #[near_bindgen]
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize)]
@@ -74,37 +75,26 @@ impl Contract {
         }
     }
 
-    pub fn view_locks_info(& self, from_index: Option<usize>, limit: Option<usize>, account_id: AccountId) -> String{
-
-        let mut messege_log = "".to_string();
+    pub fn loockups_info(&self, account_id: AccountId, from_index: Option<usize>, limit: Option<usize>) -> Vec<LockupInfo> {
 
         match self.accounts.get(&account_id) {
 
             Some(user)=>{
                 let user_account: Account = user.into();
-                let header = format!("------------locks for <{}>------------", account_id);
+                user_account
+                    .lockups
+                    .iter()
+                    .skip(from_index.unwrap_or(0))
+                    .take(limit.unwrap_or_else(|| user_account.lockups.len() as usize))
+                    .map(|lockup| lockup.into())
+                    .collect::<Vec<LockupInfo>>()
 
-                let mut locks_msg = "".to_string();
-                let locks = user_account.lockups.to_vec();
-
-                let from_index = from_index.unwrap_or(0);
-                let end_index = from_index + limit.unwrap_or(locks.len());
-
-                require!(from_index <= locks.len() && end_index <= locks.len(), "Index error");
-
-                for lock in &locks[from_index..end_index] {
-                    // TODO: check if there are not something kinda null pointer
-                    locks_msg = format!("{}\n{:#?}",locks_msg ,lock);
-                }
-                messege_log = format!("{}\n{}", header,locks_msg);
             }
 
             None => {
-                env::panic_str("User not found");
+                vec![]
             }
-        };
-
-        messege_log
+        }
     }
 }
 #[cfg(test)]
@@ -123,19 +113,19 @@ mod tests {
         let mut account: Account = Account::new(250);
         let account_id = AccountId::from_str("user.testnet").unwrap();
 
-        account.lockups.insert(&Lock::Lock{
+        account.lockups.insert(&lockup::Lockup {
             amount: 250,
             expire_on: 60
         });
 
-        account.lockups.insert(&Lock::Lock::new(25,None));
-        account.lockups.insert(&Lock::Lock::new(35,Some(20)));
+        account.lockups.insert(&lockup::Lockup::new(25, None));
+        account.lockups.insert(&lockup::Lockup::new(35, Some(20)));
 
         contract
             .accounts
             .insert(&account_id, &account.into());
 
-        println!("{}",contract.view_locks_info(None,None, account_id));
+        println!("{:#?}",contract.loockups_info(account_id, None, None));
     }
 
     #[test]
@@ -148,39 +138,7 @@ mod tests {
             .accounts
             .insert(&account_id, &account.into());
 
-        println!("{}",contract.view_locks_info(None,None, account_id));
-    }
-
-    #[test]
-    #[should_panic = "User not found"]
-    fn info_no_user(){ // There are no locks
-        let mut contract = get_contract();
-
-        let account_id = AccountId::from_str("user.testnet").unwrap();
-
-        println!("{}",contract.view_locks_info(None,None, account_id));
-    }
-
-    #[test]
-    #[should_panic = "Index error"]
-    fn info_index_error_test(){ // Indexes are default
-        let mut contract = get_contract();
-        let mut account: Account = Account::new(250);
-        let account_id = AccountId::from_str("user.testnet").unwrap();
-
-        account.lockups.insert(&Lock::Lock{
-            amount: 250,
-            expire_on: 60
-        });
-
-        account.lockups.insert(&Lock::Lock::new(25,None));
-        account.lockups.insert(&Lock::Lock::new(35,Some(20)));
-
-        contract
-            .accounts
-            .insert(&account_id, &account.into());
-
-        println!("{}",contract.view_locks_info(Some(3),Some(50), account_id));
+        println!("{:#?}",contract.loockups_info(account_id, None, None));
     }
 
 }

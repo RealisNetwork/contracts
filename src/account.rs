@@ -2,7 +2,7 @@ use crate::{NftId, Serialize, StorageKey};
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::{LookupSet, UnorderedSet};
 use near_sdk::Balance;
-use crate::Lock::Lock;
+use crate::lockup::Lockup;
 
 #[derive(BorshSerialize, BorshDeserialize)]
 pub enum VAccount {
@@ -30,7 +30,7 @@ impl From<VAccount> for Account {
 #[derive(BorshSerialize, BorshDeserialize)]
 pub struct Account {
     pub free: Balance,
-    pub lockups: UnorderedSet<Lock>,
+    pub lockups: UnorderedSet<Lockup>,
     pub nfts: LookupSet<NftId>,
 }
 
@@ -78,8 +78,8 @@ mod tests {
     #[test]
     pub fn check_lock() {
         let mut account = Account::new(5); // Current balance
-        account.lockups.insert(&Lock::new(55, None)); // Just locked (will unlock in 3 days (default lifetime))
-        account.lockups.insert(&Lock{
+        account.lockups.insert(&Lockup::new(55, None)); // Just locked (will unlock in 3 days (default lifetime))
+        account.lockups.insert(&Lockup {
             amount: 5,
             expire_on: 0,
         }); // Lock from 1970
