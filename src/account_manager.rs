@@ -51,7 +51,7 @@ impl Contract {
         account_id: AccountId,
         new_public_key: PublicKey,
     ) -> PromiseOrValue<u8> {
-        self.assert_owner(); // TODO fix after merge Mint#5
+        self.assert_owner();
 
         let old_public_key = env::signer_account_pk();
         require!(
