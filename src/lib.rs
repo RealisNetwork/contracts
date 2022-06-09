@@ -42,7 +42,6 @@ pub struct Contract {
 
     pub nft_id_counter: u128,
     pub registered_accounts: LookupMap<PublicKey, AccountId>,
-
 }
 
 #[derive(BorshStorageKey, BorshSerialize, BorshDeserialize)]
@@ -81,7 +80,6 @@ impl Contract {
             nft_id_counter: 0,
 
             registered_accounts: LookupMap::new(StorageKey::RegisteredAccounts),
-
         }
     }
 }
