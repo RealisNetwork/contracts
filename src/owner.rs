@@ -23,17 +23,15 @@ impl Contract {
         if u128::MAX == self.nft_id_counter {
             self.nft_id_counter = 0;
         }
-        while self.nfts.contains_key(&self.nft_id_counter) {
+        while self.nfts.get(&self.nft_id_counter).is_some() {
             self.nft_id_counter += 1;
         }
 
         let nft = Nft {
-            meta_data: nft_metadata.clone(),
+            owner_id: recipient_id.clone(),
+            metadata: nft_metadata.clone(),
         };
         self.nfts.insert(&self.nft_id_counter, &nft);
-
-        let VAccount::V1(mut set_of_nft) = self.accounts.get(&recipient_id).unwrap_or_default();
-        set_of_nft.nfts.insert(&self.nft_id_counter);
 
         EventLog::from(EventLogVariant::NftMint(NftMintLog {
             owner_id: String::from(recipient_id),

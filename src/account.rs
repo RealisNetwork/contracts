@@ -26,7 +26,6 @@ impl From<VAccount> for Account {
 pub struct Account {
     pub free: Balance,
     // pub lockups: Vec<Lock>,
-    pub nfts: LookupSet<NftId>,
 }
 
 impl Account {
@@ -34,7 +33,6 @@ impl Account {
         Self {
             free: balance,
             // lockups: vec![],
-
         }
     }
 }
