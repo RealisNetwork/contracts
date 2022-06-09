@@ -1,24 +1,24 @@
 mod account;
 mod backend_api;
+mod lockup;
 mod nft;
 mod owner;
 mod public_api;
 mod tokens;
 mod types;
 mod utils;
-mod lockup;
 
-use crate::account::{Account, VAccount};
+use crate::account::{Account, AccountInfo, VAccount};
+use crate::lockup::LockupInfo;
 use crate::nft::Nft;
 use crate::types::NftId;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::{LookupMap, Vector};
 use near_sdk::json_types::U128;
-use near_sdk::serde::{Deserialize, Serialize};
-use near_sdk::{env, AccountId, require};
-use near_sdk::{near_bindgen, BorshStorageKey, PanicOnDefault};
 use near_sdk::log;
-use crate::lockup::LockupInfo;
+use near_sdk::serde::{Deserialize, Serialize};
+use near_sdk::{env, require, AccountId};
+use near_sdk::{near_bindgen, BorshStorageKey, PanicOnDefault};
 
 #[near_bindgen]
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize)]
@@ -75,20 +75,16 @@ impl Contract {
         }
     }
 
-    pub fn loockups_info(&self, account_id: AccountId, from_index: Option<usize>, limit: Option<usize>) -> Vec<LockupInfo> {
-
+    pub fn loockups_info(
+        &self,
+        account_id: AccountId,
+        from_index: Option<usize>,
+        limit: Option<usize>,
+    ) -> Vec<LockupInfo> {
         match self.accounts.get(&account_id) {
-
-            Some(user)=>{
+            Some(user) => {
                 let user_account: Account = user.into();
-                user_account
-                    .lockups
-                    .iter()
-                    .skip(from_index.unwrap_or(0))
-                    .take(limit.unwrap_or_else(|| user_account.lockups.len() as usize))
-                    .map(|lockup| lockup.into())
-                    .collect::<Vec<LockupInfo>>()
-
+                user_account.get_lockups(from_index, limit)
             }
 
             None => {
@@ -96,49 +92,96 @@ impl Contract {
             }
         }
     }
+
+    pub fn get_balance_info(&self, account_id: AccountId) -> U128 {
+        match self.accounts.get(&account_id) {
+            Some(user) => {
+                let user_account: Account = user.into();
+                user_account.get_balance()
+            }
+
+            None => U128(0u128),
+        }
+    }
+
+    pub fn get_account_info(&self, account_id: AccountId) -> AccountInfo {
+        match self.accounts.get(&account_id) {
+            Some(user) => {
+                let user_account: Account = user.into();
+                user_account.into()
+            }
+
+            None => AccountInfo::default(),
+        }
+    }
 }
+
 #[cfg(test)]
 mod tests {
     use super::tokens::tests::get_contract;
     use super::*;
     use near_sdk::collections::{LookupMap, LookupSet};
+    use near_sdk::json_types::U64;
     use near_sdk::test_utils::accounts;
     use std::str::FromStr;
-    use near_sdk::json_types::U64;
-
 
     #[test]
-    fn info_log_test(){ // Indexes are default
+    fn info_log_test() {
+        // Indexes are default
         let mut contract = get_contract();
         let mut account: Account = Account::new(250);
         let account_id = AccountId::from_str("user.testnet").unwrap();
 
         account.lockups.insert(&lockup::Lockup {
             amount: 250,
-            expire_on: 60
+            expire_on: 60,
         });
 
         account.lockups.insert(&lockup::Lockup::new(25, None));
         account.lockups.insert(&lockup::Lockup::new(35, Some(20)));
 
-        contract
-            .accounts
-            .insert(&account_id, &account.into());
+        contract.accounts.insert(&account_id, &account.into());
 
-        println!("{:#?}",contract.loockups_info(account_id, None, None));
+        println!("{:#?}", contract.loockups_info(account_id, None, None));
     }
 
     #[test]
-    fn info_no_locks(){ // There are no locks
+    fn info_no_locks() {
+        // There are no locks
         let mut contract = get_contract();
         let mut account: Account = Account::new(250);
         let account_id = AccountId::from_str("user.testnet").unwrap();
 
-        contract
-            .accounts
-            .insert(&account_id, &account.into());
+        contract.accounts.insert(&account_id, &account.into());
 
-        println!("{:#?}",contract.loockups_info(account_id, None, None));
+        println!("{:#?}", contract.loockups_info(account_id, None, None));
     }
 
+    #[test]
+    fn info_get_balance_test() {
+        // Indexes are default
+        let mut contract = get_contract();
+        let mut account: Account = Account::new(250);
+        let account_id = AccountId::from_str("user.testnet").unwrap();
+
+        contract.accounts.insert(&account_id, &account.into());
+        assert_eq!(contract.get_balance_info(account_id).0, 250);
+    }
+
+    #[test]
+    fn get_account_info_test() {
+        let mut contract = get_contract();
+        let mut account: Account = Account::new(250);
+        let account_id = AccountId::from_str("user.testnet").unwrap();
+
+        account.lockups.insert(&lockup::Lockup {
+            amount: 250,
+            expire_on: 60,
+        });
+        account.lockups.insert(&lockup::Lockup::new(25, None));
+        account.lockups.insert(&lockup::Lockup::new(35, Some(20)));
+
+        contract.accounts.insert(&account_id, &account.into());
+        println!("{:#?}", contract.get_account_info(account_id));
+    }
 }

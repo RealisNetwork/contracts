@@ -1,8 +1,9 @@
-use crate::{NftId, Serialize, StorageKey};
+use crate::lockup::Lockup;
+use crate::{LockupInfo, NftId, Serialize, StorageKey};
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::{LookupSet, UnorderedSet};
+use near_sdk::json_types::U128;
 use near_sdk::Balance;
-use crate::lockup::Lockup;
 
 #[derive(BorshSerialize, BorshDeserialize)]
 pub enum VAccount {
@@ -11,7 +12,7 @@ pub enum VAccount {
 
 impl Default for VAccount {
     fn default() -> Self {
-        VAccount::V1( Account {
+        VAccount::V1(Account {
             free: 0,
             lockups: UnorderedSet::new(b'l'),
             nfts: LookupSet::new(StorageKey::NftId),
@@ -43,12 +44,11 @@ impl Account {
         }
     }
 
-
     pub fn check_lockups(&mut self) {
         let mut amount = 0;
         let mut collection = self.lockups.to_vec();
 
-        collection.iter().for_each(|lock|  {
+        collection.iter().for_each(|lock| {
             if lock.is_expired() {
                 amount += lock.amount;
                 self.lockups.remove(lock);
@@ -57,6 +57,18 @@ impl Account {
         self.free += amount;
     }
 
+    pub fn get_lockups(&self, from_index: Option<usize>, limit: Option<usize>) -> Vec<LockupInfo> {
+        self.lockups
+            .iter()
+            .skip(from_index.unwrap_or(0))
+            .take(limit.unwrap_or_else(|| self.lockups.len() as usize))
+            .map(|lockup| lockup.into())
+            .collect::<Vec<LockupInfo>>()
+    }
+
+    pub fn get_balance(&self) -> U128 {
+        U128(self.free)
+    }
 }
 
 impl From<Account> for VAccount {
@@ -90,5 +102,29 @@ mod tests {
 
         assert_eq!(account.free, 10);
     }
+}
 
+#[derive(BorshSerialize, Debug)]
+pub struct AccountInfo {
+    pub free: U128,
+    pub lockups: Vec<LockupInfo>,
+    //pub nfts: LookupSet<NftId>,
+}
+
+impl From<Account> for AccountInfo {
+    fn from(account: Account) -> Self {
+        AccountInfo {
+            free: account.get_balance(),
+            lockups: account.get_lockups(None, None),
+        }
+    }
+}
+
+impl Default for AccountInfo {
+    fn default() -> Self {
+        Self {
+            free: U128(0),
+            lockups: vec![],
+        }
+    }
 }

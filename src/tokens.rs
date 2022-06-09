@@ -1,9 +1,9 @@
+use crate::lockup::Lockup;
 use crate::*;
 use crate::{Account, Contract};
 use near_sdk::env;
 use near_sdk::near_bindgen;
 use near_sdk::{require, AccountId};
-use crate::lockup::Lockup;
 
 #[near_bindgen]
 impl Contract {
@@ -18,7 +18,10 @@ impl Contract {
         amount: u128,
     ) -> u128 {
         require!(amount > 0, "You can't transfer 0 tokens");
-        require!(sender != recipient_id , "You can't transfer tokens to yourself");
+        require!(
+            sender != recipient_id,
+            "You can't transfer tokens to yourself"
+        );
 
         // Charge fee and amount
         let sender_balance_left = self.take_fee(sender, Some(amount));
@@ -95,9 +98,9 @@ impl Contract {
 pub mod tests {
     use super::*;
     use near_sdk::collections::{LookupMap, LookupSet};
+    use near_sdk::json_types::U64;
     use near_sdk::test_utils::accounts;
     use std::str::FromStr;
-    use near_sdk::json_types::U64;
 
     pub fn get_contract() -> Contract {
         Contract {
@@ -153,9 +156,7 @@ pub mod tests {
             .accounts
             .insert(&sender_id, &Account::new(250).into());
 
-
         contract.internal_transfer(sender_id.clone(), sender_id, 20);
-
     }
 
     #[test]
@@ -301,7 +302,6 @@ pub mod tests {
             .accounts
             .insert(&receiver_id, &Account::new(9).into()); // Will be 9
 
-
         contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 251);
 
         let account: Account = contract
@@ -354,7 +354,6 @@ pub mod tests {
         contract
             .accounts
             .insert(&receiver_id, &Account::new(9).into()); // Will be 9
-
 
         contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 251);
 
@@ -410,7 +409,6 @@ pub mod tests {
             .accounts
             .insert(&receiver_id, &Account::new(9).into()); // Will be 9
 
-
         contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 251);
 
         let account: Account = contract
@@ -426,5 +424,3 @@ pub mod tests {
         assert_eq!(account.free, 260);
     }
 }
-
-
