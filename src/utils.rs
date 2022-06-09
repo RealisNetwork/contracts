@@ -1,4 +1,5 @@
-use near_sdk::{env, AccountId, PublicKey};
+use crate::*;
+use near_sdk::{env, require, AccountId, PublicKey};
 
 /// Converts `PublicKey` to `AccountId`
 pub fn convert_pk_to_account_id(pk: PublicKey) -> AccountId {
@@ -7,10 +8,15 @@ pub fn convert_pk_to_account_id(pk: PublicKey) -> AccountId {
         .unwrap_or_else(|_| env::panic_str("Fail to convert PublicKey to AccountId"))
 }
 
-pub fn _assert_owner() {
-    todo!()
+impl Contract {
+    pub fn assert_owner(&self) {
+        require!(
+            env::predecessor_account_id() == self.owner_id.clone(),
+            "Only owner can mint nft"
+        );
+    }
 }
 
-pub fn _assert_backend() {
+pub fn assert_backend() {
     todo!()
 }
