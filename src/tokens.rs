@@ -87,7 +87,7 @@ impl Contract {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use near_sdk::collections::{LookupMap, LookupSet};
+    use near_sdk::collections::LookupMap;
     use near_sdk::test_utils::accounts;
     use std::str::FromStr;
 
@@ -167,12 +167,12 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic = "User not found"]
     fn transfer_sender_not_valid() {
         let mut contract = get_contract();
 
         // Sender
-        let sender_id = AccountId::from_str("").unwrap(); // THERE IS NO SENDER
+        let sender_id = AccountId::from_str("someone.testnet").unwrap(); // Sender is not registered
 
         // receiver
         let receiver_id = accounts(1);
