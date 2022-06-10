@@ -1,10 +1,15 @@
-use crate::{Contract, NftId};
-use near_contract_standards::fungible_token::metadata::{FungibleTokenMetadata, FungibleTokenMetadataProvider};
-use near_contract_standards::non_fungible_token::metadata::{NFTContractMetadata, NonFungibleTokenMetadataProvider};
+use near_contract_standards::fungible_token::metadata::{
+    FungibleTokenMetadata, FungibleTokenMetadataProvider,
+};
 use near_contract_standards::non_fungible_token::enumeration::NonFungibleTokenEnumeration;
+use near_contract_standards::non_fungible_token::metadata::{
+    NFTContractMetadata, NonFungibleTokenMetadataProvider,
+};
 use near_contract_standards::non_fungible_token::Token;
-use near_sdk::{AccountId, env};
 use near_sdk::json_types::{Base64VecU8, U128};
+use near_sdk::{env, AccountId};
+
+use crate::Contract;
 
 /// `SPEC_TOKEN` current version of token in format `nft-n.n.n`,
 /// where nnn is number of version.
@@ -16,12 +21,13 @@ pub const NFT_TOKEN_NAME: &str = "Realis NFT";
 /// `TOKEN_SYMBOL` short token name.
 pub const FT_TOKEN_SYMBOL: &str = "LIS";
 pub const NFT_TOKEN_SYMBOL: &str = "LIS";
+pub const FT_ICON: &str = "";
+pub const NFT_ICON: &str = "";
 /// `TOKEN_REFERENCE` URL to an off-chain JSON file with more info.
 pub const FT_TOKEN_REFERENCE: &str = "";
 pub const NFT_TOKEN_REFERENCE: &str = "";
 pub const FT_TOKEN_DECIMALS: u8 = 0;
 pub const NFT_BASE_URI: &str = "";
-
 
 impl FungibleTokenMetadataProvider for Contract {
     fn ft_metadata(&self) -> FungibleTokenMetadata {
@@ -29,9 +35,11 @@ impl FungibleTokenMetadataProvider for Contract {
             spec: FT_SPEC_TOKEN.to_owned(),
             name: FT_TOKEN_NAME.to_owned(),
             symbol: FT_TOKEN_SYMBOL.to_owned(),
-            icon: None,
+            icon: Some(FT_ICON.to_owned()),
             reference: Some(FT_TOKEN_REFERENCE.to_owned()),
-            reference_hash: Some(Base64VecU8::from(env::sha256(FT_TOKEN_REFERENCE.as_bytes()))),
+            reference_hash: Some(Base64VecU8::from(env::sha256(
+                FT_TOKEN_REFERENCE.as_bytes(),
+            ))),
             decimals: FT_TOKEN_DECIMALS,
         }
     }
@@ -43,10 +51,12 @@ impl NonFungibleTokenMetadataProvider for Contract {
             spec: NFT_SPEC_TOKEN.to_owned(),
             name: NFT_TOKEN_NAME.to_owned(),
             symbol: NFT_TOKEN_SYMBOL.to_owned(),
-            icon: None,
+            icon: Some(NFT_ICON.to_owned()),
             base_uri: Some(NFT_BASE_URI.to_owned()),
             reference: Some(NFT_TOKEN_REFERENCE.to_owned()),
-            reference_hash: Some(Base64VecU8::from(env::sha256(NFT_TOKEN_REFERENCE.as_bytes()))),
+            reference_hash: Some(Base64VecU8::from(env::sha256(
+                NFT_TOKEN_REFERENCE.as_bytes(),
+            ))),
         }
     }
 }
@@ -58,15 +68,12 @@ impl NonFungibleTokenEnumeration for Contract {
 
     fn nft_tokens(&self, from_index: Option<U128>, limit: Option<u64>) -> Vec<Token> {
         // Start index
-        let mut from = 0;
-        if let Some(value) = from_index {
-            from = value.0;
-        }
+        let from = from_index.unwrap_or(U128::from(0));
         // Limit
-        let limit = limit.unwrap_or(self.nfts.len());
+        let limit = limit.unwrap_or_else(|| self.nfts.len());
         self.nfts
             .iter()
-            .skip(from as usize)
+            .skip(from.0 as usize)
             .take(limit as usize)
             .map(|(key, value)| Token {
                 token_id: key.to_string(),
@@ -77,47 +84,49 @@ impl NonFungibleTokenEnumeration for Contract {
             .collect()
     }
 
-
     fn nft_supply_for_owner(&self, account_id: AccountId) -> U128 {
-        let mut count = self.nfts
+        let count = self
+            .nfts
             .values()
             .filter(|value| value.owner_id == account_id)
             .count();
         U128::from(count as u128)
     }
 
-    fn nft_tokens_for_owner(&self, account_id: AccountId, from_index: Option<U128>, limit: Option<u64>) -> Vec<Token> {
+    fn nft_tokens_for_owner(
+        &self,
+        account_id: AccountId,
+        from_index: Option<U128>,
+        limit: Option<u64>,
+    ) -> Vec<Token> {
         // Start index
-        let mut from = 0;
-        if let Some(value) = from_index {
-            from = value.0;
-        }
+        let from = from_index.unwrap_or(U128::from(0));
         // Limit
-        let limit = limit.unwrap_or(self.nfts.len());
+        let limit = limit.unwrap_or_else(|| self.nfts.len());
         self.nfts
             .iter()
-            .skip(from as usize)
+            .filter(|(_key, value)| value.owner_id == account_id)
+            .skip(from.0 as usize)
             .take(limit as usize)
-            .filter(|(key, value)| value.owner_id == account_id )
             .map(|(key, value)| Token {
-                        token_id: key.to_string(),
-                        owner_id: value.owner_id,
-                        metadata: None,
-                        approved_account_ids: None,
+                token_id: key.to_string(),
+                owner_id: value.owner_id,
+                metadata: None,
+                approved_account_ids: None,
             })
             .collect()
     }
 }
 
-
 #[cfg(test)]
 mod tests {
-    use near_sdk::{AccountId, Gas, RuntimeFeesConfig, testing_env, VMConfig, VMContext};
-    use near_sdk::collections::{LookupMap, UnorderedMap, UnorderedSet};
-    use crate::{Contract, Nft, State};
     use near_contract_standards::non_fungible_token::enumeration::NonFungibleTokenEnumeration;
+    use near_sdk::collections::{LookupMap, UnorderedMap, UnorderedSet};
     use near_sdk::json_types::U128;
     use near_sdk::test_utils::VMContextBuilder;
+    use near_sdk::{testing_env, AccountId, Gas, RuntimeFeesConfig, VMConfig, VMContext};
+
+    use crate::{Contract, Nft, State};
 
     pub fn get_contract() -> Contract {
         let mut contract = Contract {
@@ -148,6 +157,7 @@ mod tests {
             .is_view(false)
             .build()
     }
+
     #[test]
     fn test_nft_total_supply() {
         let contract = get_contract();
@@ -180,8 +190,8 @@ mod tests {
         let contract = get_contract();
         let context = get_context("id".to_string());
         testing_env!(context, VMConfig::free(), RuntimeFeesConfig::free());
-        let result = contract.nft_tokens_for_owner(AccountId::new_unchecked("id_4".to_string()), None, None);
+        let result =
+            contract.nft_tokens_for_owner(AccountId::new_unchecked("id_4".to_string()), None, None);
         assert_eq!(result.len(), 1)
     }
-
 }
