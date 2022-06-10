@@ -1,13 +1,16 @@
-use near_contract_standards::fungible_token::metadata::{
-    FungibleTokenMetadata, FungibleTokenMetadataProvider,
+use near_contract_standards::{
+    fungible_token::metadata::{FungibleTokenMetadata, FungibleTokenMetadataProvider},
+    non_fungible_token::{
+        enumeration::NonFungibleTokenEnumeration,
+        metadata::{NFTContractMetadata, NonFungibleTokenMetadataProvider},
+        Token,
+    },
 };
-use near_contract_standards::non_fungible_token::enumeration::NonFungibleTokenEnumeration;
-use near_contract_standards::non_fungible_token::metadata::{
-    NFTContractMetadata, NonFungibleTokenMetadataProvider,
+use near_sdk::{
+    env,
+    json_types::{Base64VecU8, U128},
+    AccountId,
 };
-use near_contract_standards::non_fungible_token::Token;
-use near_sdk::json_types::{Base64VecU8, U128};
-use near_sdk::{env, AccountId};
 
 use crate::Contract;
 
@@ -15,7 +18,8 @@ use crate::Contract;
 /// Should be ft-1.0.0 to indicate that a Fungible Token contract
 /// adheres to the current versions of this Metadata and
 /// the Fungible Token Core specs. This will allow consumers
-/// of the Fungible Token to know if they support the features of a given contract.
+/// of the Fungible Token to know if they support the features of a given
+/// contract.
 pub const FT_SPEC_TOKEN: &str = "ft-0.1.0";
 pub const NFT_SPEC_TOKEN: &str = "nft-0.1.0";
 /// `TOKEN_NAME` the human-readable name of the token.
@@ -25,8 +29,8 @@ pub const NFT_TOKEN_NAME: &str = "Realis NFT";
 /// various keys offering supplementary details on the token.
 /// Example: /ipfs/QmdmQXB2mzChmMeKY47C43LxUdg1NDJ5MWcKMKxDu7RgQm,
 /// https://example.com/token.json, etc.
-/// If the information given in this document conflicts with the on-chain attributes,
-/// the values in reference shall be considered the source of truth.
+/// If the information given in this document conflicts with the on-chain
+/// attributes, the values in reference shall be considered the source of truth.
 pub const FT_TOKEN_SYMBOL: &str = "LIS";
 pub const FT_TOKEN_ICON: &str = "";
 pub const NFT_TOKEN_ICON: &str = "";
@@ -36,9 +40,9 @@ pub const FT_TOKEN_REFERENCE: &str = "";
 pub const NFT_TOKEN_REFERENCE: &str = "";
 /// Used in frontends to show the proper significant digits of a token.
 pub const FT_TOKEN_DECIMALS: u8 = 12;
-/// Centralized gateway known to have reliable access to decentralized storage assets
-/// referenced by reference or media URLs. Can be used by other frontends for
-/// initial retrieval of assets, even if these frontends then replicate the
+/// Centralized gateway known to have reliable access to decentralized storage
+/// assets referenced by reference or media URLs. Can be used by other frontends
+/// for initial retrieval of assets, even if these frontends then replicate the
 /// data to their own decentralized nodes, which they are encouraged to do.
 pub const NFT_BASE_URI: &str = "";
 
@@ -138,10 +142,12 @@ impl NonFungibleTokenEnumeration for Contract {
 #[cfg(test)]
 mod tests {
     use near_contract_standards::non_fungible_token::enumeration::NonFungibleTokenEnumeration;
-    use near_sdk::collections::{LookupMap, UnorderedMap, UnorderedSet};
-    use near_sdk::json_types::U128;
-    use near_sdk::test_utils::VMContextBuilder;
-    use near_sdk::{testing_env, AccountId, Gas, RuntimeFeesConfig, VMConfig, VMContext};
+    use near_sdk::{
+        collections::{LookupMap, UnorderedMap, UnorderedSet},
+        json_types::U128,
+        test_utils::VMContextBuilder,
+        testing_env, AccountId, Gas, RuntimeFeesConfig, VMConfig, VMContext,
+    };
 
     use crate::{Contract, Nft, State};
 

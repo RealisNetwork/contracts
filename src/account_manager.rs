@@ -1,7 +1,7 @@
-use crate::utils::convert_pk_to_account_id;
-use crate::*;
-use near_sdk::{ext_contract, near_bindgen, require};
-use near_sdk::{Balance, Gas, Promise, PromiseOrValue, PublicKey};
+use crate::{utils::convert_pk_to_account_id, *};
+use near_sdk::{
+    ext_contract, near_bindgen, require, Balance, Gas, Promise, PromiseOrValue, PublicKey,
+};
 
 impl Contract {
     pub fn resolve_account(&self, public_key: PublicKey) -> AccountId {
@@ -73,8 +73,8 @@ impl Contract {
 
     // not sure we need this
     // Add new access key for implicit account
-    // pub fn add_access_key_for_implicit_account(new_public_key: PublicKey) -> PromiseOrValue<u8> {
-    // 	assert_owner();
+    // pub fn add_access_key_for_implicit_account(new_public_key: PublicKey) ->
+    // PromiseOrValue<u8> { 	assert_owner();
     //
     // 	Promise::new(account_id)
     // 		.transfer(MIN_IMPLICIT_ACCOUNT_STORAGE_AMOUNT)

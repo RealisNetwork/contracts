@@ -12,17 +12,21 @@ mod types;
 mod update;
 mod utils;
 
-use crate::account::{Account, AccountInfo, VAccount};
-use crate::lockup::LockupInfo;
-use crate::nft::Nft;
-use crate::types::NftId;
-use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::collections::{LookupMap, UnorderedMap};
-use near_sdk::json_types::U128;
-use near_sdk::serde::{Deserialize, Serialize};
-use near_sdk::PublicKey;
-use near_sdk::{env, AccountId};
-use near_sdk::{near_bindgen, BorshStorageKey, PanicOnDefault};
+use crate::{
+    account::{Account, AccountInfo, VAccount},
+    lockup::LockupInfo,
+    nft::Nft,
+    types::NftId,
+};
+use near_sdk::{
+    borsh::{self, BorshDeserialize, BorshSerialize},
+    collections::{LookupMap, UnorderedMap},
+    env,
+    json_types::U128,
+    near_bindgen,
+    serde::{Deserialize, Serialize},
+    AccountId, BorshStorageKey, PanicOnDefault, PublicKey,
+};
 
 #[near_bindgen]
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize)]
@@ -36,7 +40,8 @@ pub enum State {
 #[derive(BorshSerialize, BorshDeserialize, PanicOnDefault)]
 pub struct Contract {
     pub constant_fee: u128,
-    pub percent_fee: u8, // Commission in percents over transferring amount. for example, 10 (like 10%)
+    pub percent_fee: u8, /* Commission in percents over transferring amount. for example, 10
+                          * (like 10%) */
     pub accounts: LookupMap<AccountId, VAccount>,
     pub nfts: UnorderedMap<NftId, Nft>,
     pub owner_id: AccountId,
@@ -77,7 +82,7 @@ impl Contract {
             percent_fee,
             nfts: UnorderedMap::new(StorageKey::Nfts),
             owner_id: owner_id.clone(),
-            backend_id: backend_id.unwrap_or(owner_id.clone()),
+            backend_id: backend_id.unwrap_or_else(|| owner_id.clone()),
             beneficiary_id: beneficiary_id.unwrap_or(owner_id),
             state: State::Running,
             accounts,
@@ -131,11 +136,12 @@ impl Contract {
 
 #[cfg(test)]
 mod tests {
-    use super::tokens::tests::get_contract;
-    use super::*;
-    use near_sdk::collections::{LookupMap, LookupSet};
-    use near_sdk::json_types::U64;
-    use near_sdk::test_utils::accounts;
+    use super::{tokens::tests::get_contract, *};
+    use near_sdk::{
+        collections::{LookupMap, LookupSet},
+        json_types::U64,
+        test_utils::accounts,
+    };
     use std::str::FromStr;
 
     #[test]
