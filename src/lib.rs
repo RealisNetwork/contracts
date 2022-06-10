@@ -92,7 +92,7 @@ impl Contract {
         }
     }
 
-    pub fn loockups_info(
+    pub fn lockups_info(
         &self,
         account_id: AccountId,
         from_index: Option<usize>,
