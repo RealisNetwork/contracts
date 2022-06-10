@@ -1,8 +1,9 @@
-use near_sdk::json_types::U128;
-use near_sdk::{AccountId, Timestamp};
+use near_sdk::{json_types::U128, AccountId, Timestamp};
 
-use crate::events::{EventLog, EventLogVariant, NftMintLog};
-use crate::*;
+use crate::{
+    events::{EventLog, EventLogVariant, NftMintLog},
+    *,
+};
 
 #[near_bindgen]
 impl Contract {
@@ -41,14 +42,17 @@ impl Contract {
         self.nft_id_counter
     }
 
+    #[allow(unused_variables)]
     pub fn change_state(&mut self, state: State) {
         todo!()
     }
 
+    #[allow(unused_variables)]
     pub fn change_beneficiary(&mut self, new_beneficiary_id: AccountId) {
         todo!()
     }
 
+    #[allow(unused_variables)]
     pub fn create_lockup(
         &mut self,
         recipient_id: AccountId,
@@ -57,16 +61,11 @@ impl Contract {
     ) -> Timestamp {
         todo!()
     }
-
-    pub fn create_account() {
-        todo!()
-    }
 }
 
 #[cfg(test)]
 mod tests {
-    use near_sdk::test_utils::VMContextBuilder;
-    use near_sdk::{testing_env, VMContext};
+    use near_sdk::{test_utils::VMContextBuilder, testing_env, VMContext};
 
     use super::*;
 
@@ -78,7 +77,7 @@ mod tests {
     }
 
     pub fn get_contract() -> Contract {
-        Contract::new(U128::from(123), 1,  10, None, None)
+        Contract::new(U128::from(123), 1, 10, None, None)
     }
 
     #[test]

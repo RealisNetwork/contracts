@@ -17,6 +17,7 @@ impl Contract {
     }
 }
 
+#[allow(dead_code)]
 pub fn assert_backend() {
     todo!()
 }

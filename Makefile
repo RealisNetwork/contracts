@@ -27,4 +27,6 @@ build:
 
 .PHONY: pre_commit
 pre_commit:
-	SKIP_WASM_BUILD=1 cargo build --release && SKIP_WASM_BUILD=1 cargo clippy --workspace -- -D clippy::pedantic -D warnings && SKIP_WASM_BUILD=1 cargo +nightly fmt --all $(if $(call eq,$(check),yes),-- --check,)
+	cargo build --release
+	cargo +nightly fmt
+	cargo clippy -- -D warnings

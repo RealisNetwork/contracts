@@ -1,7 +1,9 @@
-use crate::lockup;
-use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::json_types::U128;
-use near_sdk::Timestamp;
+use near_sdk::{
+    borsh::{self, BorshDeserialize, BorshSerialize},
+    json_types::U128,
+    serde::Serialize,
+    Timestamp,
+};
 use std::time::SystemTime;
 
 const DEFAULT_LOCK_LIFE_TIME: u64 = 1000 * 60 * 60 * 24 * 3; // millis * secs * mins  * hours * days
@@ -17,6 +19,7 @@ impl Lockup {
     pub fn get_current_timestamp() -> u64 {
         near_sdk::env::block_timestamp()
     }
+
     /// This function for tests for getting timestamp of system time in millis
     pub fn get_current_timestamp_dev() -> u64 {
         SystemTime::now()
@@ -25,7 +28,8 @@ impl Lockup {
             .as_millis() as u64
     }
 
-    /// When the new lockup is created, new expire_on value is generated (in millis)
+    /// When the new lockup is created, new expire_on value is generated (in
+    /// millis)
     pub fn new(amount: u128, live_time: Option<u64>) -> Self {
         Self {
             amount,
@@ -39,7 +43,8 @@ impl Lockup {
     }
 }
 
-#[derive(BorshSerialize, Debug)]
+#[derive(Serialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
 pub struct LockupInfo {
     pub amount: U128,
     pub expire_on: Timestamp,

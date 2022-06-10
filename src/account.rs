@@ -1,9 +1,10 @@
-use crate::lockup::Lockup;
-use crate::{LockupInfo, NftId, Serialize, StorageKey};
-use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::collections::{LookupSet, UnorderedSet};
-use near_sdk::json_types::U128;
-use near_sdk::Balance;
+use crate::{lockup::Lockup, LockupInfo, NftId, Serialize, StorageKey};
+use near_sdk::{
+    borsh::{self, BorshDeserialize, BorshSerialize},
+    collections::{LookupSet, UnorderedSet},
+    json_types::U128,
+    Balance,
+};
 
 #[derive(BorshSerialize, BorshDeserialize)]
 pub enum VAccount {
@@ -40,7 +41,7 @@ impl Account {
         }
     }
 
-    pub fn claim_all_lockups(&mut self) -> u128{
+    pub fn claim_all_lockups(&mut self) -> u128 {
         let collection = self.lockups.to_vec();
 
         let fold = collection
@@ -55,7 +56,7 @@ impl Account {
         fold
     }
 
-    //TODO remember Use this method
+    // TODO remember Use this method
     pub fn claim_lockup(&mut self, expire_on_ts: u64) -> u128 {
         let collection = self.lockups.to_vec();
 
@@ -80,7 +81,6 @@ impl Account {
             .map(|lockup| lockup.into())
             .collect::<Vec<LockupInfo>>()
     }
-
 }
 
 impl From<Account> for VAccount {
@@ -95,52 +95,12 @@ impl Default for Account {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    pub fn check_lockups() {
-        let mut account = Account::new(5); // Current balance
-        account.lockups.insert(&Lockup::new(55, None)); // Just locked (will unlock in 3 days (default lifetime))
-        account.lockups.insert(&Lockup {
-            amount: 5,
-            expire_on: 0,
-        }); // Lock from 1970
-
-        account.claim_all_lockups(); // Balance of lock from 1970 will be transferred to main balance
-
-        println!("{:#?}", account.lockups.to_vec());
-
-        assert_eq!(account.free, 10);
-    }
-
-    #[test]
-    pub fn check_lockup() {
-        let mut account = Account::new(5); // Current balance
-        account.lockups.insert(&Lockup::new(55, None)); // Just locked (will unlock in 3 days (default lifetime))
-        account.lockups.insert(&Lockup {
-            amount: 5,
-            expire_on: 0,
-        }); // Lock from 1970
-        account.lockups.insert(&Lockup {
-            amount: 8,
-            expire_on: 16457898,
-        }); // Lock from 1970
-
-        account.claim_lockup(16457898); // Balance of lock from 1970 will be transferred to main balance
-
-        println!("{:#?}", account.lockups.to_vec());
-
-        assert_eq!(account.free, 13);
-    }
-}
-
-#[derive(BorshSerialize, Debug)]
+#[derive(Serialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
 pub struct AccountInfo {
     pub free: U128,
     pub lockups: Vec<LockupInfo>,
-    //pub nfts: LookupSet<NftId>,
+    // TODO: add nfts
 }
 
 impl From<Account> for AccountInfo {
@@ -152,3 +112,47 @@ impl From<Account> for AccountInfo {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    pub fn check_lockups() {
+        let mut account = Account::new(5);
+        // Just locked (will unlock in 3 days (default lifetime))
+        account.lockups.insert(&Lockup::new(55, None));
+        account.lockups.insert(&Lockup {
+            amount: 5,
+            expire_on: 0,
+        }); // Lock from 1970
+
+        // Balance of lock from 1970 will be transferred to main balance
+        account.claim_all_lockups();
+
+        println!("{:#?}", account.lockups.to_vec());
+
+        assert_eq!(account.free, 10);
+    }
+
+    #[test]
+    pub fn check_lockup() {
+        let mut account = Account::new(5);
+        // Just locked (will unlock in 3 days (default lifetime))
+        account.lockups.insert(&Lockup::new(55, None));
+        account.lockups.insert(&Lockup {
+            amount: 5,
+            expire_on: 0,
+        }); // Lock from 1970
+        account.lockups.insert(&Lockup {
+            amount: 8,
+            expire_on: 16457898,
+        }); // Lock from 1970
+
+        // Balance of lock from 1970 will be transferred to main balance
+        account.claim_lockup(16457898);
+
+        println!("{:#?}", account.lockups.to_vec());
+
+        assert_eq!(account.free, 13);
+    }
+}
