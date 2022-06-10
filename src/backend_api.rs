@@ -1,4 +1,4 @@
-use crate::{types::NftId, *};
+use crate::*;
 use near_sdk::{json_types::U128, near_bindgen, AccountId};
 
 #[near_bindgen]
@@ -13,35 +13,35 @@ impl Contract {
     }
 
     #[allow(unused_variables)]
-    pub fn backend_burn(&mut self, nft_id: NftId) {
+    pub fn backend_burn(&mut self, nft_id: U128) {
         self.assert_running();
         self.assert_backend();
         todo!()
     }
 
     #[allow(unused_variables)]
-    pub fn backend_transfer_nft(&mut self, recipient_id: AccountId, nft_id: NftId) {
+    pub fn backend_transfer_nft(&mut self, recipient_id: AccountId, nft_id: U128) {
         self.assert_running();
         self.assert_backend();
         todo!()
     }
 
     #[allow(unused_variables)]
-    pub fn backend_sell_nft(&mut self, nft_id: NftId, price: U128) {
+    pub fn backend_sell_nft(&mut self, nft_id: U128, price: U128) {
         self.assert_running();
         self.assert_backend();
         todo!()
     }
 
     #[allow(unused_variables)]
-    pub fn backend_buy_nft(&mut self, nft_id: NftId) -> U128 {
+    pub fn backend_buy_nft(&mut self, nft_id: U128) -> U128 {
         self.assert_running();
         self.assert_backend();
         todo!()
     }
 
     #[allow(unused_variables)]
-    pub fn backend_change_price(&mut self, nft_id: NftId, price: U128) {
+    pub fn backend_change_price(&mut self, nft_id: U128, price: U128) {
         self.assert_running();
         self.assert_backend();
         todo!()
