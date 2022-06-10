@@ -24,3 +24,7 @@ delete-account:
 .PHONY: build
 build:
 	cargo build --target wasm32-unknown-unknown --release
+
+.PHONY: pre_commit
+pre_commit:
+	SKIP_WASM_BUILD=1 cargo build --release && SKIP_WASM_BUILD=1 cargo clippy --workspace -- -D clippy::pedantic -D warnings && SKIP_WASM_BUILD=1 cargo +nightly fmt --all $(if $(call eq,$(check),yes),-- --check,)

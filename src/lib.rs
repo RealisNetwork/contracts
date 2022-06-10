@@ -2,6 +2,7 @@ mod account;
 mod account_manager;
 mod backend_api;
 mod events;
+mod metadata;
 mod nft;
 mod owner;
 mod public_api;
@@ -14,7 +15,7 @@ use crate::account::{Account, VAccount};
 use crate::nft::Nft;
 use crate::types::NftId;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::collections::LookupMap;
+use near_sdk::collections::{LookupMap, UnorderedMap};
 use near_sdk::json_types::U128;
 use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::{env, AccountId, PublicKey};
@@ -34,7 +35,7 @@ pub struct Contract {
     pub constant_fee: u128,
     pub percent_fee: u8, // Commission in percents over transferring amount. for example, 10 (like 10%)
     pub accounts: LookupMap<AccountId, VAccount>,
-    pub nfts: LookupMap<NftId, Nft>,
+    pub nfts: UnorderedMap<NftId, Nft>,
     pub owner_id: AccountId,
     pub backend_id: AccountId,
     pub beneficiary_id: AccountId,
@@ -70,7 +71,7 @@ impl Contract {
         Self {
             constant_fee,
             percent_fee,
-            nfts: LookupMap::new(StorageKey::Nfts),
+            nfts: UnorderedMap::new(StorageKey::Nfts),
             owner_id: owner_id.clone(),
             backend_id: backend_id.unwrap_or(owner_id.clone()),
             beneficiary_id: beneficiary_id.unwrap_or(owner_id),

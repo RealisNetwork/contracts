@@ -1,6 +1,4 @@
-use crate::{NftId, StorageKey};
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::collections::LookupSet;
 use near_sdk::Balance;
 
 #[derive(BorshSerialize, BorshDeserialize)]
@@ -26,7 +24,6 @@ impl From<VAccount> for Account {
 pub struct Account {
     pub free: Balance,
     // pub lockups: Vec<Lock>,
-    pub nfts: LookupSet<NftId>,
 }
 
 impl Account {
@@ -34,7 +31,6 @@ impl Account {
         Self {
             free: balance,
             // lockups: vec![],
-            nfts: LookupSet::new(StorageKey::NftId),
         }
     }
 }

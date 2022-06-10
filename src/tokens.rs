@@ -97,10 +97,11 @@ mod tests {
             constant_fee: 5,
             percent_fee: 10,
             accounts: LookupMap::new(b"m"),
-            nfts: LookupMap::new(StorageKey::Nfts),
+            nfts: UnorderedMap::new(StorageKey::Nfts),
             owner_id: env::predecessor_account_id(),
             backend_id: env::predecessor_account_id(),
             state: State::Running,
+            nft_id_counter: 0,
             registered_accounts: LookupMap::new(StorageKey::RegisteredAccounts),
         }
     }
