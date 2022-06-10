@@ -15,6 +15,14 @@ impl Contract {
             "Only owner can do this"
         );
     }
+
+    pub fn assert_backend(&self) {
+        require!(env::signer_account_id() == self.backend_id, "Not allowed");
+    }
+
+    pub fn assert_running(&self) {
+        require!(self.state == State::Running, "Contract is paused");
+    }
 }
 
 #[allow(dead_code)]
