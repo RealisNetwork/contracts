@@ -29,13 +29,13 @@ impl Lockup {
     pub fn new(amount: u128, live_time: Option<u64>) -> Self {
         Self {
             amount,
-            expire_on: Lockup::get_current_timestamp_dev()
+            expire_on: Lockup::get_current_timestamp()
                 + live_time.unwrap_or(DEFAULT_LOCK_LIFE_TIME),
         }
     }
 
     pub fn is_expired(&self) -> bool {
-        Self::get_current_timestamp_dev() >= self.expire_on
+        Self::get_current_timestamp() >= self.expire_on
     }
 }
 
