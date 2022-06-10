@@ -41,7 +41,6 @@ pub mod tests_utils {
     pub const DECIMALS: u8 = 12;
     pub const ONE_LIS: Balance = 10_u128.pow(DECIMALS as _);
 
-
     #[allow(dead_code)]
     pub fn init_test_env(
         owner_id: Option<AccountId>,
