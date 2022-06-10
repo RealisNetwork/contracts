@@ -5,7 +5,11 @@ use near_sdk::{json_types::U128, near_bindgen, AccountId};
 impl Contract {
     #[allow(unused_variables)]
     pub fn backend_transfer(&mut self, recipient_id: AccountId, amount: U128) -> U128 {
-        todo!()
+        require!(self.state == State::Running, "Contract is paused");
+        require!(env::signer_account_id() == self.backend_id, "Not allowed");
+        let sender_id = self.resolve_account(env::signer_account_pk());
+        self.internal_transfer(sender_id, recipient_id, amount.0)
+            .into()
     }
 
     #[allow(unused_variables)]

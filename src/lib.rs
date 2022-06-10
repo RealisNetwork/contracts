@@ -28,8 +28,7 @@ use near_sdk::{
     AccountId, BorshStorageKey, PanicOnDefault, PublicKey,
 };
 
-#[near_bindgen]
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq)]
 #[serde(crate = "near_sdk::serde")]
 pub enum State {
     Paused,

@@ -11,6 +11,14 @@ deploy:
 				--initFunction new \
 				--initArgs '{"total_supply": "3000000", "fee": '5', "beneficiary_pk": "FG6aRApk5Ym9nDwzdWFg22ti5GWeW8mBqCKL7M3LZH62"}'
 
+.PHONY: dev-deploy
+dev-deploy:
+	cargo build --target wasm32-unknown-unknown --release
+	near dev-deploy target/wasm32-unknown-unknown/release/realis_near.wasm
+	near call dev-1654851890034-21382043185185 \
+		new '{"total_supply": "3000000", "constant_fee": '1', "percent_fee": '2', "beneficiary_id": "testnetacc.testnet", "backend_id": "testnetacc.testnet"}' \
+		--accountId dev-1654851890034-21382043185185
+
 .PHONY: create
 create:
 	near call $(CONTRACT_NAME).$(ROOT_ACCOUNT) \
