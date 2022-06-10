@@ -9,7 +9,7 @@ use near_contract_standards::non_fungible_token::Token;
 use near_sdk::json_types::{Base64VecU8, U128};
 use near_sdk::{env, AccountId};
 
-use crate::{Contract, NftId};
+use crate::Contract;
 
 /// `SPEC_TOKEN` a string.
 /// Should be ft-1.0.0 to indicate that a Fungible Token contract

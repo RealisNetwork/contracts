@@ -1,8 +1,8 @@
 mod account;
 mod account_manager;
 mod backend_api;
-mod lockup;
 mod events;
+mod lockup;
 mod metadata;
 mod nft;
 mod owner;
@@ -17,11 +17,11 @@ use crate::lockup::LockupInfo;
 use crate::nft::Nft;
 use crate::types::NftId;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::collections::{LookupMap, UnorderedMap, Vector};
+use near_sdk::collections::{LookupMap, UnorderedMap};
 use near_sdk::json_types::U128;
-use near_sdk::{log, PublicKey};
 use near_sdk::serde::{Deserialize, Serialize};
-use near_sdk::{env, require, AccountId};
+use near_sdk::PublicKey;
+use near_sdk::{env, AccountId};
 use near_sdk::{near_bindgen, BorshStorageKey, PanicOnDefault};
 
 #[near_bindgen]
@@ -54,7 +54,7 @@ pub(crate) enum StorageKey {
     Nfts,
     NftId,
     RegisteredAccounts,
-    Lockups
+    Lockups,
 }
 
 #[near_bindgen]

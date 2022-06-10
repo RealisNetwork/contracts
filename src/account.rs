@@ -40,7 +40,7 @@ impl Account {
         }
     }
 
-    pub fn claim_all_lockups(&mut self) -> u128{
+    pub fn claim_all_lockups(&mut self) -> u128 {
         let collection = self.lockups.to_vec();
 
         let fold = collection
@@ -80,7 +80,6 @@ impl Account {
             .map(|lockup| lockup.into())
             .collect::<Vec<LockupInfo>>()
     }
-
 }
 
 impl From<Account> for VAccount {
@@ -95,11 +94,12 @@ impl Default for Account {
     }
 }
 
-#[derive(BorshSerialize, Debug)]
+#[derive(Serialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
 pub struct AccountInfo {
     pub free: U128,
     pub lockups: Vec<LockupInfo>,
-    //pub nfts: LookupSet<NftId>,
+    // TODO: add nfts
 }
 
 impl From<Account> for AccountInfo {
