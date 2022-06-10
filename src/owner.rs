@@ -78,7 +78,7 @@ mod tests {
     }
 
     pub fn get_contract() -> Contract {
-        Contract::new(U128::from(123), 1, None, None)
+        Contract::new(U128::from(123), 1,  10, None, None)
     }
 
     #[test]
@@ -103,7 +103,9 @@ mod tests {
             "some_metadata".to_string(),
         );
         println!("{}", res);
-        assert!(contract.nfts.contains_key(&res));
+
+        let assertion = contract.nfts.keys().any(|key| key == res);
+        assert!(assertion);
         if let Some(VAccount::V1(mut set_of_nft)) = contract
             .accounts
             .get(&AccountId::new_unchecked("user_id".to_string()))
