@@ -68,7 +68,7 @@ impl NonFungibleTokenEnumeration for Contract {
 
     fn nft_tokens(&self, from_index: Option<U128>, limit: Option<u64>) -> Vec<Token> {
         // Start index
-        let from = from_index.unwrap_or(U128::from(0));
+        let from = from_index.unwrap_or_else(||U128::from(0));
         // Limit
         let limit = limit.unwrap_or_else(|| self.nfts.len());
         self.nfts
@@ -100,7 +100,7 @@ impl NonFungibleTokenEnumeration for Contract {
         limit: Option<u64>,
     ) -> Vec<Token> {
         // Start index
-        let from = from_index.unwrap_or(U128::from(0));
+        let from = from_index.unwrap_or_else(||U128::from(0));
         // Limit
         let limit = limit.unwrap_or_else(|| self.nfts.len());
         self.nfts
