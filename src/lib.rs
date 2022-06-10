@@ -1,11 +1,15 @@
 mod account;
+mod account_manager;
 mod backend_api;
 mod lockup;
+mod events;
+mod metadata;
 mod nft;
 mod owner;
 mod public_api;
 mod tokens;
 mod types;
+mod update;
 mod utils;
 
 use crate::account::{Account, AccountInfo, VAccount};
@@ -13,9 +17,9 @@ use crate::lockup::LockupInfo;
 use crate::nft::Nft;
 use crate::types::NftId;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::collections::{LookupMap, Vector};
+use near_sdk::collections::{LookupMap, UnorderedMap, Vector};
 use near_sdk::json_types::U128;
-use near_sdk::log;
+use near_sdk::{log, PublicKey};
 use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::{env, require, AccountId};
 use near_sdk::{near_bindgen, BorshStorageKey, PanicOnDefault};
@@ -34,11 +38,14 @@ pub struct Contract {
     pub constant_fee: u128,
     pub percent_fee: u8, // Commission in percents over transferring amount. for example, 10 (like 10%)
     pub accounts: LookupMap<AccountId, VAccount>,
-    pub nfts: LookupMap<NftId, Nft>,
+    pub nfts: UnorderedMap<NftId, Nft>,
     pub owner_id: AccountId,
     pub backend_id: AccountId,
     pub beneficiary_id: AccountId,
     pub state: State,
+
+    pub nft_id_counter: u128,
+    pub registered_accounts: LookupMap<PublicKey, AccountId>,
 }
 
 #[derive(BorshStorageKey, BorshSerialize, BorshDeserialize)]
@@ -55,7 +62,8 @@ impl Contract {
     #[init]
     pub fn new(
         total_supply: U128,
-        fee: u8,
+        constant_fee: u128,
+        percent_fee: u8,
         beneficiary_id: Option<AccountId>,
         backend_id: Option<AccountId>,
     ) -> Self {
@@ -65,14 +73,18 @@ impl Contract {
         accounts.insert(&owner_id, &Account::new(total_supply.0).into());
 
         Self {
-            constant_fee: 0, // TODO: get from args
-            percent_fee: fee,
-            nfts: LookupMap::new(StorageKey::Nfts),
+            constant_fee,
+            percent_fee,
+            nfts: UnorderedMap::new(StorageKey::Nfts),
             owner_id: owner_id.clone(),
             backend_id: backend_id.unwrap_or(owner_id.clone()),
             beneficiary_id: beneficiary_id.unwrap_or(owner_id),
             state: State::Running,
             accounts,
+
+            nft_id_counter: 0,
+
+            registered_accounts: LookupMap::new(StorageKey::RegisteredAccounts),
         }
     }
 
@@ -112,7 +124,7 @@ impl Contract {
                 user_account.into()
             }
 
-            None => AccountInfo::default(),
+            None => Account::default().into(),
         }
     }
 }

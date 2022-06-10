@@ -4,6 +4,8 @@ use crate::{Account, Contract};
 use near_sdk::env;
 use near_sdk::near_bindgen;
 use near_sdk::{require, AccountId};
+use std::str::FromStr;
+
 
 #[near_bindgen]
 impl Contract {
@@ -100,7 +102,6 @@ pub mod tests {
     use near_sdk::collections::{LookupMap, LookupSet};
     use near_sdk::json_types::U64;
     use near_sdk::test_utils::accounts;
-    use std::str::FromStr;
 
     pub fn get_contract() -> Contract {
         Contract {
@@ -108,10 +109,12 @@ pub mod tests {
             constant_fee: 5,
             percent_fee: 10,
             accounts: LookupMap::new(StorageKey::Accounts),
-            nfts: LookupMap::new(StorageKey::Nfts),
+            nfts: UnorderedMap::new(StorageKey::Nfts),
             owner_id: env::predecessor_account_id(),
             backend_id: env::predecessor_account_id(),
             state: State::Running,
+            nft_id_counter: 0,
+            registered_accounts: LookupMap::new(StorageKey::RegisteredAccounts),
         }
     }
 
@@ -191,12 +194,12 @@ pub mod tests {
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic = "User not found"]
     fn transfer_sender_not_valid() {
         let mut contract = get_contract();
 
         // Sender
-        let sender_id = AccountId::from_str("").unwrap(); // THERE IS NO SENDER
+        let sender_id = AccountId::from_str("someone.testnet").unwrap(); // Sender is not registered
 
         // receiver
         let receiver_id = accounts(1);

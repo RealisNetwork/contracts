@@ -12,11 +12,7 @@ pub enum VAccount {
 
 impl Default for VAccount {
     fn default() -> Self {
-        VAccount::V1(Account {
-            free: 0,
-            lockups: UnorderedSet::new(StorageKey::Lockups),
-            nfts: LookupSet::new(StorageKey::NftId),
-        })
+        VAccount::V1(Account::default())
     }
 }
 
@@ -156,11 +152,3 @@ impl From<Account> for AccountInfo {
     }
 }
 
-impl Default for AccountInfo {
-    fn default() -> Self {
-        Self {
-            free: U128(0),
-            lockups: vec![],
-        }
-    }
-}
