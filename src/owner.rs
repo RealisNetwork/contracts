@@ -101,11 +101,15 @@ mod tests {
         let context = get_context("user_id".to_string());
         testing_env!(context);
 
+        contract.accounts.insert(&AccountId::new_unchecked("user_id".to_string()), &Account::default().into());
+
         let res = contract.mint(
             AccountId::new_unchecked("user_id".to_string()),
             "some_metadata".to_string(),
         );
-        println!("{}", res);
+
+
+        println!("{}, {:#?}", res, contract.nfts.iter().map(|(nftid, nft)| format!("{}, {:?}", nftid, nft)).collect::<Vec<String>>());
 
         let assertion = contract.nfts.keys().any(|key| key == res);
         assert!(assertion);
