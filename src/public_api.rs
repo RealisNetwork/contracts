@@ -20,17 +20,20 @@ impl Contract {
         todo!()
     }
 
-    pub fn sell_nft(&mut self, _nft_id: U128, _price: U128) {
+    #[allow(unused_variables)]
+    pub fn sell_nft(&mut self, nft_id: U128, price: U128) {
         self.assert_running();
         todo!()
     }
 
-    pub fn buy_nft(&mut self, _nft_id: U128) -> U128 {
+    #[allow(unused_variables)]
+    pub fn buy_nft(&mut self, nft_id: U128) -> U128 {
         self.assert_running();
         todo!()
     }
 
-    pub fn change_price(&mut self, _nft_id: U128, _price: U128) {
+    #[allow(unused_variables)]
+    pub fn change_price(&mut self, nft_id: U128, price: U128) {
         self.assert_running();
         todo!()
     }

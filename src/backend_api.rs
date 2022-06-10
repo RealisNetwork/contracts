@@ -3,7 +3,6 @@ use near_sdk::{json_types::U128, near_bindgen, AccountId};
 
 #[near_bindgen]
 impl Contract {
-    #[allow(unused_variables)]
     pub fn backend_transfer(&mut self, recipient_id: AccountId, amount: U128) -> U128 {
         self.assert_running();
         self.assert_backend();
