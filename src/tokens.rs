@@ -107,7 +107,7 @@ pub mod tests {
             beneficiary_id: AccountId::from_str("alice.testnet").unwrap(), // Will be 2
             constant_fee: 5,
             percent_fee: 10,
-            accounts: LookupMap::new(b"m"),
+            accounts: LookupMap::new(StorageKey::Accounts),
             nfts: LookupMap::new(StorageKey::Nfts),
             owner_id: env::predecessor_account_id(),
             backend_id: env::predecessor_account_id(),

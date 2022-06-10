@@ -4,7 +4,7 @@ use near_sdk::json_types::U128;
 use near_sdk::Timestamp;
 use std::time::SystemTime;
 
-const DEFAULT_LOCK_LIFE_TIME: u64 = 60 * 60 * 24 * 3; // secs * mins  * hours * days
+const DEFAULT_LOCK_LIFE_TIME: u64 = 1000 * 60 * 60 * 24 * 3; // millis * secs * mins  * hours * days
 
 #[derive(BorshSerialize, BorshDeserialize, Debug)]
 pub struct Lockup {
@@ -13,25 +13,19 @@ pub struct Lockup {
 }
 
 impl Lockup {
+    /// Function for getting timestamp of a block in millis
     pub fn get_current_timestamp() -> u64 {
-        println!(
-            "Near TS: {}, Sys TS: {}",
-            near_sdk::env::block_timestamp(),
-            SystemTime::now()
-                .duration_since(SystemTime::UNIX_EPOCH)
-                .unwrap()
-                .as_secs()
-        );
         near_sdk::env::block_timestamp()
     }
-
+    /// This function for tests for getting timestamp of system time in millis
     pub fn get_current_timestamp_dev() -> u64 {
         SystemTime::now()
             .duration_since(SystemTime::UNIX_EPOCH)
             .unwrap()
-            .as_secs()
+            .as_millis() as u64
     }
 
+    /// When the new lockup is created, new expire_on value is generated (in millis)
     pub fn new(amount: u128, live_time: Option<u64>) -> Self {
         Self {
             amount,

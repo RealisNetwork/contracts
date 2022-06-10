@@ -14,7 +14,7 @@ impl Default for VAccount {
     fn default() -> Self {
         VAccount::V1(Account {
             free: 0,
-            lockups: UnorderedSet::new(b'l'),
+            lockups: UnorderedSet::new(StorageKey::Lockups),
             nfts: LookupSet::new(StorageKey::NftId),
         })
     }
@@ -39,36 +39,41 @@ impl Account {
     pub fn new(balance: Balance) -> Self {
         Self {
             free: balance,
-            lockups: UnorderedSet::new(b'l'),
+            lockups: UnorderedSet::new(StorageKey::Lockups),
             nfts: LookupSet::new(StorageKey::NftId),
         }
     }
 
-    pub fn claim_all_lockups(&mut self) {
-        let mut amount = 0;
-        let mut collection = self.lockups.to_vec();
+    pub fn claim_all_lockups(&mut self) -> u128{
+        let collection = self.lockups.to_vec();
 
-        collection.iter().for_each(|lock| {
-            if lock.is_expired() {
-                amount += lock.amount;
+        let fold = collection
+            .iter()
+            .filter(|lock| lock.is_expired())
+            .map(|lock| {
                 self.lockups.remove(lock);
-            }
-        });
-        self.free += amount;
+                lock
+            })
+            .fold(0, |acc, lock| acc + lock.amount);
+        self.free += fold;
+        fold
     }
 
     //TODO remember Use this method
-    pub fn claim_lockup(&mut self, expire_on_ts: u64) {
-        let mut amount = 0;
-        let mut collection = self.lockups.to_vec();
+    pub fn claim_lockup(&mut self, expire_on_ts: u64) -> u128 {
+        let collection = self.lockups.to_vec();
 
-        collection.iter().for_each(|lock| {
-            if lock.expire_on == expire_on_ts && lock.is_expired() {
-                amount += lock.amount;
+        let fold = collection
+            .iter()
+            .filter(|lock| lock.expire_on == expire_on_ts && lock.is_expired())
+            .map(|lock| {
                 self.lockups.remove(lock);
-            }
-        });
-        self.free += amount;
+                lock
+            })
+            .fold(0, |acc, lock| acc + lock.amount);
+
+        self.free += fold;
+        fold
     }
 
     pub fn get_lockups(&self, from_index: Option<usize>, limit: Option<usize>) -> Vec<LockupInfo> {
@@ -80,9 +85,6 @@ impl Account {
             .collect::<Vec<LockupInfo>>()
     }
 
-    pub fn get_balance(&self) -> U128 {
-        U128(self.free)
-    }
 }
 
 impl From<Account> for VAccount {
@@ -148,7 +150,7 @@ pub struct AccountInfo {
 impl From<Account> for AccountInfo {
     fn from(account: Account) -> Self {
         AccountInfo {
-            free: account.get_balance(),
+            free: U128(account.free),
             lockups: account.get_lockups(None, None),
         }
     }

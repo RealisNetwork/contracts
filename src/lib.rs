@@ -47,6 +47,7 @@ pub(crate) enum StorageKey {
     Nfts,
     NftId,
     RegisteredAccounts,
+    Lockups
 }
 
 #[near_bindgen]
@@ -97,7 +98,7 @@ impl Contract {
         match self.accounts.get(&account_id) {
             Some(user) => {
                 let user_account: Account = user.into();
-                user_account.get_balance()
+                U128(user_account.free)
             }
 
             None => U128(0u128),
