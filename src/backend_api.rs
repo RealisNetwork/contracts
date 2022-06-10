@@ -7,6 +7,7 @@ use near_sdk::{near_bindgen, require};
 #[near_bindgen]
 impl Contract {
     pub fn backend_transfer(&mut self, recipient_id: AccountId, amount: U128) -> U128 {
+        require!(self.state == State::Running, "Contract is paused");
         require!(env::signer_account_id() == self.backend_id, "Not allowed");
         let sender_id = self.resolve_account(env::signer_account_pk());
         self.internal_transfer(sender_id, recipient_id, amount.0)

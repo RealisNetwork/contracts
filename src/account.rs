@@ -40,7 +40,7 @@ impl Account {
         }
     }
 
-    pub fn claim_all_lockups(&mut self) -> u128{
+    pub fn claim_all_lockups(&mut self) -> u128 {
         let collection = self.lockups.to_vec();
 
         let fold = collection
@@ -80,7 +80,6 @@ impl Account {
             .map(|lockup| lockup.into())
             .collect::<Vec<LockupInfo>>()
     }
-
 }
 
 impl From<Account> for VAccount {
@@ -152,4 +151,3 @@ mod tests {
         assert_eq!(account.free, 13);
     }
 }
-

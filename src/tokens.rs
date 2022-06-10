@@ -6,7 +6,6 @@ use near_sdk::near_bindgen;
 use near_sdk::{require, AccountId};
 use std::str::FromStr;
 
-
 #[near_bindgen]
 impl Contract {
     /// This function checks if amount != 0 (if no it would panic), taskes fee and amount from sender
