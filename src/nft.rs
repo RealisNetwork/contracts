@@ -164,15 +164,7 @@ impl NftMap {
     }
     /// Transfer `NFT` between two users if NFT available.
     pub fn transfer_nft(&mut self, new_owner: AccountId, nft_id: NftId) {
-        require!(
-            self.marketplace_nft_map.get(&nft_id).is_none(),
-            "Nft locked up"
-        );
-        let mut nft = self
-            .nft_map
-            .get(&nft_id)
-            .unwrap_or_else(|| env::panic_str("Nft not exist"))
-            .set_owner_id(new_owner);
+        let nft = self.get_if_available(nft_id).set_owner_id(new_owner);
         self.nft_map.insert(&nft_id, &nft);
     }
     /// List `NFT` with `price` on marketplace.
