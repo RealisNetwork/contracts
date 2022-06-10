@@ -280,7 +280,7 @@ pub mod tests {
     }
 
     #[test]
-    fn transfer_whith_lockups() {
+    fn transfer_with_lockups() {
         let mut contract = get_contract();
 
         // Sender
