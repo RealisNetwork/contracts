@@ -97,8 +97,7 @@ impl Contract {
 pub mod tests {
     use super::*;
     use near_sdk::{
-        collections::{LookupMap, LookupSet},
-        json_types::U64,
+        collections::LookupMap,
         test_utils::accounts,
     };
     use std::str::FromStr;
