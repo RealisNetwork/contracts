@@ -39,8 +39,7 @@ impl Lockup {
     }
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Debug, Serialize)]
-#[serde(crate = "near_sdk::serde")]
+#[derive(BorshSerialize,  Debug)]
 pub struct LockupInfo {
     pub amount: U128,
     pub expire_on: Timestamp,

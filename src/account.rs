@@ -136,8 +136,7 @@ mod tests {
     }
 }
 
-#[derive(BorshSerialize, Debug, Serialize)]
-#[serde(crate = "near_sdk::serde")]
+#[derive(BorshSerialize, Debug)]
 pub struct AccountInfo {
     pub free: U128,
     pub lockups: Vec<LockupInfo>,
