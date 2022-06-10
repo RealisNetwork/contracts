@@ -79,7 +79,7 @@ mod tests {
         let (mut contract, _context) = init_test_env(None, None, None);
 
         contract.state = State::Paused;
-        contract.backend_burn(1);
+        contract.backend_burn(U128(1));
     }
 
     #[test]
@@ -88,7 +88,7 @@ mod tests {
         let (mut contract, mut context) = init_test_env(None, None, Some(accounts(1)));
 
         testing_env!(context.predecessor_account_id(accounts(2)).build());
-        contract.backend_burn(1);
+        contract.backend_burn(U128(1));
     }
 
     #[test]
@@ -97,7 +97,7 @@ mod tests {
         let (mut contract, _context) = init_test_env(None, None, None);
 
         contract.state = State::Paused;
-        contract.backend_sell_nft(1, U128(100));
+        contract.backend_sell_nft(U128(1), U128(100));
     }
 
     #[test]
@@ -106,7 +106,7 @@ mod tests {
         let (mut contract, mut context) = init_test_env(None, None, Some(accounts(1)));
 
         testing_env!(context.predecessor_account_id(accounts(2)).build());
-        contract.backend_sell_nft(1, U128(100));
+        contract.backend_sell_nft(U128(1), U128(100));
     }
 
     #[test]
@@ -115,7 +115,7 @@ mod tests {
         let (mut contract, _context) = init_test_env(None, None, None);
 
         contract.state = State::Paused;
-        contract.backend_change_price(1, U128(100));
+        contract.backend_change_price(U128(1), U128(100));
     }
 
     #[test]
@@ -124,7 +124,7 @@ mod tests {
         let (mut contract, mut context) = init_test_env(None, None, Some(accounts(1)));
 
         testing_env!(context.predecessor_account_id(accounts(2)).build());
-        contract.backend_change_price(1, U128(100));
+        contract.backend_change_price(U128(1), U128(100));
     }
 
     #[test]
@@ -133,7 +133,7 @@ mod tests {
         let (mut contract, _context) = init_test_env(None, None, None);
 
         contract.state = State::Paused;
-        contract.backend_transfer_nft(accounts(1), 100);
+        contract.backend_transfer_nft(accounts(1), U128(100));
     }
 
     #[test]
@@ -142,7 +142,7 @@ mod tests {
         let (mut contract, mut context) = init_test_env(None, None, Some(accounts(1)));
 
         testing_env!(context.predecessor_account_id(accounts(2)).build());
-        contract.backend_transfer_nft(accounts(1), 1);
+        contract.backend_transfer_nft(accounts(1), U128(1));
     }
 
     #[test]
@@ -151,7 +151,7 @@ mod tests {
         let (mut contract, _context) = init_test_env(None, None, None);
 
         contract.state = State::Paused;
-        contract.backend_buy_nft(1);
+        contract.backend_buy_nft(U128(1));
     }
 
     #[test]
@@ -160,6 +160,6 @@ mod tests {
         let (mut contract, mut context) = init_test_env(None, None, Some(accounts(1)));
 
         testing_env!(context.predecessor_account_id(accounts(2)).build());
-        contract.backend_buy_nft(100);
+        contract.backend_buy_nft(U128(100));
     }
 }
