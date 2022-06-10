@@ -27,10 +27,12 @@ impl Contract {
 
 #[cfg(test)]
 pub mod tests_utils {
-    pub use near_sdk::test_utils::{accounts, VMContextBuilder};
-    pub use near_sdk::{Balance, Gas, testing_env};
-    pub use near_sdk::json_types::U128;
     pub use crate::*;
+    pub use near_sdk::{
+        json_types::U128,
+        test_utils::{accounts, VMContextBuilder},
+        testing_env, Balance, Gas,
+    };
 
     pub const DECIMALS: u8 = 12;
     pub const ONE_LIS: Balance = 10_u128.pow(DECIMALS as _);
@@ -44,18 +46,16 @@ pub mod tests_utils {
         let mut context = VMContextBuilder::new();
         context.prepaid_gas(Gas::ONE_TERA * 100);
 
-        testing_env!(
-            context
-                .block_timestamp(0)
-                .predecessor_account_id(owner_id.unwrap_or_else(|| accounts(0)))
-                .build()
-        );
+        testing_env!(context
+            .block_timestamp(0)
+            .predecessor_account_id(owner_id.unwrap_or_else(|| accounts(0)))
+            .build());
         let contract = Contract::new(
             U128(3_000_000_000 * ONE_LIS),
             U128(10 * ONE_LIS),
             10,
             beneficiary_id,
-            backend_id
+            backend_id,
         );
 
         (contract, context)

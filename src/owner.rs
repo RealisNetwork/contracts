@@ -105,8 +105,9 @@ mod tests {
 
         let assertion = contract.nfts.keys().any(|key| key == res);
         assert!(assertion);
-        let account: Account = contract.accounts.get(
-            &AccountId::new_unchecked("user_id".to_string()))
+        let account: Account = contract
+            .accounts
+            .get(&AccountId::new_unchecked("user_id".to_string()))
             .unwrap()
             .into();
         assert!(account.nfts.contains(&res));

@@ -96,12 +96,9 @@ impl Contract {
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use near_sdk::{
-        collections::LookupMap,
-        test_utils::accounts,
-    };
-    use std::str::FromStr;
     use crate::lockup::Lockup;
+    use near_sdk::{collections::LookupMap, test_utils::accounts};
+    use std::str::FromStr;
 
     pub fn get_contract() -> Contract {
         Contract {
