@@ -38,3 +38,62 @@ impl Contract {
     // TODO: delegate nft
     // Discuss general structure of delegation
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::utils::tests_utils::*;
+
+    #[test]
+    #[should_panic = "Contract is paused"]
+    fn transfer_assert_running() {
+        let (mut contract, _context) = init_test_env(None, None, None);
+
+        contract.state = State::Paused;
+        contract.transfer(accounts(1), U128(100));
+    }
+
+    #[test]
+    #[should_panic = "Contract is paused"]
+    fn burn_assert_running() {
+        let (mut contract, _context) = init_test_env(None, None, None);
+
+        contract.state = State::Paused;
+        contract.burn(1);
+    }
+
+    #[test]
+    #[should_panic = "Contract is paused"]
+    fn sell_nft_assert_running() {
+        let (mut contract, _context) = init_test_env(None, None, None);
+
+        contract.state = State::Paused;
+        contract.sell_nft(1, U128(100));
+    }
+
+    #[test]
+    #[should_panic = "Contract is paused"]
+    fn change_price_assert_running() {
+        let (mut contract, _context) = init_test_env(None, None, None);
+
+        contract.state = State::Paused;
+        contract.change_price(1, U128(100));
+    }
+
+    #[test]
+    #[should_panic = "Contract is paused"]
+    fn transfer_nft_assert_running() {
+        let (mut contract, _context) = init_test_env(None, None, None);
+
+        contract.state = State::Paused;
+        contract.transfer_nft(accounts(1), 100);
+    }
+
+    #[test]
+    #[should_panic = "Contract is paused"]
+    fn buy_nft_assert_running() {
+        let (mut contract, _context) = init_test_env(None, None, None);
+
+        contract.state = State::Paused;
+        contract.buy_nft(1);
+    }
+}

@@ -26,10 +26,10 @@ impl Contract {
 }
 
 #[cfg(test)]
-mod tests_utils {
-    use near_sdk::test_utils::{accounts, VMContextBuilder};
-    use near_sdk::{Balance, Gas, testing_env};
-    use near_sdk::json_types::U128;
+pub mod tests_utils {
+    pub use near_sdk::test_utils::{accounts, VMContextBuilder};
+    pub use near_sdk::{Balance, Gas, testing_env};
+    pub use near_sdk::json_types::U128;
     pub use crate::*;
 
     pub const DECIMALS: u8 = 12;
