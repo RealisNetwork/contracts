@@ -31,11 +31,18 @@ pub mod tests_utils {
     pub use near_sdk::{
         json_types::U128,
         test_utils::{accounts, VMContextBuilder},
-        testing_env, Balance, Gas,
+        testing_env, Balance, Gas, AccountId
+
     };
+    pub use std::str::FromStr;
 
     pub const DECIMALS: u8 = 12;
     pub const ONE_LIS: Balance = 10_u128.pow(DECIMALS as _);
+
+    pub const ALICE_ACCOUNT_ID:AccountId = AccountId::from_str("alice.testnet").unwrap();
+    pub const BOB_ACCOUNT_ID:AccountId = AccountId::from_str("bob.testnet").unwrap();
+    pub const FRED_ACCOUNT_ID:AccountId = AccountId::from_str("fred.testnet").unwrap();
+
 
     #[allow(dead_code)]
     pub fn init_test_env(

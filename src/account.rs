@@ -115,9 +115,13 @@ impl From<Account> for AccountInfo {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::utils::tests_utils::*;
 
     #[test]
     pub fn check_lockups() {
+
+        let (contract, context) = init_test_env(Some(ALICE_ACCOUNT_ID), Some(BOB_ACCOUNT_ID), Some(FRED_ACCOUNT_ID));
+
         let mut account = Account::new(5);
         // Just locked (will unlock in 3 days (default lifetime))
         account.lockups.insert(&Lockup::new(55, None));
@@ -127,6 +131,12 @@ mod tests {
         }); // Lock from 1970
 
         // Balance of lock from 1970 will be transferred to main balance
+
+        testing_env!(context
+            .block_timestamp(0)
+            .predecessor_account_id(owner_id.unwrap_or_else(|| accounts(0)))
+            .build());
+
         account.claim_all_lockups();
 
         println!("{:#?}", account.lockups.to_vec());
