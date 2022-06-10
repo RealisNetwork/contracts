@@ -62,7 +62,7 @@ impl Contract {
     #[init]
     pub fn new(
         total_supply: U128,
-        constant_fee: u128,
+        constant_fee: U128,
         percent_fee: u8,
         beneficiary_id: Option<AccountId>,
         backend_id: Option<AccountId>,
@@ -73,7 +73,7 @@ impl Contract {
         accounts.insert(&owner_id, &Account::new(total_supply.0).into());
 
         Self {
-            constant_fee,
+            constant_fee: constant_fee.0,
             percent_fee,
             nfts: UnorderedMap::new(StorageKey::Nfts),
             owner_id: owner_id.clone(),
