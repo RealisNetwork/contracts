@@ -1,9 +1,10 @@
 //! Designed to interact with the NFT, NFT marketplace.
-use crate::{NftId, StorageKey};
+use near_sdk::{AccountId, Balance, env, require};
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::{LookupMap, LookupSet, UnorderedMap, Vector};
 use near_sdk::json_types::U128;
-use near_sdk::{env, require, AccountId, Balance};
+
+use crate::{NftId, StorageKey};
 
 /// State of NFT.
 /// Displays the current state of an NFT.
@@ -85,14 +86,17 @@ pub struct NftMap {
     nft_id_counter: NftId,
 }
 
-impl NftMap {
-    pub fn new() -> Self {
+impl Default for NftMap {
+    fn default() -> Self {
         Self {
             nft_map: UnorderedMap::new(StorageKey::NftsMap),
             marketplace_nft_map: UnorderedMap::new(StorageKey::NftsOnSale),
             nft_id_counter: 0,
         }
     }
+}
+
+impl NftMap {
     /// Get count of all NFTs.
     pub fn nft_count(&self) -> u64 {
         self.nft_map.len()
@@ -191,7 +195,7 @@ impl NftMap {
     }
 
     /// Generate new id for new `NFT`.
-   pub fn generate_nft_id(&mut self) -> NftId {
+    pub fn generate_nft_id(&mut self) -> NftId {
         if u128::MAX == self.nft_id_counter {
             self.nft_id_counter = 0;
         }
@@ -207,10 +211,10 @@ impl NftMap {
 #[cfg(test)]
 mod tests {
     use near_contract_standards::non_fungible_token::enumeration::NonFungibleTokenEnumeration;
+    use near_sdk::{AccountId, Gas, RuntimeFeesConfig, testing_env, VMConfig, VMContext};
     use near_sdk::collections::{LookupMap, UnorderedMap, UnorderedSet};
     use near_sdk::json_types::U128;
     use near_sdk::test_utils::VMContextBuilder;
-    use near_sdk::{testing_env, AccountId, Gas, RuntimeFeesConfig, VMConfig, VMContext};
 
     use crate::{Contract, Nft, NftMap, State};
 
@@ -230,7 +234,7 @@ mod tests {
             let nft_id = contract.nfts
                 .mint_nft(
                     AccountId::new_unchecked("id".to_string()),
-                    String::from("metadata")
+                    String::from("metadata"),
                 );
         }
         contract
@@ -254,8 +258,5 @@ mod tests {
         contract.nfts.burn_nft(m_id);
         let f_id = contract.nfts.mint_nft(AccountId::new_unchecked("id".to_string()), String::from("metadata"));
         assert_eq!(f_id, 10);
-
     }
-
-
 }

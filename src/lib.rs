@@ -82,7 +82,7 @@ impl Contract {
         Self {
             constant_fee,
             percent_fee,
-            nfts: NftMap::new(),
+            nfts: NftMap::default(),
             owner_id: owner_id.clone(),
             backend_id: backend_id.unwrap_or(owner_id.clone()),
             beneficiary_id: beneficiary_id.unwrap_or(owner_id),
