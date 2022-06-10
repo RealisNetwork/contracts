@@ -95,7 +95,7 @@ impl NonFungibleTokenEnumeration for Contract {
             .take(limit as usize)
             .map(|(key, value)| Token {
                 token_id: key.to_string(),
-                owner_id: value.get_owner_id(),
+                owner_id: value.owner_id,
                 metadata: None,
                 approved_account_ids: None,
             })
@@ -107,7 +107,7 @@ impl NonFungibleTokenEnumeration for Contract {
             .nfts
             .get_nft_map()
             .values()
-            .filter(|value| value.get_owner_id() == account_id)
+            .filter(|value| value.owner_id == account_id)
             .count();
         U128::from(count as u128)
     }
@@ -125,7 +125,7 @@ impl NonFungibleTokenEnumeration for Contract {
         self.nfts
             .get_nft_map()
             .iter()
-            .filter(|(_key, value)| value.get_owner_id() == account_id)
+            .filter(|(_key, value)| value.owner_id == account_id)
             .skip(from.0 as usize)
             .take(limit as usize)
             .map(|(key, value)| Token {

@@ -8,12 +8,12 @@ use near_sdk::{env, require, AccountId, Balance};
 /// State of NFT.
 /// Displays the current state of an NFT.
 /// # States
-/// `AVAILABLE` - NFT unlocked, could be burn or transferred.
-/// `LOCK` - NFT locked. Allow read access.
+/// * `AVAILABLE` - NFT unlocked, could be burn or transferred.
+/// * `LOCK` - NFT locked. Allow read access.
 #[derive(BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq, Clone)]
 enum NftState {
-    AVAILABLE,
-    LOCK,
+    Available,
+    Lock,
 }
 
 /// Describe NFT.
@@ -24,7 +24,7 @@ enum NftState {
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
 pub struct Nft {
     // TODO add fields
-    owner_id: AccountId,
+    pub owner_id: AccountId,
     metadata: String,
     state: NftState,
 }
@@ -34,16 +34,12 @@ impl Nft {
         Self {
             owner_id,
             metadata,
-            state: NftState::AVAILABLE,
+            state: NftState::Available,
         }
     }
 
     pub fn get_metadata(&self) -> String {
         self.metadata.clone()
-    }
-
-    pub fn get_owner_id(&self) -> AccountId {
-        self.owner_id.clone()
     }
 
     pub fn set_owner_id(self, id: AccountId) -> Self {
@@ -55,14 +51,14 @@ impl Nft {
 
     /// Check if current NFT available.
     pub fn assert_available(self) -> Self {
-        require!(self.state == NftState::AVAILABLE, "Nft locked up");
+        require!(self.state == NftState::Available, "Nft locked up");
         self
     }
 
     /// Deny any operations with NFT
     pub fn lock_nft(self) -> Self {
         Self {
-            state: NftState::LOCK,
+            state: NftState::Lock,
             ..self
         }
     }
@@ -70,7 +66,7 @@ impl Nft {
     /// Allow any operations with NFT
     pub fn unlock_nft(self) -> Self {
         Self {
-            state: NftState::AVAILABLE,
+            state: NftState::Available,
             ..self
         }
     }

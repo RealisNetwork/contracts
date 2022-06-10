@@ -5,7 +5,6 @@ mod account_manager;
 mod backend_api;
 mod events;
 mod lockup;
-mod marketplace;
 mod metadata;
 mod nft;
 mod owner;

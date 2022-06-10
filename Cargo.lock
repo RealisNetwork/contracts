@@ -864,7 +864,6 @@ dependencies = [
  "hex",
  "near-contract-standards",
  "near-sdk",
- "serde",
 ]
 
 [[package]]
