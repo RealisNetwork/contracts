@@ -25,7 +25,39 @@ impl Contract {
     }
 }
 
-#[allow(dead_code)]
-pub fn assert_backend() {
-    todo!()
+#[cfg(test)]
+mod tests_utils {
+    use near_sdk::test_utils::{accounts, VMContextBuilder};
+    use near_sdk::{Balance, Gas, testing_env};
+    use near_sdk::json_types::U128;
+    pub use crate::*;
+
+    pub const DECIMALS: u8 = 12;
+    pub const ONE_LIS: Balance = 10_u128.pow(DECIMALS as _);
+
+    #[allow(dead_code)]
+    pub fn init_test_env(
+        owner_id: Option<AccountId>,
+        beneficiary_id: Option<AccountId>,
+        backend_id: Option<AccountId>,
+    ) -> (Contract, VMContextBuilder) {
+        let mut context = VMContextBuilder::new();
+        context.prepaid_gas(Gas::ONE_TERA * 100);
+
+        testing_env!(
+            context
+                .block_timestamp(0)
+                .predecessor_account_id(owner_id.unwrap_or_else(|| accounts(0)))
+                .build()
+        );
+        let contract = Contract::new(
+            U128(3_000_000_000 * ONE_LIS),
+            U128(10 * ONE_LIS),
+            10,
+            beneficiary_id,
+            backend_id
+        );
+
+        (contract, context)
+    }
 }

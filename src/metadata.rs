@@ -143,10 +143,10 @@ impl NonFungibleTokenEnumeration for Contract {
 mod tests {
     use near_contract_standards::non_fungible_token::enumeration::NonFungibleTokenEnumeration;
     use near_sdk::{
-        collections::{LookupMap, UnorderedMap, UnorderedSet},
+        collections::{LookupMap, UnorderedMap},
         json_types::U128,
         test_utils::VMContextBuilder,
-        testing_env, AccountId, Gas, RuntimeFeesConfig, VMConfig, VMContext,
+        testing_env, AccountId, RuntimeFeesConfig, VMConfig, VMContext,
     };
 
     use crate::{Contract, Nft, State};

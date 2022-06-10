@@ -101,6 +101,8 @@ pub mod tests {
         json_types::U64,
         test_utils::accounts,
     };
+    use std::str::FromStr;
+    use crate::lockup::Lockup;
 
     pub fn get_contract() -> Contract {
         Contract {

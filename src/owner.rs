@@ -77,7 +77,7 @@ mod tests {
     }
 
     pub fn get_contract() -> Contract {
-        Contract::new(U128::from(123), 1, 10, None, None)
+        Contract::new(U128::from(123), U128(1), 10, None, None)
     }
 
     #[test]
@@ -86,7 +86,7 @@ mod tests {
         let mut contract = get_contract();
         let context = get_context("not owner".to_string());
         testing_env!(context);
-        let res = contract.mint(
+        contract.mint(
             AccountId::new_unchecked("user_id".to_string()),
             "some_metadata".to_string(),
         );
@@ -105,11 +105,10 @@ mod tests {
 
         let assertion = contract.nfts.keys().any(|key| key == res);
         assert!(assertion);
-        if let Some(VAccount::V1(mut set_of_nft)) = contract
-            .accounts
-            .get(&AccountId::new_unchecked("user_id".to_string()))
-        {
-            assert!(set_of_nft.nfts.contains(&res));
-        }
+        let account: Account = contract.accounts.get(
+            &AccountId::new_unchecked("user_id".to_string()))
+            .unwrap()
+            .into();
+        assert!(account.nfts.contains(&res));
     }
 }

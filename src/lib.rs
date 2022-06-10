@@ -136,11 +136,6 @@ impl Contract {
 #[cfg(test)]
 mod tests {
     use super::{tokens::tests::get_contract, *};
-    use near_sdk::{
-        collections::{LookupMap, LookupSet},
-        json_types::U64,
-        test_utils::accounts,
-    };
     use std::str::FromStr;
 
     #[test]
@@ -167,7 +162,7 @@ mod tests {
     fn info_no_locks() {
         // There are no locks
         let mut contract = get_contract();
-        let mut account: Account = Account::new(250);
+        let account: Account = Account::new(250);
         let account_id = AccountId::from_str("user.testnet").unwrap();
 
         contract.accounts.insert(&account_id, &account.into());
@@ -179,7 +174,7 @@ mod tests {
     fn info_get_balance_test() {
         // Indexes are default
         let mut contract = get_contract();
-        let mut account: Account = Account::new(250);
+        let account: Account = Account::new(250);
         let account_id = AccountId::from_str("user.testnet").unwrap();
 
         contract.accounts.insert(&account_id, &account.into());
