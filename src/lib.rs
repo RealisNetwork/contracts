@@ -1,3 +1,5 @@
+extern crate core;
+
 mod account;
 mod account_manager;
 mod backend_api;
@@ -81,15 +83,12 @@ impl Contract {
         Self {
             constant_fee,
             percent_fee,
-            nfts: UnorderedMap::new(StorageKey::Nfts),
+            nfts: NftMap::new(),
             owner_id: owner_id.clone(),
             backend_id: backend_id.unwrap_or(owner_id.clone()),
             beneficiary_id: beneficiary_id.unwrap_or(owner_id),
             state: State::Running,
             accounts,
-
-            nft_id_counter: 0,
-
             registered_accounts: LookupMap::new(StorageKey::RegisteredAccounts),
         }
     }
@@ -121,7 +120,7 @@ impl Contract {
         }
     }
 
-    pub fn get_account_info(&self, account_id: AccountId) -> AccountInfo {
+    pub fn get_account_info(&self, account_id: &AccountId) -> AccountInfo {
         match self.accounts.get(&account_id) {
             Some(user) => {
                 let user_account: Account = user.into();

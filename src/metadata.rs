@@ -80,21 +80,22 @@ impl NonFungibleTokenMetadataProvider for Contract {
 
 impl NonFungibleTokenEnumeration for Contract {
     fn nft_total_supply(&self) -> U128 {
-        U128::from(self.nfts.len() as u128)
+        U128::from(self.nfts.nft_count() as u128)
     }
 
     fn nft_tokens(&self, from_index: Option<U128>, limit: Option<u64>) -> Vec<Token> {
         // Start index
         let from = from_index.unwrap_or_else(|| U128::from(0));
         // Limit
-        let limit = limit.unwrap_or_else(|| self.nfts.len());
+        let limit = limit.unwrap_or_else(|| self.nfts.nft_count());
         self.nfts
+            .get_nft_map()
             .iter()
             .skip(from.0 as usize)
             .take(limit as usize)
             .map(|(key, value)| Token {
                 token_id: key.to_string(),
-                owner_id: value.owner_id,
+                owner_id: value.get_owner_id(),
                 metadata: None,
                 approved_account_ids: None,
             })
@@ -104,8 +105,9 @@ impl NonFungibleTokenEnumeration for Contract {
     fn nft_supply_for_owner(&self, account_id: AccountId) -> U128 {
         let count = self
             .nfts
+            .get_nft_map()
             .values()
-            .filter(|value| value.owner_id == account_id)
+            .filter(|value| value.get_owner_id() == account_id)
             .count();
         U128::from(count as u128)
     }
@@ -119,15 +121,16 @@ impl NonFungibleTokenEnumeration for Contract {
         // Start index
         let from = from_index.unwrap_or_else(|| U128::from(0));
         // Limit
-        let limit = limit.unwrap_or_else(|| self.nfts.len());
+        let limit = limit.unwrap_or_else(|| self.nfts.nft_count());
         self.nfts
+            .get_nft_map()
             .iter()
-            .filter(|(_key, value)| value.owner_id == account_id)
+            .filter(|(_key, value)| value.get_owner_id() == account_id)
             .skip(from.0 as usize)
             .take(limit as usize)
             .map(|(key, value)| Token {
                 token_id: key.to_string(),
-                owner_id: value.owner_id,
+                owner_id: account_id.clone(),
                 metadata: None,
                 approved_account_ids: None,
             })
@@ -143,14 +146,14 @@ mod tests {
     use near_sdk::test_utils::VMContextBuilder;
     use near_sdk::{testing_env, AccountId, Gas, RuntimeFeesConfig, VMConfig, VMContext};
 
-    use crate::{Contract, Nft, State};
+    use crate::{Contract, Nft, NftMap, State};
 
     pub fn get_contract() -> Contract {
         let mut contract = Contract {
             constant_fee: 0,
             percent_fee: 0,
             accounts: LookupMap::new(b"m"),
-            nfts: UnorderedMap::new(b"s"),
+            nfts: NftMap::new(),
             owner_id: AccountId::new_unchecked("id".to_string()),
             backend_id: AccountId::new_unchecked("id".to_string()),
             beneficiary_id: AccountId::new_unchecked("id".to_string()),
@@ -158,12 +161,12 @@ mod tests {
             registered_accounts: LookupMap::new(b"a"),
         };
         for i in 0..10 {
-            let nft = Nft {
-                owner_id: AccountId::new_unchecked(format!("id_{}", i)),
-                metadata: "some".to_string(),
-            };
-            contract.nfts.insert(&i, &nft);
+            contract.nfts.mint_nft(
+                AccountId::new_unchecked(format!("id_{}", i)),
+                "some".to_string(),
+            );
         }
+
         contract
     }
 
