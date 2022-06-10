@@ -1,7 +1,6 @@
 use near_sdk::json_types::U128;
-use near_sdk::{env, AccountId, StorageUsage, Timestamp};
+use near_sdk::{AccountId, Timestamp};
 
-use crate::events::EventLogVariant::NftMint;
 use crate::events::{EventLog, EventLogVariant, NftMintLog};
 use crate::*;
 
@@ -23,17 +22,15 @@ impl Contract {
         if u128::MAX == self.nft_id_counter {
             self.nft_id_counter = 0;
         }
-        while self.nfts.contains_key(&self.nft_id_counter) {
+        while self.nfts.get(&self.nft_id_counter).is_some() {
             self.nft_id_counter += 1;
         }
 
         let nft = Nft {
-            meta_data: nft_metadata.clone(),
+            owner_id: recipient_id.clone(),
+            metadata: nft_metadata.clone(),
         };
         self.nfts.insert(&self.nft_id_counter, &nft);
-
-        let VAccount::V1(mut set_of_nft) = self.accounts.get(&recipient_id).unwrap_or_default();
-        set_of_nft.nfts.insert(&self.nft_id_counter);
 
         EventLog::from(EventLogVariant::NftMint(NftMintLog {
             owner_id: String::from(recipient_id),
@@ -81,7 +78,7 @@ mod tests {
     }
 
     pub fn get_contract() -> Contract {
-        Contract::new(U128::from(123), 1, None, None)
+        Contract::new(U128::from(123), 1,  10, None, None)
     }
 
     #[test]
@@ -106,7 +103,9 @@ mod tests {
             "some_metadata".to_string(),
         );
         println!("{}", res);
-        assert!(contract.nfts.contains_key(&res));
+
+        let assertion = contract.nfts.keys().any(|key| key == res);
+        assert!(assertion);
         if let Some(VAccount::V1(mut set_of_nft)) = contract
             .accounts
             .get(&AccountId::new_unchecked("user_id".to_string()))
