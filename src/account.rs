@@ -95,6 +95,23 @@ impl Default for Account {
     }
 }
 
+#[derive(Serialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
+pub struct AccountInfo {
+    pub free: U128,
+    pub lockups: Vec<LockupInfo>,
+    //pub nfts: LookupSet<NftId>,
+}
+
+impl From<Account> for AccountInfo {
+    fn from(account: Account) -> Self {
+        AccountInfo {
+            free: U128(account.free),
+            lockups: account.get_lockups(None, None),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -133,22 +150,6 @@ mod tests {
         println!("{:#?}", account.lockups.to_vec());
 
         assert_eq!(account.free, 13);
-    }
-}
-
-#[derive(BorshSerialize, Debug)]
-pub struct AccountInfo {
-    pub free: U128,
-    pub lockups: Vec<LockupInfo>,
-    //pub nfts: LookupSet<NftId>,
-}
-
-impl From<Account> for AccountInfo {
-    fn from(account: Account) -> Self {
-        AccountInfo {
-            free: U128(account.free),
-            lockups: account.get_lockups(None, None),
-        }
     }
 }
 

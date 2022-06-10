@@ -24,8 +24,7 @@ use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::{env, require, AccountId};
 use near_sdk::{near_bindgen, BorshStorageKey, PanicOnDefault};
 
-#[near_bindgen]
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq)]
 #[serde(crate = "near_sdk::serde")]
 pub enum State {
     Paused,
