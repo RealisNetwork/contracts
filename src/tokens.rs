@@ -96,104 +96,89 @@ impl Contract {
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use crate::lockup::Lockup;
-    use near_sdk::{collections::LookupMap, test_utils::accounts};
-    use std::str::FromStr;
+    use crate::utils::tests_utils::*;
 
-    pub fn get_contract() -> Contract {
-        Contract {
-            beneficiary_id: AccountId::from_str("alice.testnet").unwrap(), // Will be 2
-            constant_fee: 5,
-            percent_fee: 10,
-            accounts: LookupMap::new(StorageKey::Accounts),
-            nfts: UnorderedMap::new(StorageKey::Nfts),
-            owner_id: env::predecessor_account_id(),
-            backend_id: env::predecessor_account_id(),
-            state: State::Running,
-            nft_id_counter: 0,
-            registered_accounts: LookupMap::new(StorageKey::RegisteredAccounts),
-        }
-    }
 
     #[test]
     fn transfer() {
-        let mut contract = get_contract();
+        let (mut contract, mut context) = init_test_env(None, None, None);
 
         // Sender
         let sender_id = accounts(0);
         contract
             .accounts
-            .insert(&sender_id, &Account::new(250).into()); // Will be 228
+            .insert(&sender_id, &Account::new(250 * ONE_LIS).into()); // Will be 228
 
         // receiver
         let receiver_id = accounts(1);
         contract
             .accounts
-            .insert(&receiver_id, &Account::new(9).into()); // Will be 29
+            .insert(&receiver_id, &Account::new(9 * ONE_LIS).into()); // Will be 29
 
-        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 20);
+        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 20 * ONE_LIS);
 
         let account: Account = contract
             .accounts
             .get(&contract.beneficiary_id.clone())
             .unwrap()
             .into();
-        assert_eq!(account.free, 2);
+        assert_eq!(account.free, 3000000002 * ONE_LIS);
         let account: Account = contract.accounts.get(&sender_id).unwrap().into();
-        assert_eq!(account.free, 228);
+        assert_eq!(account.free, 228 * ONE_LIS);
         let account: Account = contract.accounts.get(&receiver_id).unwrap().into();
-        assert_eq!(account.free, 29);
+        assert_eq!(account.free, 29 * ONE_LIS);
     }
 
     #[test]
     #[should_panic = "You can't transfer tokens to yourself"]
     fn transfer_tokens_to_itself() {
-        let mut contract = get_contract();
+
+        let (mut contract, mut context) = init_test_env(None, None, None);
 
         // Sender
         let sender_id = accounts(0);
         contract
             .accounts
-            .insert(&sender_id, &Account::new(250).into());
+            .insert(&sender_id, &Account::new(250 * ONE_LIS).into());
 
-        contract.internal_transfer(sender_id.clone(), sender_id, 20);
+        contract.internal_transfer(sender_id.clone(), sender_id, 20 * ONE_LIS);
     }
 
     #[test]
     #[should_panic = "Not enough balance"]
     fn transfer_not_enough_balance() {
-        let mut contract = get_contract();
+        let (mut contract, mut context) = init_test_env(None, None, None);
 
         // Sender
         let sender_id = accounts(0);
         contract
             .accounts
-            .insert(&sender_id, &Account::new(250).into()); // Will be 250
+            .insert(&sender_id, &Account::new(250 * ONE_LIS).into()); // Will be 250
 
         // receiver
         let receiver_id = accounts(1);
         contract
             .accounts
-            .insert(&receiver_id, &Account::new(9).into()); // Will be 9
+            .insert(&receiver_id, &Account::new(9 * ONE_LIS).into()); // Will be 9
 
-        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 251);
+        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 251 * ONE_LIS);
 
         let account: Account = contract
             .accounts
             .get(&contract.beneficiary_id.clone())
             .unwrap()
             .into();
-        assert_eq!(account.free, 0);
+        assert_eq!(account.free, 0 * ONE_LIS);
         let account: Account = contract.accounts.get(&sender_id).unwrap().into();
-        assert_eq!(account.free, 250);
+        assert_eq!(account.free, 250 * ONE_LIS);
         let account: Account = contract.accounts.get(&receiver_id).unwrap().into();
-        assert_eq!(account.free, 9);
+        assert_eq!(account.free, 9 * ONE_LIS);
     }
 
     #[test]
     #[should_panic = "User not found"]
     fn transfer_sender_not_valid() {
-        let mut contract = get_contract();
+        let (mut contract, mut context) = init_test_env(None, None, None);
 
         // Sender
         let sender_id = AccountId::from_str("someone.testnet").unwrap(); // Sender is not registered
@@ -202,9 +187,9 @@ pub mod tests {
         let receiver_id = accounts(1);
         contract
             .accounts
-            .insert(&receiver_id, &Account::new(9).into()); // Will be 9
+            .insert(&receiver_id, &Account::new(9 * ONE_LIS).into()); // Will be 9
 
-        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 250);
+        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 250 * ONE_LIS);
 
         let account: Account = contract
             .accounts
@@ -212,29 +197,29 @@ pub mod tests {
             .unwrap()
             .into();
 
-        assert_eq!(account.free, 0);
+        assert_eq!(account.free, 0 * ONE_LIS);
         let account: Account = contract.accounts.get(&sender_id).unwrap().into();
-        assert_eq!(account.free, 250);
+        assert_eq!(account.free, 250 * ONE_LIS);
         let account: Account = contract.accounts.get(&receiver_id).unwrap().into();
-        assert_eq!(account.free, 9);
+        assert_eq!(account.free, 9 * ONE_LIS);
     }
 
     #[test]
     #[should_panic = "You can't transfer 0 tokens"]
     fn transfer_zero() {
-        let mut contract = get_contract();
+        let (mut contract, mut context) = init_test_env(None, None, None);
 
         // Sender
         let sender_id = accounts(0);
         contract
             .accounts
-            .insert(&sender_id, &Account::new(250).into()); // Will be 250
+            .insert(&sender_id, &Account::new(250 * ONE_LIS).into()); // Will be 250
 
         // receiver
         let receiver_id = accounts(1);
         contract
             .accounts
-            .insert(&receiver_id, &Account::new(9).into()); // Will be 9
+            .insert(&receiver_id, &Account::new(9 * ONE_LIS).into()); // Will be 9
 
         contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 0);
 
@@ -244,27 +229,27 @@ pub mod tests {
             .unwrap()
             .into(); // TRY SEND INVALID BALANCE
 
-        assert_eq!(account.free, 0);
+        assert_eq!(account.free, 0 * ONE_LIS);
         let account: Account = contract.accounts.get(&sender_id).unwrap().into();
-        assert_eq!(account.free, 250);
+        assert_eq!(account.free, 250 * ONE_LIS);
         let account: Account = contract.accounts.get(&receiver_id).unwrap().into();
-        assert_eq!(account.free, 9);
+        assert_eq!(account.free, 9 * ONE_LIS);
     }
 
     #[test]
     fn transfer_to_no_account() {
-        let mut contract = get_contract();
+        let (mut contract, mut context) = init_test_env(None, None, None);
 
         // Sender
         let sender_id = accounts(0);
         contract
             .accounts
-            .insert(&sender_id, &Account::new(250).into()); // Will be 228
+            .insert(&sender_id, &Account::new(250 * ONE_LIS).into()); // Will be 228
 
         // receiver
         let receiver_id = AccountId::from_str("mike.testnet").unwrap();
 
-        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 20);
+        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 20 * ONE_LIS);
 
         let account: Account = contract
             .accounts
@@ -272,24 +257,24 @@ pub mod tests {
             .unwrap()
             .into();
 
-        assert_eq!(account.free, 2);
+        assert_eq!(account.free, 3000000002 * ONE_LIS);
         let account: Account = contract.accounts.get(&sender_id).unwrap().into();
-        assert_eq!(account.free, 228);
+        assert_eq!(account.free, 228 * ONE_LIS);
         let account: Account = contract.accounts.get(&receiver_id).unwrap().into();
-        assert_eq!(account.free, 20);
+        assert_eq!(account.free, 20 * ONE_LIS);
     }
 
     #[test]
     fn transfer_whith_lockups() {
-        let mut contract = get_contract();
+        let (mut contract, mut context) = init_test_env(None, None, None);
 
         // Sender
         let sender_id = accounts(0);
 
-        let mut account_sender: Account = Account::new(250).into();
+        let mut account_sender: Account = Account::new(250 * ONE_LIS).into();
 
         account_sender.lockups.insert(&Lockup {
-            amount: 26,
+            amount: 36 * ONE_LIS,
             expire_on: 1654762489,
         });
 
@@ -300,9 +285,14 @@ pub mod tests {
 
         contract
             .accounts
-            .insert(&receiver_id, &Account::new(9).into()); // Will be 9
+            .insert(&receiver_id, &Account::new(9 * ONE_LIS).into()); // Will be 9
 
-        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 251);
+        testing_env!(context
+            .block_timestamp(Lockup::get_current_timestamp_dev())
+            .predecessor_account_id(accounts(0))
+            .build());
+
+        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 260 * ONE_LIS);
 
         let account: Account = contract
             .accounts
@@ -310,39 +300,39 @@ pub mod tests {
             .unwrap()
             .into();
 
-        assert_eq!(account.free, 25);
+        assert_eq!(account.free, 3000000026 * ONE_LIS);
         let account: Account = contract.accounts.get(&sender_id).unwrap().into();
         assert_eq!(account.free, 0);
         let account: Account = contract.accounts.get(&receiver_id).unwrap().into();
-        assert_eq!(account.free, 260);
+        assert_eq!(account.free, 269 * ONE_LIS);
     }
 
     #[test]
     fn transfer_with_many_lockups() {
-        let mut contract = get_contract();
+        let (mut contract, mut context) = init_test_env(None, None, None);
 
         // Sender
         let sender_id = accounts(0);
 
-        let mut account_sender: Account = Account::new(250).into();
+        let mut account_sender: Account = Account::new(250 * ONE_LIS).into();
 
         account_sender.lockups.insert(&Lockup {
-            amount: 10,
-            expire_on: 1654762489,
+            amount: 10 * ONE_LIS,
+            expire_on: 1654867011023,
         });
 
         account_sender.lockups.insert(&Lockup {
-            amount: 12,
-            expire_on: 1654762489,
+            amount: 17 * ONE_LIS,
+            expire_on: 1654867011023,
         });
 
         account_sender.lockups.insert(&Lockup {
-            amount: 4,
-            expire_on: 1654762489,
+            amount: 14 * ONE_LIS,
+            expire_on: 1654867011023,
         });
 
         account_sender.lockups.insert(&Lockup {
-            amount: 4,
+            amount: 4 * ONE_LIS,
             expire_on: u64::MAX,
         });
 
@@ -353,9 +343,18 @@ pub mod tests {
 
         contract
             .accounts
-            .insert(&receiver_id, &Account::new(9).into()); // Will be 9
+            .insert(&receiver_id, &Account::new(9 * ONE_LIS).into()); // Will be 9
 
-        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 251);
+        println!("TS before: {}", context.context.block_timestamp);
+
+        testing_env!(context
+            .block_timestamp(Lockup::get_current_timestamp_dev())
+            .predecessor_account_id(accounts(0))
+            .build());
+
+        println!("TS after: {}", context.context.block_timestamp);
+
+        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 260 * ONE_LIS);
 
         let account: Account = contract
             .accounts
@@ -363,40 +362,40 @@ pub mod tests {
             .unwrap()
             .into();
 
-        assert_eq!(account.free, 25);
+        assert_eq!(account.free, 3000000026 * ONE_LIS);
         let account: Account = contract.accounts.get(&sender_id).unwrap().into();
-        assert_eq!(account.free, 0);
+        assert_eq!(account.free, 5 * ONE_LIS);
         let account: Account = contract.accounts.get(&receiver_id).unwrap().into();
-        assert_eq!(account.free, 260);
+        assert_eq!(account.free, 269 * ONE_LIS);
     }
 
     #[test]
     #[should_panic]
     fn transfer_with_many_but_not_enough_lockups() {
-        let mut contract = get_contract();
+        let (mut contract, mut context) = init_test_env(None, None, None);
 
         // Sender
         let sender_id = accounts(0);
 
-        let mut account_sender: Account = Account::new(250).into();
+        let mut account_sender: Account = Account::new(250 * ONE_LIS).into();
 
         account_sender.lockups.insert(&Lockup {
-            amount: 10,
+            amount: 10 * ONE_LIS,
             expire_on: 1654762489,
         });
 
         account_sender.lockups.insert(&Lockup {
-            amount: 12,
+            amount: 12 * ONE_LIS,
             expire_on: u64::MAX,
         });
 
         account_sender.lockups.insert(&Lockup {
-            amount: 4,
+            amount: 4 * ONE_LIS,
             expire_on: 1654762489,
         });
 
         account_sender.lockups.insert(&Lockup {
-            amount: 4,
+            amount: 4 * ONE_LIS,
             expire_on: u64::MAX,
         });
 
@@ -407,9 +406,9 @@ pub mod tests {
 
         contract
             .accounts
-            .insert(&receiver_id, &Account::new(9).into()); // Will be 9
+            .insert(&receiver_id, &Account::new(9 * ONE_LIS).into()); // Will be 9
 
-        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 251);
+        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 251 * ONE_LIS);
 
         let account: Account = contract
             .accounts
@@ -417,10 +416,10 @@ pub mod tests {
             .unwrap()
             .into();
 
-        assert_eq!(account.free, 25);
+        assert_eq!(account.free, 30000000025 * ONE_LIS);
         let account: Account = contract.accounts.get(&sender_id).unwrap().into();
-        assert_eq!(account.free, 0);
+        assert_eq!(account.free, 0 * ONE_LIS);
         let account: Account = contract.accounts.get(&receiver_id).unwrap().into();
-        assert_eq!(account.free, 260);
+        assert_eq!(account.free, 260 * ONE_LIS);
     }
 }

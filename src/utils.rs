@@ -31,17 +31,15 @@ pub mod tests_utils {
     pub use near_sdk::{
         json_types::U128,
         test_utils::{accounts, VMContextBuilder},
-        testing_env, Balance, Gas, AccountId
-
+        testing_env, Balance, Gas, AccountId,
+        collections::LookupMap,
     };
     pub use std::str::FromStr;
+    pub use crate::lockup::Lockup;
+
 
     pub const DECIMALS: u8 = 12;
     pub const ONE_LIS: Balance = 10_u128.pow(DECIMALS as _);
-
-    pub const ALICE_ACCOUNT_ID:AccountId = AccountId::from_str("alice.testnet").unwrap();
-    pub const BOB_ACCOUNT_ID:AccountId = AccountId::from_str("bob.testnet").unwrap();
-    pub const FRED_ACCOUNT_ID:AccountId = AccountId::from_str("fred.testnet").unwrap();
 
 
     #[allow(dead_code)]
@@ -55,11 +53,11 @@ pub mod tests_utils {
 
         testing_env!(context
             .block_timestamp(0)
-            .predecessor_account_id(owner_id.unwrap_or_else(|| accounts(0)))
+            .predecessor_account_id(owner_id.clone().unwrap_or_else(|| accounts(0)))
             .build());
         let contract = Contract::new(
             U128(3_000_000_000 * ONE_LIS),
-            U128(10 * ONE_LIS),
+            U128(5 * ONE_LIS),
             10,
             beneficiary_id,
             backend_id,
