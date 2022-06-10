@@ -10,12 +10,14 @@ impl Contract {
             .into()
     }
 
-    pub fn burn(&mut self, _nft_id: U128) {
+    #[allow(unused_variables)]
+    pub fn burn(&mut self, nft_id: U128) {
         self.assert_running();
         todo!()
     }
 
-    pub fn transfer_nft(&mut self, _recipient_id: AccountId, _nft_id: U128) {
+    #[allow(unused_variables)]
+    pub fn transfer_nft(&mut self, recipient_id: AccountId, nft_id: U128) {
         self.assert_running();
         todo!()
     }
