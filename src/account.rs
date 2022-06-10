@@ -118,8 +118,8 @@ mod tests {
 
     #[test]
     pub fn check_lockups() {
-        let mut account = Account::new(5); // Current balance
-                                           // Just locked (will unlock in 3 days (default lifetime))
+        let mut account = Account::new(5);
+        // Just locked (will unlock in 3 days (default lifetime))
         account.lockups.insert(&Lockup::new(55, None));
         account.lockups.insert(&Lockup {
             amount: 5,
@@ -136,8 +136,8 @@ mod tests {
 
     #[test]
     pub fn check_lockup() {
-        let mut account = Account::new(5); // Current balance
-                                           // Just locked (will unlock in 3 days (default lifetime))
+        let mut account = Account::new(5);
+        // Just locked (will unlock in 3 days (default lifetime))
         account.lockups.insert(&Lockup::new(55, None));
         account.lockups.insert(&Lockup {
             amount: 5,
