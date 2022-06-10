@@ -63,7 +63,7 @@ impl Contract {
 
         // Check if user have enough tokens to pay for transaction and to send
         if sender_account.free < charge {
-            sender_account.check_lockups();
+            sender_account.claim_all_lockups();
         }
 
         // Check if user have enough tokens to send
