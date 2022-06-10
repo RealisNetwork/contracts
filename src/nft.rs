@@ -191,7 +191,7 @@ impl NftMap {
     }
 
     /// Generate new id for new `NFT`.
-    fn generate_nft_id(&mut self) -> NftId {
+   pub fn generate_nft_id(&mut self) -> NftId {
         if u128::MAX == self.nft_id_counter {
             self.nft_id_counter = 0;
         }
