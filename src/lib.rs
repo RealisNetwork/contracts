@@ -196,6 +196,6 @@ mod tests {
         account.lockups.insert(&lockup::Lockup::new(35, Some(20)));
 
         contract.accounts.insert(&account_id, &account.into());
-        println!("{:#?}", contract.get_account_info(account_id));
+        println!("{:#?}", contract.get_account_info(&account_id));
     }
 }

@@ -92,7 +92,7 @@ mod tests {
         );
         println!("{}", res);
 
-        let assertion = contract.nfts.keys().any(|key| key == res);
+        let assertion = contract.nfts.get_nft_map().keys().any(|key| key == res);
         assert!(assertion);
         if let Some(VAccount::V1(mut set_of_nft)) = contract
             .accounts

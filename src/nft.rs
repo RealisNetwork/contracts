@@ -203,3 +203,59 @@ impl NftMap {
         self.nft_id_counter
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use near_contract_standards::non_fungible_token::enumeration::NonFungibleTokenEnumeration;
+    use near_sdk::collections::{LookupMap, UnorderedMap, UnorderedSet};
+    use near_sdk::json_types::U128;
+    use near_sdk::test_utils::VMContextBuilder;
+    use near_sdk::{testing_env, AccountId, Gas, RuntimeFeesConfig, VMConfig, VMContext};
+
+    use crate::{Contract, Nft, NftMap, State};
+
+    pub fn get_contract() -> Contract {
+        let mut contract = Contract {
+            constant_fee: 0,
+            percent_fee: 0,
+            accounts: LookupMap::new(b"m"),
+            nfts: NftMap::new(),
+            owner_id: AccountId::new_unchecked("id".to_string()),
+            backend_id: AccountId::new_unchecked("id".to_string()),
+            beneficiary_id: AccountId::new_unchecked("id".to_string()),
+            state: State::Paused,
+            registered_accounts: LookupMap::new(b"a"),
+        };
+        for i in 0..10 {
+            let nft_id = contract.nfts
+                .mint_nft(
+                    AccountId::new_unchecked("id".to_string()),
+                    String::from("metadata")
+                );
+        }
+        contract
+    }
+
+
+    pub fn get_context(caller_id: String) -> VMContext {
+        VMContextBuilder::new()
+            .signer_account_id(AccountId::new_unchecked(caller_id))
+            .is_view(false)
+            .build()
+    }
+
+    #[test]
+    fn id_test() {
+        let mut contract = get_contract();
+        let context = get_context("smbd".to_string());
+        testing_env!(context, VMConfig::free(), RuntimeFeesConfig::free());
+        let m_id = contract.nfts.mint_nft(AccountId::new_unchecked("id".to_string()), String::from("metadata"));
+        assert_eq!(m_id, 10);
+        contract.nfts.burn_nft(m_id);
+        let f_id = contract.nfts.mint_nft(AccountId::new_unchecked("id".to_string()), String::from("metadata"));
+        assert_eq!(f_id, 10);
+
+    }
+
+
+}
