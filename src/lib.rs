@@ -2,6 +2,7 @@ mod account;
 mod account_manager;
 mod backend_api;
 mod events;
+mod metadata;
 mod nft;
 mod owner;
 mod public_api;
@@ -9,7 +10,6 @@ mod tokens;
 mod types;
 mod update;
 mod utils;
-mod metadata;
 
 use crate::account::{Account, VAccount};
 use crate::nft::Nft;

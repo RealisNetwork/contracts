@@ -6,33 +6,20 @@ use near_contract_standards::non_fungible_token::Token;
 use near_sdk::{AccountId, env};
 use near_sdk::json_types::{Base64VecU8, U128};
 
-/// `SPEC_TOKEN` a string.
-/// Should be ft-1.0.0 to indicate that a Fungible Token contract
-/// adheres to the current versions of this Metadata and
-/// the Fungible Token Core specs. This will allow consumers
-/// of the Fungible Token to know if they support the features of a given contract.
+/// `SPEC_TOKEN` current version of token in format `nft-n.n.n`,
+/// where nnn is number of version.
 pub const FT_SPEC_TOKEN: &str = "ft-0.1.0";
 pub const NFT_SPEC_TOKEN: &str = "nft-0.1.0";
-/// `TOKEN_NAME` the human-readable name of the token.
+/// `TOKEN_NAME` fool length token name.
 pub const FT_TOKEN_NAME: &str = "Realis";
 pub const NFT_TOKEN_NAME: &str = "Realis NFT";
-/// `TOKEN_SYMBOL` he abbreviation, like `wETH` or `AMPL`.
+/// `TOKEN_SYMBOL` short token name.
 pub const FT_TOKEN_SYMBOL: &str = "LIS";
 pub const NFT_TOKEN_SYMBOL: &str = "LIS";
-/// `TOKEN_REFERENCE`a link to a valid JSON file containing
-/// various keys offering supplementary details on the token.
-/// Example: /ipfs/QmdmQXB2mzChmMeKY47C43LxUdg1NDJ5MWcKMKxDu7RgQm,
-/// https://example.com/token.json, etc.
-/// If the information given in this document conflicts with the on-chain attributes,
-/// the values in reference shall be considered the source of truth.
+/// `TOKEN_REFERENCE` URL to an off-chain JSON file with more info.
 pub const FT_TOKEN_REFERENCE: &str = "";
 pub const NFT_TOKEN_REFERENCE: &str = "";
-/// Used in frontends to show the proper significant digits of a token.
-pub const FT_TOKEN_DECIMALS: u8 = 12;
-/// Centralized gateway known to have reliable access to decentralized storage assets
-/// referenced by reference or media URLs. Can be used by other frontends for
-/// initial retrieval of assets, even if these frontends then replicate the
-/// data to their own decentralized nodes, which they are encouraged to do.
+pub const FT_TOKEN_DECIMALS: u8 = 0;
 pub const NFT_BASE_URI: &str = "";
 
 
@@ -44,8 +31,6 @@ impl FungibleTokenMetadataProvider for Contract {
             symbol: FT_TOKEN_SYMBOL.to_owned(),
             icon: None,
             reference: Some(FT_TOKEN_REFERENCE.to_owned()),
-            // the base64-encoded sha256 hash of the JSON file contained in the reference field.
-            // This is to guard against off-chain tampering.
             reference_hash: Some(Base64VecU8::from(env::sha256(FT_TOKEN_REFERENCE.as_bytes()))),
             decimals: FT_TOKEN_DECIMALS,
         }
@@ -61,8 +46,6 @@ impl NonFungibleTokenMetadataProvider for Contract {
             icon: None,
             base_uri: Some(NFT_BASE_URI.to_owned()),
             reference: Some(NFT_TOKEN_REFERENCE.to_owned()),
-            // the base64-encoded sha256 hash of the JSON file contained in the reference field.
-            // This is to guard against off-chain tampering.
             reference_hash: Some(Base64VecU8::from(env::sha256(NFT_TOKEN_REFERENCE.as_bytes()))),
         }
     }

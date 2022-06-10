@@ -1,7 +1,6 @@
 use near_sdk::json_types::U128;
-use near_sdk::{env, AccountId, StorageUsage, Timestamp};
+use near_sdk::{AccountId, Timestamp};
 
-use crate::events::EventLogVariant::NftMint;
 use crate::events::{EventLog, EventLogVariant, NftMintLog};
 use crate::*;
 
