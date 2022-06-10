@@ -1,17 +1,14 @@
-use crate::lockup::Lockup;
-use crate::*;
-use crate::{Account, Contract};
-use near_sdk::env;
-use near_sdk::near_bindgen;
-use near_sdk::{require, AccountId};
-use std::str::FromStr;
+use crate::{Account, Contract, *};
+use near_sdk::{env, near_bindgen, require, AccountId};
 
 #[near_bindgen]
 impl Contract {
-    /// This function checks if amount != 0 (if no it would panic), taskes fee and amount from sender
-    /// (via take_fee() function), increases beneficiary balance for fee and increases recipient balance
-    /// by amount, if beneficiary exists, balance will be increased, in case beneficiary account
-    /// doesn't exist, account will be created with balance of amount
+    /// This function checks if amount != 0 (if no it would panic), taskes fee
+    /// and amount from sender (via take_fee() function), increases
+    /// beneficiary balance for fee and increases recipient balance
+    /// by amount, if beneficiary exists, balance will be increased, in case
+    /// beneficiary account doesn't exist, account will be created with
+    /// balance of amount
     pub fn internal_transfer(
         &mut self,
         sender: AccountId,
@@ -41,8 +38,9 @@ impl Contract {
     /// This function decreases sender balance in (100 + percent_fee) * amount
     /// and increases beneficiary balance by percent_fee * amount where amount
     /// is Some(u128) and percent_fee is > 0
-    /// In case amount in None, function decreases sender balance by constant_fee
-    /// and increases beneficiary balance by constant_fee, where constant_fee >= 0
+    /// In case amount in None, function decreases sender balance by
+    /// constant_fee and increases beneficiary balance by constant_fee,
+    /// where constant_fee >= 0
     pub fn take_fee(&mut self, sender: AccountId, amount: Option<u128>) -> u128 {
         // Calculate total charged amount
         let (charge, fee) = if let Some(amount) = amount {
@@ -98,9 +96,11 @@ impl Contract {
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use near_sdk::collections::{LookupMap, LookupSet};
-    use near_sdk::json_types::U64;
-    use near_sdk::test_utils::accounts;
+    use near_sdk::{
+        collections::{LookupMap, LookupSet},
+        json_types::U64,
+        test_utils::accounts,
+    };
 
     pub fn get_contract() -> Contract {
         Contract {
