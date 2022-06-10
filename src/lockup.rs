@@ -1,4 +1,3 @@
-use crate::lockup;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::json_types::U128;
 use near_sdk::Timestamp;
@@ -39,7 +38,7 @@ impl Lockup {
     }
 }
 
-#[derive(BorshSerialize, Debug)]
+#[derive(BorshSerialize, BorshDeserialize, Debug, serde::Serialize)]
 pub struct LockupInfo {
     pub amount: U128,
     pub expire_on: Timestamp,

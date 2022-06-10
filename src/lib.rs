@@ -1,8 +1,9 @@
 mod account;
 mod account_manager;
 mod backend_api;
-mod lockup;
 mod events;
+mod lockup;
+mod marketplace;
 mod metadata;
 mod nft;
 mod owner;
@@ -14,14 +15,14 @@ mod utils;
 
 use crate::account::{Account, AccountInfo, VAccount};
 use crate::lockup::LockupInfo;
-use crate::nft::Nft;
+use crate::nft::{Nft, NftMap};
 use crate::types::NftId;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::{LookupMap, UnorderedMap, Vector};
 use near_sdk::json_types::U128;
-use near_sdk::{log, PublicKey};
 use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::{env, require, AccountId};
+use near_sdk::{log, PublicKey};
 use near_sdk::{near_bindgen, BorshStorageKey, PanicOnDefault};
 
 #[near_bindgen]
@@ -37,24 +38,29 @@ pub enum State {
 pub struct Contract {
     pub constant_fee: u128,
     pub percent_fee: u8, // Commission in percents over transferring amount. for example, 10 (like 10%)
+    // Current contract users
     pub accounts: LookupMap<AccountId, VAccount>,
-    pub nfts: UnorderedMap<NftId, Nft>,
+    pub nfts: NftMap,
+    // Owner of the contract. Example, `Realis.near` or `Volvo.near`
     pub owner_id: AccountId,
+    // Allowed user from backend, with admin permission.
     pub backend_id: AccountId,
+    // Fee collector.
     pub beneficiary_id: AccountId,
+    // State of contract.
     pub state: State,
-
-    pub nft_id_counter: u128,
+    // API accounts.
     pub registered_accounts: LookupMap<PublicKey, AccountId>,
 }
 
 #[derive(BorshStorageKey, BorshSerialize, BorshDeserialize)]
 pub(crate) enum StorageKey {
     Accounts,
-    Nfts,
+    NftsMap,
+    NftsOnSale,
     NftId,
     RegisteredAccounts,
-    Lockups
+    Lockups,
 }
 
 #[near_bindgen]
@@ -99,7 +105,6 @@ impl Contract {
                 let user_account: Account = user.into();
                 user_account.get_lockups(from_index, limit)
             }
-
             None => {
                 vec![]
             }
@@ -112,7 +117,6 @@ impl Contract {
                 let user_account: Account = user.into();
                 U128(user_account.free)
             }
-
             None => U128(0u128),
         }
     }
@@ -123,7 +127,6 @@ impl Contract {
                 let user_account: Account = user.into();
                 user_account.into()
             }
-
             None => Account::default().into(),
         }
     }

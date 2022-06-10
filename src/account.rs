@@ -1,5 +1,5 @@
 use crate::lockup::Lockup;
-use crate::{LockupInfo, NftId, Serialize, StorageKey};
+use crate::{LockupInfo, NftId, StorageKey};
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::{LookupSet, UnorderedSet};
 use near_sdk::json_types::U128;
@@ -40,7 +40,7 @@ impl Account {
         }
     }
 
-    pub fn claim_all_lockups(&mut self) -> u128{
+    pub fn claim_all_lockups(&mut self) -> u128 {
         let collection = self.lockups.to_vec();
 
         let fold = collection
@@ -80,7 +80,6 @@ impl Account {
             .map(|lockup| lockup.into())
             .collect::<Vec<LockupInfo>>()
     }
-
 }
 
 impl From<Account> for VAccount {
@@ -136,11 +135,10 @@ mod tests {
     }
 }
 
-#[derive(BorshSerialize, Debug)]
+#[derive(BorshSerialize, Debug, serde::Serialize)]
 pub struct AccountInfo {
     pub free: U128,
     pub lockups: Vec<LockupInfo>,
-    //pub nfts: LookupSet<NftId>,
 }
 
 impl From<Account> for AccountInfo {
@@ -151,4 +149,3 @@ impl From<Account> for AccountInfo {
         }
     }
 }
-
