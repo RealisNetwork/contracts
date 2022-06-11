@@ -4,9 +4,7 @@ use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::{UnorderedMap, Vector};
 use near_sdk::env::panic_str;
 
-
 use crate::{NftId, StorageKey};
-
 
 /// State of NFT.
 /// Displays the current state of an NFT.
@@ -154,7 +152,7 @@ impl NftMap {
             .remove(&nft_id)
             .unwrap_or_else(|| env::panic_str("Nft not exist"));
     }
-    fn get_bit(&self, nft_id: NftId) -> Bit {
+    pub fn get_bit(&self, nft_id: NftId) -> Bit {
         self.marketplace_nft_map.get(&nft_id).unwrap_or_else(|| panic_str("Nft isn't exist or isn't on sale"))
     }
 
@@ -202,6 +200,11 @@ impl NftMap {
         self.marketplace_nft_map.insert(&nft_id, &bit);
 
         bit
+    }
+    pub fn unlock_nft(&mut self, nft_id: NftId) {
+        require!(self.marketplace_nft_map.remove(&nft_id).is_some(),"Nft isn't exist or isn't on sale");
+        let nft = self.get_nft(nft_id).unlock_nft();
+        self.nft_map.insert(&nft_id, &nft);
     }
 
     /// Generate new id for new `NFT`.
