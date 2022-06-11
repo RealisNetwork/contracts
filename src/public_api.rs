@@ -1,12 +1,13 @@
-use crate::types::NftId;
-use crate::*;
-use near_sdk::json_types::U128;
-use near_sdk::AccountId;
+use crate::{types::NftId, *};
+use near_sdk::{json_types::U128, require, AccountId};
 
 #[near_bindgen]
 impl Contract {
-    pub fn transfer(&mut self, _recipient_id: AccountId, _amount: U128) -> U128 {
-        todo!()
+    pub fn transfer(&mut self, recipient_id: AccountId, amount: U128) -> U128 {
+        require!(self.state == State::Running, "Contract is paused");
+        let sender_id = env::signer_account_id();
+        self.internal_transfer(sender_id, recipient_id, amount.0)
+            .into()
     }
 
     pub fn burn(&mut self, _nft_id: NftId) {

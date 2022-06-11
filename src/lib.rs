@@ -14,20 +14,30 @@ mod types;
 mod update;
 mod utils;
 
-use crate::account::{Account, AccountInfo, VAccount};
-use crate::lockup::LockupInfo;
-use crate::nft::{Nft, NftMap};
-use crate::types::NftId;
-use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::collections::{LookupMap, UnorderedMap, Vector};
-use near_sdk::json_types::U128;
-use near_sdk::serde::{Deserialize, Serialize};
-use near_sdk::{env, require, AccountId};
-use near_sdk::{log, PublicKey};
-use near_sdk::{near_bindgen, BorshStorageKey, PanicOnDefault};
 
-#[near_bindgen]
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize)]
+
+
+use crate::nft::NftMap;
+use near_sdk::{require, AccountId};
+use near_sdk::{log, PublicKey};
+use crate::{
+    account::{Account, AccountInfo, VAccount},
+    lockup::LockupInfo,
+    nft::Nft,
+    types::NftId,
+};
+use near_sdk::{
+    borsh::{self, BorshDeserialize, BorshSerialize},
+    collections::{LookupMap, UnorderedMap,Vector},
+    env,
+    json_types::U128,
+    near_bindgen,
+    serde::{Deserialize, Serialize},
+    AccountId, BorshStorageKey, PanicOnDefault, PublicKey,
+};
+
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq)]
+
 #[serde(crate = "near_sdk::serde")]
 pub enum State {
     Paused,
@@ -38,8 +48,8 @@ pub enum State {
 #[derive(BorshSerialize, BorshDeserialize, PanicOnDefault)]
 pub struct Contract {
     pub constant_fee: u128,
-    pub percent_fee: u8, // Commission in percents over transferring amount. for example, 10 (like 10%)
-    // Current contract users
+    pub percent_fee: u8, /* Commission in percents over transferring amount. for example, 10
+                          * (like 10%) */
     pub accounts: LookupMap<AccountId, VAccount>,
     pub nfts: NftMap,
     // Owner of the contract. Example, `Realis.near` or `Volvo.near`
@@ -69,7 +79,7 @@ impl Contract {
     #[init]
     pub fn new(
         total_supply: U128,
-        constant_fee: u128,
+        constant_fee: U128,
         percent_fee: u8,
         beneficiary_id: Option<AccountId>,
         backend_id: Option<AccountId>,
@@ -80,11 +90,11 @@ impl Contract {
         accounts.insert(&owner_id, &Account::new(total_supply.0).into());
 
         Self {
-            constant_fee,
+            constant_fee: constant_fee.0,
             percent_fee,
             nfts: NftMap::default(),
             owner_id: owner_id.clone(),
-            backend_id: backend_id.unwrap_or(owner_id.clone()),
+            backend_id: backend_id.unwrap_or_else(|| owner_id.clone()),
             beneficiary_id: beneficiary_id.unwrap_or(owner_id),
             state: State::Running,
             accounts,
@@ -132,11 +142,12 @@ impl Contract {
 
 #[cfg(test)]
 mod tests {
-    use super::tokens::tests::get_contract;
-    use super::*;
-    use near_sdk::collections::{LookupMap, LookupSet};
-    use near_sdk::json_types::U64;
-    use near_sdk::test_utils::accounts;
+    use super::{tokens::tests::get_contract, *};
+    use near_sdk::{
+        collections::{LookupMap, LookupSet},
+        json_types::U64,
+        test_utils::accounts,
+    };
     use std::str::FromStr;
 
     #[test]

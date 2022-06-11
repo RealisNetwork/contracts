@@ -1,7 +1,10 @@
 use std::fmt;
 
-use near_sdk::serde::{Deserialize, Serialize};
-use near_sdk::{env, serde_json};
+use near_sdk::{
+    env,
+    serde::{Deserialize, Serialize},
+    serde_json,
+};
 
 /// Rules of logging events on `Near`.
 /// Should include:
