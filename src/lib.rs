@@ -1,5 +1,24 @@
 extern crate core;
 
+use near_sdk::{
+    AccountId,
+    borsh::{self, BorshDeserialize, BorshSerialize},
+    BorshStorageKey,
+    collections::{LookupMap},
+    env,
+    json_types::U128,
+    near_bindgen, PanicOnDefault, PublicKey, serde::{Deserialize, Serialize},
+};
+
+use crate::{
+    account::{Account, AccountInfo, VAccount},
+    lockup::LockupInfo,
+    nft::Nft,
+    types::NftId,
+};
+use crate::lockup::Lockup;
+use crate::nft::NftMap;
+
 mod account;
 mod account_manager;
 mod backend_api;
@@ -13,30 +32,10 @@ mod tokens;
 mod types;
 mod update;
 mod utils;
+mod marketplace;
 
-
-
-
-use crate::nft::NftMap;
-use near_sdk::{require,log};
-use crate::{
-    account::{Account, AccountInfo, VAccount},
-    lockup::LockupInfo,
-    nft::Nft,
-    types::NftId,
-};
-use near_sdk::{
-    borsh::{self, BorshDeserialize, BorshSerialize},
-    collections::{LookupMap, UnorderedMap,Vector},
-    env,
-    json_types::U128,
-    near_bindgen,
-    serde::{Deserialize, Serialize},
-    AccountId, BorshStorageKey, PanicOnDefault, PublicKey,
-};
 
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq)]
-
 #[serde(crate = "near_sdk::serde")]
 pub enum State {
     Paused,
@@ -47,8 +46,9 @@ pub enum State {
 #[derive(BorshSerialize, BorshDeserialize, PanicOnDefault)]
 pub struct Contract {
     pub constant_fee: u128,
-    pub percent_fee: u8, /* Commission in percents over transferring amount. for example, 10
-                          * (like 10%) */
+    pub percent_fee: u8,
+    /* Commission in percents over transferring amount. for example, 10
+                             * (like 10%) */
     pub accounts: LookupMap<AccountId, VAccount>,
     pub nfts: NftMap,
     // Owner of the contract. Example, `Realis.near` or `Volvo.near`
@@ -141,13 +141,15 @@ impl Contract {
 
 #[cfg(test)]
 mod tests {
-    use super::{tokens::tests::get_contract, *};
+    use std::str::FromStr;
+
     use near_sdk::{
         collections::{LookupMap, LookupSet},
         json_types::U64,
         test_utils::accounts,
     };
-    use std::str::FromStr;
+
+    use super::{*, tokens::tests::get_contract};
 
     #[test]
     fn info_log_test() {

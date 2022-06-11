@@ -1,18 +1,12 @@
-
-use near_sdk::{
-    borsh::{self, BorshDeserialize, BorshSerialize},
-    json_types::U128,
-    serde::Serialize,
-    Timestamp,
-};
-
 use std::time::SystemTime;
+
+use near_sdk::{AccountId, Balance, borsh::{self, BorshDeserialize, BorshSerialize}, json_types::U128, serde::Serialize, Timestamp};
 
 const DEFAULT_LOCK_LIFE_TIME: u64 = 1000 * 60 * 60 * 24 * 3; // millis * secs * mins  * hours * days
 
 #[derive(BorshSerialize, BorshDeserialize, Debug)]
 pub struct Lockup {
-    pub amount: u128,
+    pub amount: Balance,
     pub expire_on: Timestamp,
 }
 
@@ -32,11 +26,12 @@ impl Lockup {
 
     /// When the new lockup is created, new expire_on value is generated (in
     /// millis)
-    pub fn new(amount: u128, live_time: Option<u64>) -> Self {
+    pub fn new(amount: Balance, live_time: Option<u64>) -> Self {
         Self {
             amount,
             expire_on: Lockup::get_current_timestamp()
                 + live_time.unwrap_or(DEFAULT_LOCK_LIFE_TIME),
+
         }
     }
 
@@ -52,6 +47,7 @@ pub struct LockupInfo {
     pub amount: U128,
     pub expire_on: Timestamp,
 }
+
 
 impl From<Lockup> for LockupInfo {
     fn from(lockup: Lockup) -> Self {

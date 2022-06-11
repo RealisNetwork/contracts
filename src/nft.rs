@@ -1,12 +1,12 @@
-
 //! Designed to interact with the NFT, NFT marketplace.
-use near_sdk::{AccountId, Balance, env, require};
+use near_sdk::{AccountId, Balance, env, require, Timestamp};
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::collections::{LookupMap, LookupSet, UnorderedMap, Vector};
-use near_sdk::json_types::U128;
+use near_sdk::collections::{UnorderedMap, Vector};
+use near_sdk::env::panic_str;
 
 
 use crate::{NftId, StorageKey};
+
 
 /// State of NFT.
 /// Displays the current state of an NFT.
@@ -84,7 +84,7 @@ impl Nft {
 #[derive(BorshSerialize, BorshDeserialize, Debug)]
 pub struct NftMap {
     nft_map: UnorderedMap<NftId, Nft>,
-    marketplace_nft_map: UnorderedMap<NftId, Balance>,
+    marketplace_nft_map: UnorderedMap<NftId, Bit>,
     nft_id_counter: NftId,
 }
 
@@ -139,7 +139,7 @@ impl NftMap {
             .collect()
     }
     /// Return map of NFTs listed on the marketplace.
-    pub fn get_marketplace_nft_map(&self) -> &UnorderedMap<NftId, Balance> {
+    pub fn get_marketplace_nft_map(&self) -> &UnorderedMap<NftId, Bit> {
         &self.marketplace_nft_map
     }
 
@@ -153,6 +153,9 @@ impl NftMap {
         self.nft_map
             .remove(&nft_id)
             .unwrap_or_else(|| env::panic_str("Nft not exist"));
+    }
+    fn get_bit(&self, nft_id: NftId) -> Bit {
+        self.marketplace_nft_map.get(&nft_id).unwrap_or_else(|| panic_str("Nft isn't exist or isn't on sale"))
     }
 
     /// Mint new `NFT` with generated id.
@@ -170,13 +173,14 @@ impl NftMap {
         self.nft_map.insert(&nft_id, &nft);
     }
     /// List `NFT` with `price` on marketplace.
-    pub fn sell_nft(&mut self, nft_id: u128, price: Balance) {
+    pub fn sell_nft(&mut self, nft_id: u128, price: Balance, deadline: Timestamp) {
         let nft = self
             .nft_map
             .get(&nft_id)
             .unwrap_or_else(|| env::panic_str("Nft not exist"));
+        let bit = Bit::new(price, deadline);
 
-        self.marketplace_nft_map.insert(&nft_id, &price);
+        self.marketplace_nft_map.insert(&nft_id, &bit);
         self.nft_map.insert(&nft_id, &nft.lock_nft());
     }
     /// Remove `NFT` from `marketplace_nft_map` and transfer to the new owner.
@@ -187,17 +191,21 @@ impl NftMap {
     }
 
     /// Change price of `NFT` that already on sale.
-    pub fn change_price_nft(&mut self, nft_id: u128, new_price: Balance) {
-        require!(
-            self.marketplace_nft_map.get(&nft_id).is_some(),
-            "Nft isn't exist or isn't on sale"
-        );
+    pub fn change_price_nft(&mut self, nft_id: u128, new_price: Balance, bit_owner: Option<AccountId>) -> Bit {
+        let bit = self.get_bit(nft_id);
+        require!(bit.get_price()  < &new_price,"Bit less then last one");
+        require!(bit.get_deadline()> &env::block_timestamp(),"Auction expired");
 
-        self.marketplace_nft_map.insert(&nft_id, &new_price);
+        let bit = bit
+            .set_price(new_price)
+            .set_account_id(bit_owner);
+        self.marketplace_nft_map.insert(&nft_id, &bit);
+
+        bit
     }
 
     /// Generate new id for new `NFT`.
-    pub fn generate_nft_id(&mut self) -> NftId {
+    fn generate_nft_id(&mut self) -> NftId {
         if u128::MAX == self.nft_id_counter {
             self.nft_id_counter = 0;
         }
@@ -209,6 +217,45 @@ impl NftMap {
         self.nft_id_counter
     }
 }
+
+#[derive(Debug, BorshSerialize, BorshDeserialize)]
+pub struct Bit {
+    pub(crate) account_id: Option<AccountId>,
+    pub(crate) price: Balance,
+    pub(crate) deadline: Timestamp,
+}
+
+impl Bit {
+    pub fn new(price: Balance, deadline: near_sdk::Timestamp) -> Self {
+        Self {
+            account_id: None,
+            price,
+            deadline,
+        }
+    }
+    pub fn get_price(&self) -> &Balance
+    {
+        &self.price
+    }
+    pub fn get_deadline(&self) -> &Timestamp
+    {
+        &self.deadline
+    }
+
+    pub fn set_price(self, price: Balance) -> Self {
+        Self {
+            price,
+            ..self
+        }
+    }
+    pub fn set_account_id(self, account_id: Option<AccountId>) -> Self {
+        Self {
+            account_id,
+            ..self
+        }
+    }
+}
+
 
 #[cfg(test)]
 mod tests {
