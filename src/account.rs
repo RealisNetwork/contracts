@@ -1,6 +1,3 @@
-use near_sdk::serde::Serialize;
-use near_sdk::Balance;
-
 use crate::{lockup::Lockup, LockupInfo, NftId, Serialize, StorageKey};
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},

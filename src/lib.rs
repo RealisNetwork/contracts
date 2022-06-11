@@ -18,8 +18,7 @@ mod utils;
 
 
 use crate::nft::NftMap;
-use near_sdk::{require, AccountId};
-use near_sdk::{log, PublicKey};
+use near_sdk::{require,log};
 use crate::{
     account::{Account, AccountInfo, VAccount},
     lockup::LockupInfo,
