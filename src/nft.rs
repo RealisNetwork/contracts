@@ -189,17 +189,19 @@ impl NftMap {
     }
 
     /// Change price of `NFT` that already on sale.
-    pub fn change_price_nft(&mut self, nft_id: u128, new_price: Balance, bit_owner: Option<AccountId>) -> Bit {
+    pub fn change_price_nft(&mut self, nft_id: u128, new_price: Balance, bit_owner: Option<AccountId>) {
         let bit = self.get_bit(nft_id);
         require!(bit.get_price()  < &new_price,"Bit less then last one");
-        require!(bit.get_deadline()> &env::block_timestamp(),"Auction expired");
+        require!(bit.get_deadline() > &env::block_timestamp(),"Auction expired");
 
-        let bit = bit
+        let new_bit = bit
             .set_price(new_price)
             .set_account_id(bit_owner);
-        self.marketplace_nft_map.insert(&nft_id, &bit);
-
-        bit
+        self.marketplace_nft_map.insert(&nft_id, &new_bit);
+    }
+    pub fn update_nft(&mut self, nft_id: NftId, nft: Nft) {
+        require!(self.nft_map.get(&nft_id).is_some(),"Nft not exist");
+        self.nft_map.insert(&nft_id, &nft);
     }
     pub fn unlock_nft(&mut self, nft_id: NftId) {
         require!(self.marketplace_nft_map.remove(&nft_id).is_some(),"Nft isn't exist or isn't on sale");
@@ -275,7 +277,7 @@ mod tests {
             constant_fee: 0,
             percent_fee: 0,
             accounts: LookupMap::new(b"m"),
-            nfts: NftMap::new(),
+            nfts: NftMap::default(),
             owner_id: AccountId::new_unchecked("id".to_string()),
             backend_id: AccountId::new_unchecked("id".to_string()),
             beneficiary_id: AccountId::new_unchecked("id".to_string()),

@@ -132,7 +132,7 @@ impl NonFungibleTokenEnumeration for Contract {
             .filter(|(_key, value)| value.owner_id == account_id)
             .skip(from.0 as usize)
             .take(limit as usize)
-            .map(|(key, value)| Token {
+            .map(|(key, _value)| Token {
                 token_id: key.to_string(),
                 owner_id: account_id.clone(),
                 metadata: None,
@@ -159,7 +159,7 @@ mod tests {
             constant_fee: 0,
             percent_fee: 0,
             accounts: LookupMap::new(b"m"),
-            nfts: NftMap::new(),
+            nfts: NftMap::default(),
             owner_id: AccountId::new_unchecked("id".to_string()),
             backend_id: AccountId::new_unchecked("id".to_string()),
             beneficiary_id: AccountId::new_unchecked("id".to_string()),

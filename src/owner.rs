@@ -65,7 +65,7 @@ mod tests {
     }
 
     pub fn get_contract() -> Contract {
-        Contract::new(U128::from(123), 1, 10, None, None)
+        Contract::new(U128::from(123), U128::from(1), 10, None, None)
     }
 
     #[test]

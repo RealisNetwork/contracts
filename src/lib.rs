@@ -13,7 +13,6 @@ use near_sdk::{
 use crate::{
     account::{Account, AccountInfo, VAccount},
     lockup::LockupInfo,
-    nft::Nft,
     types::NftId,
 };
 use crate::lockup::Lockup;
