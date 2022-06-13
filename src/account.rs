@@ -7,6 +7,7 @@ use near_sdk::{
 };
 use crate::events::{EventLog, EventLogVariant, LockupLog};
 
+
 #[derive(BorshSerialize, BorshDeserialize)]
 pub enum VAccount {
     V1(Account),
@@ -182,3 +183,4 @@ mod tests {
         assert_eq!(account.free, 13);
     }
 }
+

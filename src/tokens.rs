@@ -1,5 +1,10 @@
+
+use crate::lockup::Lockup;
+use crate::*;
+use std::str::FromStr;
 use crate::{Account, Contract, *};
 use near_sdk::{env, near_bindgen, require, AccountId};
+
 
 #[near_bindgen]
 impl Contract {
@@ -118,7 +123,6 @@ impl Contract {
 pub mod tests {
     use super::*;
     use crate::utils::tests_utils::*;
-
 
     #[test]
     fn transfer() {
