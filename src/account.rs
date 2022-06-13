@@ -167,8 +167,6 @@ mod tests {
         // Balance of lock from 1970 will be transferred to main balance
         account.claim_lockup(16457898);
 
-        println!("{:#?}", account.lockups.to_vec());
-
         assert_eq!(account.free, 13);
     }
 }
