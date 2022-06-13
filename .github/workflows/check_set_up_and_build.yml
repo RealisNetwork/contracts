@@ -17,7 +17,7 @@ jobs:
           profile: minimal
           #toolchain: nightly-2021-11-18 # Pinned because of compilation error on later version, should unpin later.
           target: wasm32-unknown-unknown
-      - run: cargo build
+      - run: cargo +nightly build
 
   build-release:
     runs-on: ubuntu-latest
@@ -30,7 +30,7 @@ jobs:
           profile: minimal
           #toolchain: nightly-2021-11-18 # Pinned because of compilation error on later version, should unpin later.
           target: wasm32-unknown-unknown
-      - run: cargo build --release
+      - run: cargo +nightly build --release
 
   fmt:
     runs-on: ubuntu-latest
@@ -44,7 +44,7 @@ jobs:
           #toolchain: nightly
           target: wasm32-unknown-unknown
           components: rustfmt
-      - run: cargo fmt
+      - run: cargo +nightly fmt
 
   lint:
     runs-on: ubuntu-latest
@@ -58,7 +58,7 @@ jobs:
           #toolchain: nightly
           target: wasm32-unknown-unknown
           components: clippy
-      - run: cargo clippy
+      - run: cargo +nightly clippy
 
   udeps:
     runs-on: ubuntu-latest
@@ -96,4 +96,4 @@ jobs:
           profile: minimal
          # toolchain: nightly-2021-11-18 # Pinned because of compilation error on later version, should unpin later.
           target: wasm32-unknown-unknown
-      - run: cargo test
+      - run: cargo +nightly test
