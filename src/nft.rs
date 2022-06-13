@@ -190,14 +190,14 @@ impl NftMap {
 
     /// Change price of `NFT` that already on sale.
     pub fn change_price_nft(&mut self, nft_id: u128, new_price: Balance, bit_owner: Option<AccountId>) {
-        let bit = self.get_bit(nft_id);
-        require!(bit.get_price()  < &new_price,"Bit less then last one");
-        require!(bit.get_deadline() > &env::block_timestamp(),"Auction expired");
+        let mut bit = self.get_bit(nft_id);
+        require!(&bit.price  < &new_price,"Bit less then last one");
+        require!(&bit.deadline > &env::block_timestamp(),"Auction expired");
 
-        let new_bit = bit
-            .set_price(new_price)
-            .set_account_id(bit_owner);
-        self.marketplace_nft_map.insert(&nft_id, &new_bit);
+        bit.price  = new_price;
+        bit.account_id = bit_owner;
+
+        self.marketplace_nft_map.insert(&nft_id, &bit);
     }
     pub fn update_nft(&mut self, nft_id: NftId, nft: Nft) {
         require!(self.nft_map.get(&nft_id).is_some(),"Nft not exist");
@@ -225,9 +225,9 @@ impl NftMap {
 
 #[derive(Debug, BorshSerialize, BorshDeserialize)]
 pub struct Bit {
-    account_id: Option<AccountId>,
-    price: Balance,
-    deadline: Timestamp,
+   pub account_id: Option<AccountId>,
+   pub price: Balance,
+   pub deadline: Timestamp,
 }
 
 impl Bit {
@@ -236,27 +236,6 @@ impl Bit {
             account_id: None,
             price,
             deadline,
-        }
-    }
-    pub fn get_price(&self) -> &Balance
-    {
-        &self.price
-    }
-    pub fn get_deadline(&self) -> &Timestamp
-    {
-        &self.deadline
-    }
-
-    pub fn set_price(self, price: Balance) -> Self {
-        Self {
-            price,
-            ..self
-        }
-    }
-    pub fn set_account_id(self, account_id: Option<AccountId>) -> Self {
-        Self {
-            account_id,
-            ..self
         }
     }
 }

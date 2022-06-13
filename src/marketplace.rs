@@ -49,7 +49,7 @@ impl Contract {
         let last_bit = self.nfts.get_bit(nft_id);
         let nft = self.nfts.get_nft(nft_id);
 
-        require!(last_bit.get_deadline() > &env::block_timestamp(),"Auction in progress");
+        require!(&last_bit.deadline > &env::block_timestamp(),"Auction in progress");
 
         if last_bit.account_id.is_none() {
             require!(nft.owner_id==account_id,"Only for nft owner");
