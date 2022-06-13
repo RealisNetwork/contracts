@@ -6,6 +6,7 @@ use near_sdk::{
     Balance,
 };
 use crate::events::{EventLog, EventLogVariant, LockupLog};
+//use crate::StorageKey::NftId;
 
 #[derive(BorshSerialize, BorshDeserialize)]
 pub enum VAccount {
@@ -30,7 +31,7 @@ impl From<VAccount> for Account {
 pub struct Account {
     pub free: Balance,
     pub lockups: UnorderedSet<Lockup>,
-    pub nfts: LookupSet<NftId>,
+    pub nfts: UnorderedSet<NftId>,
 }
 
 impl Account {
@@ -38,7 +39,7 @@ impl Account {
         Self {
             free: balance,
             lockups: UnorderedSet::new(StorageKey::Lockups),
-            nfts: LookupSet::new(StorageKey::NftId),
+            nfts: UnorderedSet::new(StorageKey::NftId),
         }
     }
 
@@ -93,6 +94,20 @@ impl Account {
             .map(|lockup| lockup.into())
             .collect::<Vec<LockupInfo>>()
     }
+    pub fn get_lockups_free(& self) -> u128 {
+
+        let fold = self.lockups
+            .to_vec()
+            .iter()
+            .filter(|lock| lock.is_expired())
+            .fold(0, |acc, lock| acc + lock.amount);
+        fold
+    }
+    pub fn get_nfts(& self) -> Vec<NftId> {
+        let nfts = self.nfts
+            .iter().collect::<Vec<NftId>>();
+        nfts
+    }
 }
 
 impl From<Account> for VAccount {
@@ -112,7 +127,8 @@ impl Default for Account {
 pub struct AccountInfo {
     pub free: U128,
     pub lockups: Vec<LockupInfo>,
-    // TODO: add nfts
+    pub nfts: Vec<NftId>,
+    pub lockups_free: U128,
 }
 
 impl From<Account> for AccountInfo {
@@ -120,6 +136,8 @@ impl From<Account> for AccountInfo {
         AccountInfo {
             free: U128(account.free),
             lockups: account.get_lockups(None, None),
+            nfts: account.get_nfts(),
+            lockups_free: U128(account.get_lockups_free())
         }
     }
 }
