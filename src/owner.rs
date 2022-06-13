@@ -1,10 +1,9 @@
 use near_sdk::{json_types::U128, AccountId, Timestamp};
 
 use crate::{
-    events::{EventLog, EventLogVariant, NftMintLog},
+    events::{ChangeBeneficiaryLog, ChangeStateLog, EventLog, EventLogVariant, NftMintLog},
     *,
 };
-use crate::events::{ChangeBeneficiaryLog, ChangeStateLog};
 
 #[near_bindgen]
 impl Contract {
@@ -48,7 +47,7 @@ impl Contract {
         }))
         .emit();
 
-       self.beneficiary_id = new_beneficiary_id;
+        self.beneficiary_id = new_beneficiary_id;
     }
 
     #[allow(unused_variables)]
@@ -78,7 +77,13 @@ mod tests {
     }
 
     pub fn get_contract() -> Contract {
-        Contract::new(U128::from(123), U128(1), 10, Some(AccountId::from_str("beneficiary").unwrap()), None)
+        Contract::new(
+            U128::from(123),
+            U128(1),
+            10,
+            Some(AccountId::from_str("beneficiary").unwrap()),
+            None,
+        )
     }
 
     #[test]
@@ -100,7 +105,10 @@ mod tests {
         let context = get_context("user_id".to_string());
         testing_env!(context);
 
-        contract.accounts.insert(&AccountId::new_unchecked("user_id".to_string()), &Account::default().into());
+        contract.accounts.insert(
+            &AccountId::new_unchecked("user_id".to_string()),
+            &Account::default().into(),
+        );
 
         let res = contract.mint(
             AccountId::new_unchecked("user_id".to_string()),

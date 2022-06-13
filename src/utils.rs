@@ -27,16 +27,14 @@ impl Contract {
 
 #[cfg(test)]
 pub mod tests_utils {
-    pub use crate::*;
+    pub use crate::{lockup::Lockup, *};
     pub use near_sdk::{
+        collections::LookupMap,
         json_types::U128,
         test_utils::{accounts, VMContextBuilder},
-        testing_env, Balance, Gas, AccountId,
-        collections::LookupMap,
+        testing_env, AccountId, Balance, Gas,
     };
     pub use std::str::FromStr;
-    pub use crate::lockup::Lockup;
-
 
     pub const DECIMALS: u8 = 12;
     pub const ONE_LIS: Balance = 10_u128.pow(DECIMALS as _);

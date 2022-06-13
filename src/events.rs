@@ -1,8 +1,12 @@
 use std::fmt;
 
-use near_sdk::{AccountId, env, serde::{Deserialize, Serialize}, serde_json};
-use near_sdk::json_types::U128;
 use crate::State;
+use near_sdk::{
+    env,
+    json_types::U128,
+    serde::{Deserialize, Serialize},
+    serde_json, AccountId,
+};
 
 /// Rules of logging events on `Near`.
 /// Should include:

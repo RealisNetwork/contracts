@@ -1,4 +1,3 @@
-
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
     json_types::U128,
@@ -68,7 +67,6 @@ impl Lockup {
         Self::get_current_timestamp() >= self.expire_on
     }
 }
-
 
 #[derive(Serialize, Debug)]
 #[serde(crate = "near_sdk::serde")]
