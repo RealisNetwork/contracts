@@ -1,7 +1,7 @@
 use near_sdk::{json_types::U128, AccountId, Timestamp};
 
 use crate::{
-    events::{EventLog, EventLogVariant, NftMintLog},
+    events::{ChangeBeneficiaryLog, ChangeStateLog, EventLog, EventLogVariant, NftMintLog},
     *,
 };
 
@@ -29,14 +29,24 @@ impl Contract {
         self.nfts.mint_nft(recipient_id, nft_metadata)
     }
 
-    #[allow(unused_variables)]
     pub fn change_state(&mut self, state: State) {
-        todo!()
+        EventLog::from(EventLogVariant::ChangeState(ChangeStateLog {
+            from: self.state.clone(),
+            to: state.clone(),
+        }))
+        .emit();
+
+        self.state = state;
     }
 
-    #[allow(unused_variables)]
     pub fn change_beneficiary(&mut self, new_beneficiary_id: AccountId) {
-        todo!()
+        EventLog::from(EventLogVariant::ChangeBeneficiary(ChangeBeneficiaryLog {
+            from: self.beneficiary_id.clone().to_string(),
+            to: new_beneficiary_id.to_string(),
+        }))
+        .emit();
+
+        self.beneficiary_id = new_beneficiary_id;
     }
 
     #[allow(unused_variables)]
@@ -66,7 +76,13 @@ mod tests {
     }
 
     pub fn get_contract() -> Contract {
-        Contract::new(U128::from(123), U128(1), 10, None, None)
+        Contract::new(
+            U128::from(123),
+            U128(1),
+            10,
+            Some(AccountId::from_str("beneficiary").unwrap()),
+            None,
+        )
     }
 
     #[test]
@@ -106,5 +122,21 @@ mod tests {
             .unwrap()
             .into();
         assert!(account.nfts.contains(&res));
+    }
+
+    #[test]
+    fn change_beneficiary_test() {
+        let mut contract = get_contract();
+        let account_id_new = AccountId::from_str("new_beneficiary").unwrap();
+        contract.change_beneficiary(account_id_new.clone());
+        assert_eq!(contract.beneficiary_id, account_id_new);
+    }
+
+    #[test]
+    fn change_state_test() {
+        let mut contract = get_contract();
+        let contract_new_state = State::Paused;
+        contract.change_state(contract_new_state.clone());
+        assert_eq!(contract.state, contract_new_state)
     }
 }

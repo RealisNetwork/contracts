@@ -96,4 +96,8 @@ jobs:
           profile: minimal
           toolchain: nightly
           target: wasm32-unknown-unknown
+<<<<<<< HEAD
       - run: cargo +nightly test
+=======
+      - run: cargo +nightly test
+>>>>>>> origin/RB885_Refactor_contract

@@ -152,14 +152,14 @@ mod tests {
         testing_env, AccountId, RuntimeFeesConfig, VMConfig, VMContext,
     };
 
-    use crate::{Contract, Nft, NftMap, State};
+    use crate::{Contract, NftMap, State};
 
     pub fn get_contract() -> Contract {
         let mut contract = Contract {
             constant_fee: 0,
             percent_fee: 0,
             accounts: LookupMap::new(b"m"),
-            nfts: NftMap::default(), // NftMap::new(),
+            nfts: NftMap::default(),
             owner_id: AccountId::new_unchecked("id".to_string()),
             backend_id: AccountId::new_unchecked("id".to_string()),
             beneficiary_id: AccountId::new_unchecked("id".to_string()),
