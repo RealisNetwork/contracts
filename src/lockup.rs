@@ -5,8 +5,6 @@ use near_sdk::{
     Timestamp,
 };
 
-use std::time::SystemTime;
-
 const DEFAULT_LOCK_LIFE_TIME: u64 = 1000 * 60 * 60 * 24 * 3; // millis * secs * mins  * hours * days
 
 #[derive(BorshSerialize, BorshDeserialize, Debug)]

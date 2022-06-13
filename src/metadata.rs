@@ -132,7 +132,7 @@ impl NonFungibleTokenEnumeration for Contract {
             .filter(|(_key, value)| value.owner_id == account_id)
             .skip(from.0 as usize)
             .take(limit as usize)
-            .map(|(key, value)| Token {
+            .map(|(key, _value)| Token {
                 token_id: key.to_string(),
                 owner_id: account_id.clone(),
                 metadata: None,
