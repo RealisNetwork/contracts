@@ -252,8 +252,8 @@ impl NftManager {
     /// For remove need to unlock NFT if it was locked up.
     pub fn burn_nft(&mut self, nft_id: &NftId) {
         require!(
-            self.marketplace_nft_map.is_on_marketplace(nft_id)
-                || self.auction_nft_map.is_in_auction(nft_id),
+            !self.marketplace_nft_map.is_on_marketplace(nft_id)
+                && !self.auction_nft_map.is_in_auction(nft_id),
             "Nft locked up"
         );
         self.nft_map
@@ -293,59 +293,27 @@ impl NftManager {
 
 #[cfg(test)]
 mod tests {
-    use near_contract_standards::non_fungible_token::enumeration::NonFungibleTokenEnumeration;
-    use near_sdk::{
-        collections::{LookupMap, UnorderedMap, UnorderedSet},
-        json_types::U128,
-        test_utils::VMContextBuilder,
-        testing_env, AccountId, Gas, RuntimeFeesConfig, VMConfig, VMContext,
-    };
+    use crate::utils::tests_utils::*;
 
-    use crate::{Contract, Nft, NftManager, State};
 
-    pub fn get_contract() -> Contract {
-        let mut contract = Contract {
-            constant_fee: 0,
-            percent_fee: 0,
-            accounts: LookupMap::new(b"m"),
-            nfts: NftManager::new(),
-            owner_id: AccountId::new_unchecked("id".to_string()),
-            backend_id: AccountId::new_unchecked("id".to_string()),
-            beneficiary_id: AccountId::new_unchecked("id".to_string()),
-            state: State::Paused,
-            registered_accounts: LookupMap::new(b"a"),
-        };
-        for i in 0..10 {
-            let nft_id = contract.nfts.mint_nft(
-                AccountId::new_unchecked("id".to_string()),
-                String::from("metadata"),
-            );
-        }
-        contract
-    }
-
-    pub fn get_context(caller_id: String) -> VMContext {
-        VMContextBuilder::new()
-            .signer_account_id(AccountId::new_unchecked(caller_id))
-            .is_view(false)
-            .build()
-    }
 
     #[test]
     fn id_test() {
-        let mut contract = get_contract();
-        let context = get_context("smbd".to_string());
-        testing_env!(context, VMConfig::free(), RuntimeFeesConfig::free());
+       let (mut contract,context)  =
+           init_test_env(
+               Some(AccountId::new_unchecked("user_id".to_string())), None,None);
+ contract.accounts.insert(&AccountId::new_unchecked("id".to_string()),&VAccount::V1(Account::new(0)));
+
         let m_id = contract.nfts.mint_nft(
-            AccountId::new_unchecked("id".to_string()),
+            &AccountId::new_unchecked("id".to_string()),
             String::from("metadata"),
         );
-        assert_eq!(m_id, 10);
-        contract.nfts.burn_nft(m_id);
+        assert_eq!(m_id, 0);
+        contract.nfts.burn_nft(&m_id);
         let f_id = contract.nfts.mint_nft(
-            AccountId::new_unchecked("id".to_string()),
+            &AccountId::new_unchecked("id".to_string()),
             String::from("metadata"),
         );
-        assert_eq!(f_id, 10);
+        assert_eq!(f_id, 0);
     }
 }
