@@ -5,6 +5,7 @@ use near_sdk::{
     json_types::U128,
     Balance,
 };
+use crate::events::{EventLog, EventLogVariant, LockupLog};
 
 #[derive(BorshSerialize, BorshDeserialize)]
 pub enum VAccount {
@@ -53,10 +54,15 @@ impl Account {
             })
             .fold(0, |acc, lock| acc + lock.amount);
         self.free += fold;
+
+        EventLog::from(EventLogVariant::LockupLog(LockupLog {
+            amount: U128(fold),
+        }))
+        .emit();
+
         fold
     }
 
-    // TODO remember Use this method
     pub fn claim_lockup(&mut self, expire_on_ts: u64) -> u128 {
         let collection = self.lockups.to_vec();
 
@@ -70,6 +76,12 @@ impl Account {
             .fold(0, |acc, lock| acc + lock.amount);
 
         self.free += fold;
+
+        EventLog::from(EventLogVariant::LockupLog(LockupLog {
+            amount: U128(fold),
+        }))
+        .emit();
+
         fold
     }
 
