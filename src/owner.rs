@@ -108,9 +108,6 @@ mod tests {
             "some_metadata".to_string(),
         );
 
-
-        println!("{}, {:#?}", res, contract.nfts.iter().map(|(nftid, nft)| format!("{}, {:?}", nftid, nft)).collect::<Vec<String>>());
-
         let assertion = contract.nfts.keys().any(|key| key == res);
         assert!(assertion);
         let account: Account = contract

@@ -139,8 +139,6 @@ mod tests {
 
         account.claim_all_lockups();
 
-        println!("{:#?}", account.lockups.to_vec());
-
         assert_eq!(account.free, 10);
     }
 

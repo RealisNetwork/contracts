@@ -154,8 +154,6 @@ mod tests {
         account.lockups.insert(&lockup::Lockup::new(35 * ONE_LIS, Some(20)));
 
         contract.accounts.insert(&account_id, &account.into());
-
-        println!("{:#?}", contract.loockups_info(account_id, None, None));
     }
 
     #[test]
@@ -166,8 +164,6 @@ mod tests {
         let account_id = AccountId::from_str("user.testnet").unwrap();
 
         contract.accounts.insert(&account_id, &account.into());
-
-        println!("{:#?}", contract.loockups_info(account_id, None, None));
     }
 
     #[test]
@@ -195,6 +191,5 @@ mod tests {
         account.lockups.insert(&lockup::Lockup::new(35 * ONE_LIS, Some(20)));
 
         contract.accounts.insert(&account_id, &account.into());
-        println!("{:#?}", contract.get_account_info(account_id));
     }
 }
