@@ -53,6 +53,8 @@ impl Contract {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+    use crate::utils::tests_utils::*;
     use near_sdk::{test_utils::VMContextBuilder, testing_env, VMContext};
 
     use super::*;
@@ -65,7 +67,7 @@ mod tests {
     }
 
     pub fn get_contract() -> Contract {
-        Contract::new(U128::from(123), 1, 10, None, None)
+        Contract::new(U128::from(123), U128(1), 10, None, None)
     }
 
     #[test]
@@ -74,7 +76,8 @@ mod tests {
         let mut contract = get_contract();
         let context = get_context("not owner".to_string());
         testing_env!(context);
-        let res = contract.mint(
+
+        contract.mint(
             AccountId::new_unchecked("user_id".to_string()),
             "some_metadata".to_string(),
         );
@@ -83,21 +86,23 @@ mod tests {
     #[test]
     fn mint_nft_test() {
         let mut contract = get_contract();
-        let context = get_context("owner".to_string());
+        let context = get_context("user_id".to_string());
         testing_env!(context);
+
+        contract.accounts.insert(&AccountId::new_unchecked("user_id".to_string()), &Account::default().into());
+
         let res = contract.mint(
             AccountId::new_unchecked("user_id".to_string()),
             "some_metadata".to_string(),
         );
-        println!("{}", res);
 
         let assertion = contract.nfts.get_nft_map().keys().any(|key| key == res);
         assert!(assertion);
-        if let Some(VAccount::V1(mut set_of_nft)) = contract
+        let account: Account = contract
             .accounts
             .get(&AccountId::new_unchecked("user_id".to_string()))
-        {
-            assert!(set_of_nft.nfts.contains(&res));
-        }
+            .unwrap()
+            .into();
+        assert!(account.nfts.contains(&res));
     }
 }
