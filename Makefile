@@ -23,7 +23,7 @@ dev-deploy:
 create:
 	near call $(CONTRACT_NAME).$(ROOT_ACCOUNT) \
 		create_account '{"account_id": "test_create_account5.token_contract_v2.testnetacc.testnet", "pk": "GSQcQNtxfya44TjeSU5NyD113qft7YRLUKhZwXPRsdcC", "amount": "2000000000000000000000"}' \
-		--accountId $(CONTRA-CT_NAME).$(ROOT_ACCOUNT)
+		--accountId $(CONTRACT_NAME).$(ROOT_ACCOUNT)
 
 .PHONY: delete-account
 delete-account:
