@@ -5,10 +5,17 @@ use crate::*;
 
 #[near_bindgen]
 impl Contract {
+    ///Put NFT on sale, block it an make available to make new bit.
     pub fn start_auction(&mut self, nft_id: NftId, price: Balance, deadline: near_sdk::Timestamp) {
         self.nfts.sell_nft(nft_id, price, deadline);
     }
 
+    ///Check if new bit is:
+    ///  - User have enough tokens
+    ///  - Deadline not expired.
+    ///  - New bit more then last one.
+    ///
+    /// Block tokens of new bit owner and unlock money from previous bit.
     pub fn make_bit(&mut self, account_id: AccountId, nft_id: NftId, new_price: Balance) {
         let acc = self.accounts.get(&account_id);
         require!(acc.is_some(),"User not found");
@@ -33,7 +40,11 @@ impl Contract {
         }
     }
 
-
+     ///Finish  transfer NFT from one user to new owner,could be possible if:
+     ///    -Auction expired.
+     ///    -accountId belongs  previous NFT owner or owner of max bit.
+     /// Unblock NFT.
+     /// Transfer tokens from NFT owner to buyer and NFT in the opposite direction.
     pub fn confirm_deal(&mut self, nft_id: NftId, account_id: AccountId) {
         let last_bit = self.nfts.get_bit(nft_id);
         let nft = self.nfts.get_nft(nft_id);
