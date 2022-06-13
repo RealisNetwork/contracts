@@ -20,26 +20,14 @@ impl Contract {
     pub fn mint(&mut self, recipient_id: AccountId, nft_metadata: String) -> u128 {
         self.assert_owner();
 
-        if u128::MAX == self.nft_id_counter {
-            self.nft_id_counter = 0;
-        }
-        while self.nfts.get(&self.nft_id_counter).is_some() {
-            self.nft_id_counter += 1;
-        }
-
-        let nft = Nft {
-            owner_id: recipient_id.clone(),
-            metadata: nft_metadata.clone(),
-        };
-        self.nfts.insert(&self.nft_id_counter, &nft);
-
         EventLog::from(EventLogVariant::NftMint(NftMintLog {
-            owner_id: String::from(recipient_id),
-            meta_data: nft_metadata,
+            owner_id: String::from(recipient_id.clone()),
+            meta_data: nft_metadata.clone(),
         }))
         .emit();
 
-        self.nft_id_counter
+        self.nfts
+            .mint_nft(recipient_id.clone(), nft_metadata.clone())
     }
 
     #[allow(unused_variables)]
@@ -103,7 +91,7 @@ mod tests {
         );
         println!("{}", res);
 
-        let assertion = contract.nfts.keys().any(|key| key == res);
+        let assertion = contract.nfts.get_nft_map().keys().any(|key| key == res);
         assert!(assertion);
         if let Some(VAccount::V1(mut set_of_nft)) = contract
             .accounts

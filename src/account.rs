@@ -6,6 +6,7 @@ use near_sdk::{
     Balance,
 };
 
+
 #[derive(BorshSerialize, BorshDeserialize)]
 pub enum VAccount {
     V1(Account),
@@ -156,3 +157,4 @@ mod tests {
         assert_eq!(account.free, 13);
     }
 }
+

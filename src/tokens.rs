@@ -1,5 +1,10 @@
+
+use crate::lockup::Lockup;
+use crate::*;
+use std::str::FromStr;
 use crate::{Account, Contract, *};
 use near_sdk::{env, near_bindgen, require, AccountId};
+
 
 #[near_bindgen]
 impl Contract {
@@ -108,11 +113,10 @@ pub mod tests {
             constant_fee: 5,
             percent_fee: 10,
             accounts: LookupMap::new(StorageKey::Accounts),
-            nfts: UnorderedMap::new(StorageKey::Nfts),
+            nfts: NftMap::new(),
             owner_id: env::predecessor_account_id(),
             backend_id: env::predecessor_account_id(),
             state: State::Running,
-            nft_id_counter: 0,
             registered_accounts: LookupMap::new(StorageKey::RegisteredAccounts),
         }
     }
