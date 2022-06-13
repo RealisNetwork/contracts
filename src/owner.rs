@@ -26,8 +26,7 @@ impl Contract {
         }))
         .emit();
 
-        self.nfts
-            .mint_nft(recipient_id.clone(), nft_metadata.clone())
+        self.nfts.mint_nft(recipient_id, nft_metadata)
     }
 
     #[allow(unused_variables)]

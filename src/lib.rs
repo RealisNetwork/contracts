@@ -2,9 +2,11 @@ extern crate core;
 
 mod account;
 mod account_manager;
+mod auction;
 mod backend_api;
 mod events;
 mod lockup;
+mod marketplace;
 mod metadata;
 mod nft;
 mod owner;
@@ -14,20 +16,15 @@ mod types;
 mod update;
 mod utils;
 
-
-
-
-use crate::nft::NftMap;
-use near_sdk::{require,log};
 use crate::{
     account::{Account, AccountInfo, VAccount},
     lockup::LockupInfo,
-    nft::Nft,
+    nft::NftManager,
     types::NftId,
 };
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
-    collections::{LookupMap, UnorderedMap,Vector},
+    collections::LookupMap,
     env,
     json_types::U128,
     near_bindgen,
@@ -36,7 +33,6 @@ use near_sdk::{
 };
 
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq)]
-
 #[serde(crate = "near_sdk::serde")]
 pub enum State {
     Paused,
@@ -50,7 +46,7 @@ pub struct Contract {
     pub percent_fee: u8, /* Commission in percents over transferring amount. for example, 10
                           * (like 10%) */
     pub accounts: LookupMap<AccountId, VAccount>,
-    pub nfts: NftMap,
+    pub nfts: NftManager,
     // Owner of the contract. Example, `Realis.near` or `Volvo.near`
     pub owner_id: AccountId,
     // Allowed user from backend, with admin permission.
@@ -91,7 +87,7 @@ impl Contract {
         Self {
             constant_fee: constant_fee.0,
             percent_fee,
-            nfts: NftMap::default(),
+            nfts: NftManager::default(),
             owner_id: owner_id.clone(),
             backend_id: backend_id.unwrap_or_else(|| owner_id.clone()),
             beneficiary_id: beneficiary_id.unwrap_or(owner_id),
@@ -129,7 +125,7 @@ impl Contract {
     }
 
     pub fn get_account_info(&self, account_id: &AccountId) -> AccountInfo {
-        match self.accounts.get(&account_id) {
+        match self.accounts.get(account_id) {
             Some(user) => {
                 let user_account: Account = user.into();
                 user_account.into()
