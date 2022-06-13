@@ -225,9 +225,9 @@ impl NftMap {
 
 #[derive(Debug, BorshSerialize, BorshDeserialize)]
 pub struct Bit {
-    pub(crate) account_id: Option<AccountId>,
-    pub(crate) price: Balance,
-    pub(crate) deadline: Timestamp,
+    account_id: Option<AccountId>,
+    price: Balance,
+    deadline: Timestamp,
 }
 
 impl Bit {

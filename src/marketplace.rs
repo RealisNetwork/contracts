@@ -76,10 +76,9 @@ impl Contract {
 
         self.nfts.unlock_nft(nft_id);
         self.accounts.insert(&nft.owner_id, &VAccount::V1(account));
+
         self.nfts.update_nft(nft_id, nft.set_owner_id(new_nft_owner.clone()).unlock_nft());
 
-
-        self.nfts.transfer_nft(new_nft_owner, nft_id);
     }
 }
 
