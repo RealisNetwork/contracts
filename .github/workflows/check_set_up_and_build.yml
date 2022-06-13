@@ -15,7 +15,7 @@ jobs:
         name: "Rust Toolchain Setup"
         with:
           profile: minimal
-          toolchain: nightly-2021-11-18 # Pinned because of compilation error on later version, should unpin later.
+          toolchain: nightly
           target: wasm32-unknown-unknown
       - run: cargo +nightly build
 
@@ -28,7 +28,7 @@ jobs:
         name: "Rust Toolchain Setup"
         with:
           profile: minimal
-          toolchain: nightly-2021-11-18 # Pinned because of compilation error on later version, should unpin later.
+          toolchain: nightly
           target: wasm32-unknown-unknown
       - run: cargo +nightly build --release
 
@@ -94,6 +94,6 @@ jobs:
         name: "Rust Toolchain Setup"
         with:
           profile: minimal
-          toolchain: nightly-2021-11-18 # Pinned because of compilation error on later version, should unpin later.
+          toolchain: nightly
           target: wasm32-unknown-unknown
       - run: cargo +nightly test
