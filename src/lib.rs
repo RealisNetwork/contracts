@@ -63,7 +63,9 @@ pub struct Contract {
 pub(crate) enum StorageKey {
     Accounts,
     NftsMap,
-    NftsOnSale,
+    NftsMarketplace,
+    NftsAuction,
+    NftsAuctionBids,
     NftId,
     RegisteredAccounts,
     Lockups,

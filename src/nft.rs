@@ -1,4 +1,3 @@
-
 //! Designed to interact with the NFT, NFT marketplace.
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
