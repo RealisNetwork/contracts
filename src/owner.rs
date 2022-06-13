@@ -37,6 +37,7 @@ impl Contract {
 
     #[allow(unused_variables)]
     pub fn change_beneficiary(&mut self, new_beneficiary_id: AccountId) {
+
         todo!()
     }
 

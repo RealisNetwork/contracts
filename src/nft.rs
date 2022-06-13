@@ -82,7 +82,7 @@ impl Nft {
 /// * `nft_id_counter` - counter for generating NFT id.
 #[derive(BorshSerialize, BorshDeserialize, Debug)]
 pub struct NftMap {
-    nft_map: UnorderedMap<NftId, Nft>,
+    pub nft_map: UnorderedMap<NftId, Nft>,
     marketplace_nft_map: UnorderedMap<NftId, Balance>,
     nft_id_counter: NftId,
 }
@@ -224,7 +224,7 @@ mod tests {
             constant_fee: 0,
             percent_fee: 0,
             accounts: LookupMap::new(b"m"),
-            nfts: NftMap::new(),
+            nfts: NftMap::default(),//NftMap::new(),
             owner_id: AccountId::new_unchecked("id".to_string()),
             backend_id: AccountId::new_unchecked("id".to_string()),
             beneficiary_id: AccountId::new_unchecked("id".to_string()),

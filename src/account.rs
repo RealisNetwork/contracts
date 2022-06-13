@@ -94,6 +94,7 @@ impl Account {
             .map(|lockup| lockup.into())
             .collect::<Vec<LockupInfo>>()
     }
+
 }
 
 impl From<Account> for VAccount {
@@ -113,7 +114,7 @@ impl Default for Account {
 pub struct AccountInfo {
     pub free: U128,
     pub lockups: Vec<LockupInfo>,
-    // TODO: add nfts
+    //pub nfts: UnorderedSet<NftId>,
 }
 
 impl From<Account> for AccountInfo {
