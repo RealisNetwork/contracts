@@ -3,7 +3,7 @@ use near_sdk::{
     AccountId,
 };
 
-#[derive(BorshSerialize, BorshDeserialize)]
+#[derive(BorshSerialize, BorshDeserialize, Debug)]
 pub struct Nft {
     // TODO add fields
     pub owner_id: AccountId,

@@ -135,66 +135,61 @@ impl Contract {
 
 #[cfg(test)]
 mod tests {
-    use super::{tokens::tests::get_contract, *};
     use std::str::FromStr;
+    use crate::utils::tests_utils::*;
 
     #[test]
     fn info_log_test() {
         // Indexes are default
-        let mut contract = get_contract();
+        let (mut contract, mut context) = init_test_env(None, None, None);
         let mut account: Account = Account::new(250);
         let account_id = AccountId::from_str("user.testnet").unwrap();
 
         account.lockups.insert(&lockup::Lockup {
-            amount: 250,
+            amount: 250 * ONE_LIS,
             expire_on: 60,
         });
 
-        account.lockups.insert(&lockup::Lockup::new(25, None));
-        account.lockups.insert(&lockup::Lockup::new(35, Some(20)));
+        account.lockups.insert(&lockup::Lockup::new(25 * ONE_LIS, None));
+        account.lockups.insert(&lockup::Lockup::new(35 * ONE_LIS, Some(20)));
 
         contract.accounts.insert(&account_id, &account.into());
-
-        println!("{:#?}", contract.loockups_info(account_id, None, None));
     }
 
     #[test]
     fn info_no_locks() {
         // There are no locks
-        let mut contract = get_contract();
-        let account: Account = Account::new(250);
+        let (mut contract, mut context) = init_test_env(None, None, None);
+        let account: Account = Account::new(250 * ONE_LIS);
         let account_id = AccountId::from_str("user.testnet").unwrap();
 
         contract.accounts.insert(&account_id, &account.into());
-
-        println!("{:#?}", contract.loockups_info(account_id, None, None));
     }
 
     #[test]
     fn info_get_balance_test() {
         // Indexes are default
-        let mut contract = get_contract();
-        let account: Account = Account::new(250);
+        let (mut contract, mut context) = init_test_env(None, None, None);
+        let account: Account = Account::new(250 * ONE_LIS);
         let account_id = AccountId::from_str("user.testnet").unwrap();
 
         contract.accounts.insert(&account_id, &account.into());
-        assert_eq!(contract.get_balance_info(account_id).0, 250);
+        assert_eq!(contract.get_balance_info(account_id).0, 250 * ONE_LIS);
     }
 
     #[test]
     fn get_account_info_test() {
-        let mut contract = get_contract();
-        let mut account: Account = Account::new(250);
+        let (mut contract, mut context) = init_test_env(None, None, None);
+        let mut account: Account = Account::new(250 * ONE_LIS);
         let account_id = AccountId::from_str("user.testnet").unwrap();
 
         account.lockups.insert(&lockup::Lockup {
-            amount: 250,
+            amount: 250 * ONE_LIS,
             expire_on: 60,
         });
-        account.lockups.insert(&lockup::Lockup::new(25, None));
-        account.lockups.insert(&lockup::Lockup::new(35, Some(20)));
+        account.lockups.insert(&lockup::Lockup::new(25 * ONE_LIS, None));
+        account.lockups.insert(&lockup::Lockup::new(35 * ONE_LIS, Some(20)));
 
         contract.accounts.insert(&account_id, &account.into());
-        println!("{:#?}", contract.get_account_info(account_id));
     }
 }

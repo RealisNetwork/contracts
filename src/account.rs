@@ -115,27 +115,38 @@ impl From<Account> for AccountInfo {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::utils::tests_utils::*;
 
     #[test]
     pub fn check_lockups() {
+
+        let (contract, mut context) = init_test_env(None, None, None);
+
         let mut account = Account::new(5);
         // Just locked (will unlock in 3 days (default lifetime))
         account.lockups.insert(&Lockup::new(55, None));
         account.lockups.insert(&Lockup {
             amount: 5,
-            expire_on: 0,
+            expire_on: 1,
         }); // Lock from 1970
 
         // Balance of lock from 1970 will be transferred to main balance
-        account.claim_all_lockups();
 
-        println!("{:#?}", account.lockups.to_vec());
+        testing_env!(context
+            .block_timestamp(999)
+            .predecessor_account_id(accounts(0))
+            .build());
+
+        account.claim_all_lockups();
 
         assert_eq!(account.free, 10);
     }
 
     #[test]
     pub fn check_lockup() {
+
+        let (contract, mut context) = init_test_env(None, None, None);
+
         let mut account = Account::new(5);
         // Just locked (will unlock in 3 days (default lifetime))
         account.lockups.insert(&Lockup::new(55, None));
@@ -148,10 +159,13 @@ mod tests {
             expire_on: 16457898,
         }); // Lock from 1970
 
+        testing_env!(context
+            .block_timestamp(16457899)
+            .predecessor_account_id(accounts(0))
+            .build());
+
         // Balance of lock from 1970 will be transferred to main balance
         account.claim_lockup(16457898);
-
-        println!("{:#?}", account.lockups.to_vec());
 
         assert_eq!(account.free, 13);
     }
