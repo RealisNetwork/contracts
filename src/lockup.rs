@@ -46,7 +46,7 @@ impl Lockup {
         }
     }
 
-    /// `fn is_expired` returns true if lockup time is expired.
+    /// `fn is_expired` check if lockup time is expired.
     ///  # Examples
     /// ```
     /// let collection = self.lockups.to_vec();
