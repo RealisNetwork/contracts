@@ -1,5 +1,5 @@
-use crate::{types::NftId, *};
-use near_sdk::{json_types::U128, near_bindgen, require, AccountId};
+use crate::*;
+use near_sdk::{json_types::U128, near_bindgen, AccountId};
 
 #[near_bindgen]
 impl Contract {
