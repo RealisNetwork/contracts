@@ -5,6 +5,7 @@ use near_sdk::{
     serde::{Deserialize, Serialize},
     serde_json,
 };
+use near_sdk::json_types::U128;
 
 /// Rules of logging events on `Near`.
 /// Should include:
@@ -22,6 +23,7 @@ pub const NFT_STANDARD_NAME: &str = "nep171";
 #[non_exhaustive]
 pub enum EventLogVariant {
     NftMint(NftMintLog),
+    LockupLog(LockupLog),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -64,4 +66,10 @@ impl fmt::Display for EventLog {
 pub struct NftMintLog {
     pub owner_id: String,
     pub meta_data: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
+pub struct LockupLog {
+    pub amount: U128,
 }

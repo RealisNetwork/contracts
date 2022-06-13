@@ -3,6 +3,18 @@ use near_sdk::{env, near_bindgen, require, AccountId};
 
 #[near_bindgen]
 impl Contract {
+
+    /// `fn internal_transfer` transfers tokens from one user to another, returns sender balance left
+    ///  # Examples
+    /// ```
+    /// let sender_id = accounts(0);
+    /// let receiver_id = accounts(1);
+    /// contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 20 * ONE_LIS);
+    /// ```
+    /// # Arguments
+    ///  * `sender` - `AccountId` of transferring user
+    ///  * `recipient_id`- `AccountId` of user to be transferred.
+    ///  * `amount` - The amount of tokens to be transferred
     /// This function checks if amount != 0 (if no it would panic), taskes fee
     /// and amount from sender (via take_fee() function), increases
     /// beneficiary balance for fee and increases recipient balance
@@ -35,6 +47,15 @@ impl Contract {
         sender_balance_left
     }
 
+
+    /// `fn take_fee` used to take users money and fee, returns sender balance left
+    ///  # Examples
+    /// ```
+    ///  let sender_balance_left = self.take_fee(sender, Some(amount));
+    /// ```
+    /// # Arguments
+    ///  * `sender` - `AccountId` of transferring user
+    ///  * `amount` - The amount of tokens to be taken while transaction
     /// This function decreases sender balance in (100 + percent_fee) * amount
     /// and increases beneficiary balance by percent_fee * amount where amount
     /// is Some(u128) and percent_fee is > 0
@@ -288,7 +309,7 @@ pub mod tests {
             .insert(&receiver_id, &Account::new(9 * ONE_LIS).into()); // Will be 9
 
         testing_env!(context
-            .block_timestamp(Lockup::get_current_timestamp_dev())
+            .block_timestamp(1655102539992)
             .predecessor_account_id(accounts(0))
             .build());
 
@@ -348,7 +369,7 @@ pub mod tests {
         println!("TS before: {}", context.context.block_timestamp);
 
         testing_env!(context
-            .block_timestamp(Lockup::get_current_timestamp_dev())
+            .block_timestamp(1655102539992)
             .predecessor_account_id(accounts(0))
             .build());
 
