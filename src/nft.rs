@@ -262,9 +262,9 @@ impl NftManager {
     }
 
     /// Mint new `NFT` with generated id.
-    pub fn mint_nft(&mut self, owner_id: AccountId, metadata: String) -> u128 {
+    pub fn mint_nft(&mut self, owner_id: &AccountId, metadata: String) -> u128 {
         let new_nft_id = self.generate_nft_id();
-        let nft = Nft::new(owner_id, metadata);
+        let nft = Nft::new(owner_id.clone(), metadata);
 
         self.nft_map.insert(&new_nft_id, &nft);
 

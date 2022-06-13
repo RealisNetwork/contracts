@@ -1,4 +1,4 @@
-use near_sdk::{json_types::U128, AccountId, Timestamp};
+use near_sdk::{env::panic_str, json_types::U128, AccountId, Timestamp};
 
 use crate::{
     events::{EventLog, EventLogVariant, NftMintLog},
@@ -26,7 +26,18 @@ impl Contract {
         }))
         .emit();
 
-        self.nfts.mint_nft(recipient_id, nft_metadata)
+        let mut nft_owner_id = Account::from(
+            self.accounts
+                .get(&recipient_id)
+                .unwrap_or_else(|| panic_str("Account not found")),
+        );
+
+        let nft_id = self.nfts.mint_nft(&recipient_id, nft_metadata);
+        nft_owner_id.nfts.insert(&nft_id);
+        self.accounts
+            .insert(&recipient_id, &VAccount::V1(nft_owner_id));
+
+        nft_id
     }
 
     #[allow(unused_variables)]
@@ -64,7 +75,7 @@ mod tests {
     }
 
     pub fn get_contract() -> Contract {
-        Contract::new(U128::from(123), 1, 10, None, None)
+        Contract::new(U128::from(123), U128::from(1), 10, None, None)
     }
 
     #[test]
