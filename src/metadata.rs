@@ -132,7 +132,7 @@ impl NonFungibleTokenEnumeration for Contract {
             .filter(|(_key, value)| value.owner_id == account_id)
             .skip(from.0 as usize)
             .take(limit as usize)
-            .map(|(key, value)| Token {
+            .map(|(key, _value)| Token {
                 token_id: key.to_string(),
                 owner_id: account_id.clone(),
                 metadata: None,
@@ -152,14 +152,14 @@ mod tests {
         testing_env, AccountId, RuntimeFeesConfig, VMConfig, VMContext,
     };
 
-    use crate::{Contract, Nft, NftMap, State};
+    use crate::{Contract, NftMap, State};
 
     pub fn get_contract() -> Contract {
         let mut contract = Contract {
             constant_fee: 0,
             percent_fee: 0,
             accounts: LookupMap::new(b"m"),
-            nfts: NftMap::new(),
+            nfts: NftMap::default(),
             owner_id: AccountId::new_unchecked("id".to_string()),
             backend_id: AccountId::new_unchecked("id".to_string()),
             beneficiary_id: AccountId::new_unchecked("id".to_string()),

@@ -26,8 +26,7 @@ impl Contract {
         }))
         .emit();
 
-        self.nfts
-            .mint_nft(recipient_id.clone(), nft_metadata.clone())
+        self.nfts.mint_nft(recipient_id, nft_metadata)
     }
 
     pub fn change_state(&mut self, state: State) {
@@ -43,7 +42,7 @@ impl Contract {
     pub fn change_beneficiary(&mut self, new_beneficiary_id: AccountId) {
         EventLog::from(EventLogVariant::ChangeBeneficiary(ChangeBeneficiaryLog {
             from: self.beneficiary_id.clone().to_string(),
-            to: new_beneficiary_id.clone().to_string(),
+            to: new_beneficiary_id.to_string(),
         }))
         .emit();
 

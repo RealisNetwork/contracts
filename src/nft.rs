@@ -1,10 +1,8 @@
 //! Designed to interact with the NFT, NFT marketplace.
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
-    collections::{LookupMap, LookupSet, UnorderedMap, Vector},
-    env,
-    json_types::U128,
-    require, AccountId, Balance,
+    collections::{UnorderedMap, Vector},
+    env, require, AccountId, Balance,
 };
 
 use crate::{NftId, StorageKey};
@@ -132,7 +130,7 @@ impl NftMap {
 
     /// Get all NFTs.
     pub fn get_all_nft(&self) -> &Vector<Nft> {
-        &self.nft_map.values_as_vector()
+        self.nft_map.values_as_vector()
     }
 
     /// Get all available NFTs.
@@ -163,7 +161,7 @@ impl NftMap {
     /// Mint new `NFT` with generated id.
     pub fn mint_nft(&mut self, owner_id: AccountId, metadata: String) -> u128 {
         let new_nft_id = self.generate_nft_id();
-        let nft = Nft::new(owner_id.clone(), metadata.clone());
+        let nft = Nft::new(owner_id, metadata);
 
         self.nft_map.insert(&new_nft_id, &nft);
 
@@ -228,14 +226,14 @@ mod tests {
         testing_env, AccountId, Gas, RuntimeFeesConfig, VMConfig, VMContext,
     };
 
-    use crate::{Contract, Nft, NftMap, State};
+    use crate::{Contract, NftMap, State};
 
     pub fn get_contract() -> Contract {
         let mut contract = Contract {
             constant_fee: 0,
             percent_fee: 0,
             accounts: LookupMap::new(b"m"),
-            nfts: NftMap::new(),
+            nfts: NftMap::default(),
             owner_id: AccountId::new_unchecked("id".to_string()),
             backend_id: AccountId::new_unchecked("id".to_string()),
             beneficiary_id: AccountId::new_unchecked("id".to_string()),

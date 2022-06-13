@@ -22,15 +22,15 @@ use crate::{
 };
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
-    collections::{LookupMap, UnorderedMap, Vector},
+    collections::LookupMap,
     env,
     json_types::U128,
-    log, near_bindgen, require,
+    near_bindgen,
     serde::{Deserialize, Serialize},
     AccountId, BorshStorageKey, PanicOnDefault, PublicKey,
 };
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq, Clone, Debug)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
 #[serde(crate = "near_sdk::serde")]
 pub enum State {
     Paused,
@@ -123,7 +123,7 @@ impl Contract {
     }
 
     pub fn get_account_info(&self, account_id: &AccountId) -> AccountInfo {
-        match self.accounts.get(&account_id) {
+        match self.accounts.get(account_id) {
             Some(user) => {
                 let user_account: Account = user.into();
                 user_account.into()

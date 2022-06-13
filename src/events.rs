@@ -5,7 +5,7 @@ use near_sdk::{
     env,
     json_types::U128,
     serde::{Deserialize, Serialize},
-    serde_json, AccountId,
+    serde_json,
 };
 
 /// Rules of logging events on `Near`.

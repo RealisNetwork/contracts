@@ -1,6 +1,5 @@
-use crate::{lockup::Lockup, Account, Contract, *};
+use crate::{Account, Contract, *};
 use near_sdk::{env, near_bindgen, require, AccountId};
-use std::str::FromStr;
 
 #[near_bindgen]
 impl Contract {

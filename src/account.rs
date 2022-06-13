@@ -5,7 +5,7 @@ use crate::{
 };
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
-    collections::{LookupSet, UnorderedSet},
+    collections::UnorderedSet,
     json_types::U128,
     Balance,
 };
