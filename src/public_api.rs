@@ -119,7 +119,10 @@ mod tests {
         let (mut contract, _context) = init_test_env(Some(owner.clone()), None, None);
         let nft_id = contract.nfts.mint_nft(owner, "Duck".to_string());
         contract.transfer_nft(reciver.clone(), U128(nft_id));
-        assert_eq!(contract.nfts.nft_map.get(&nft_id).unwrap().owner_id, reciver);
+        assert_eq!(
+            contract.nfts.nft_map.get(&nft_id).unwrap().owner_id,
+            reciver
+        );
     }
 
     #[test]

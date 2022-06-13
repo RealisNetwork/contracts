@@ -37,7 +37,6 @@ impl Contract {
 
     #[allow(unused_variables)]
     pub fn change_beneficiary(&mut self, new_beneficiary_id: AccountId) {
-
         todo!()
     }
 
@@ -90,7 +89,10 @@ mod tests {
         let context = get_context("user_id".to_string());
         testing_env!(context);
 
-        contract.accounts.insert(&AccountId::new_unchecked("user_id".to_string()), &Account::default().into());
+        contract.accounts.insert(
+            &AccountId::new_unchecked("user_id".to_string()),
+            &Account::default().into(),
+        );
 
         let res = contract.mint(
             AccountId::new_unchecked("user_id".to_string()),

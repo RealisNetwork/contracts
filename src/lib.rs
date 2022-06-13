@@ -14,29 +14,23 @@ mod types;
 mod update;
 mod utils;
 
-
-
-
-use crate::nft::NftMap;
-use near_sdk::{require,log};
 use crate::{
     account::{Account, AccountInfo, VAccount},
     lockup::LockupInfo,
-    nft::Nft,
+    nft::{Nft, NftMap},
     types::NftId,
 };
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
-    collections::{LookupMap, UnorderedMap,Vector},
+    collections::{LookupMap, UnorderedMap, Vector},
     env,
     json_types::U128,
-    near_bindgen,
+    log, near_bindgen, require,
     serde::{Deserialize, Serialize},
     AccountId, BorshStorageKey, PanicOnDefault, PublicKey,
 };
 
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq)]
-
 #[serde(crate = "near_sdk::serde")]
 pub enum State {
     Paused,
@@ -141,8 +135,8 @@ impl Contract {
 
 #[cfg(test)]
 mod tests {
-    use std::str::FromStr;
     use crate::utils::tests_utils::*;
+    use std::str::FromStr;
 
     #[test]
     fn info_log_test() {
@@ -156,8 +150,12 @@ mod tests {
             expire_on: 60,
         });
 
-        account.lockups.insert(&lockup::Lockup::new(25 * ONE_LIS, None));
-        account.lockups.insert(&lockup::Lockup::new(35 * ONE_LIS, Some(20)));
+        account
+            .lockups
+            .insert(&lockup::Lockup::new(25 * ONE_LIS, None));
+        account
+            .lockups
+            .insert(&lockup::Lockup::new(35 * ONE_LIS, Some(20)));
 
         contract.accounts.insert(&account_id, &account.into());
     }
@@ -193,8 +191,12 @@ mod tests {
             amount: 250 * ONE_LIS,
             expire_on: 60,
         });
-        account.lockups.insert(&lockup::Lockup::new(25 * ONE_LIS, None));
-        account.lockups.insert(&lockup::Lockup::new(35 * ONE_LIS, Some(20)));
+        account
+            .lockups
+            .insert(&lockup::Lockup::new(25 * ONE_LIS, None));
+        account
+            .lockups
+            .insert(&lockup::Lockup::new(35 * ONE_LIS, Some(20)));
 
         contract.accounts.insert(&account_id, &account.into());
     }
