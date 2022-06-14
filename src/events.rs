@@ -2,10 +2,10 @@ use std::fmt;
 
 use near_sdk::{
     env,
+    json_types::U128,
     serde::{Deserialize, Serialize},
     serde_json,
 };
-use near_sdk::json_types::U128;
 
 /// Rules of logging events on `Near`.
 /// Should include:

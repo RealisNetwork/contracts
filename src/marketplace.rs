@@ -1,8 +1,9 @@
 //! All the logic described here applies to the NFT marketplace.
-use crate::{Account, Contract, ContractExt, NftId, StorageKey, VAccount};
-use near_sdk::{collections::UnorderedMap, env, env::panic_str, near_bindgen, require, Balance};
+use crate::{Account, Contract, NftId, StorageKey};
+use near_sdk::{collections::UnorderedMap, env::panic_str, require, AccountId, Balance};
 
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
+
 /// Structure for working with NFT in Marketplace.
 /// Contains all NFTs available for sale.
 /// # Fields
@@ -21,12 +22,6 @@ impl Default for Marketplace {
 }
 
 impl Marketplace {
-    pub fn new() -> Self {
-        Self {
-            nft_map: UnorderedMap::new(StorageKey::NftsMarketplace),
-        }
-    }
-
     /// Return all available for sale NFTs.
     pub fn get_marketplace_nfts(&self) -> &UnorderedMap<NftId, Balance> {
         &self.nft_map
@@ -48,14 +43,10 @@ impl Marketplace {
     }
 
     /// Remove NFT from list for sale.
-    pub fn buy_nft(&mut self, nft_id: &NftId, price: Balance) -> Balance {
-        let balance = self
-            .nft_map
-            .get(nft_id)
-            .unwrap_or_else(|| panic_str("Nft not in marketplace."));
-        require!(balance == price, "Wrong price.");
-
-        self.nft_map.remove(nft_id).unwrap()
+    pub fn buy_nft(&mut self, nft_id: &NftId) -> Balance {
+        self.nft_map
+            .remove(nft_id)
+            .unwrap_or_else(|| panic_str("Nft not in marketplace."))
     }
 
     /// Change price NFT in marketplace.
@@ -65,48 +56,45 @@ impl Marketplace {
     }
 }
 
-#[near_bindgen]
 impl Contract {
-    // TODO: this is need to be here?
-    pub fn internal_sell_nft(&mut self, nft_id: NftId, price: Balance) {
-        self.nfts
-            .sell_nft(&nft_id, &price, env::signer_account_id())
+    pub fn internal_sell_nft(&mut self, nft_id: NftId, price: Balance, account_id: AccountId) {
+        self.nfts.sell_nft(&nft_id, &price, account_id)
     }
 
-    pub fn internal_buy_nft(&mut self, nft_id: NftId, price: Balance) {
+    pub fn internal_buy_nft(&mut self, nft_id: NftId, price: Balance, account_id: AccountId) {
         let mut buyer_account = Account::from(
             self.accounts
-                .get(&env::signer_account_id())
+                .get(&account_id)
                 .unwrap_or_else(|| panic_str("Account not found")),
         );
         require!(buyer_account.free >= price, "Not enough money");
 
         let nft = self.nfts.get_nft(nft_id);
 
+        let price = self.nfts.buy_nft(&nft_id, &account_id);
 
-        let price = self.nfts.buy_nft(&nft_id, price, env::signer_account_id());
-
-        let mut nft_owner_account = Account::from(
-            self.accounts
-                .get(&nft.owner_id)
-                .unwrap_or_else(|| panic_str("Account not found")),
-        );
+        let mut nft_owner_account: Account = self
+            .accounts
+            .get(&nft.owner_id)
+            .unwrap_or_else(|| panic_str("Account not found"))
+            .into();
 
         nft_owner_account.free += price;
         buyer_account.free -= price;
 
         self.accounts
-            .insert(&nft.owner_id, &VAccount::V1(nft_owner_account));
-        self.accounts
-            .insert(&env::signer_account_id(), &VAccount::V1(buyer_account));
+            .insert(&nft.owner_id, &nft_owner_account.into());
+        self.accounts.insert(&account_id, &buyer_account.into());
     }
 
-    pub fn internal_change_price_nft(&mut self, nft_id: NftId, price: Balance) {
+    pub fn internal_change_price_nft(
+        &mut self,
+        nft_id: NftId,
+        price: Balance,
+        account_id: AccountId,
+    ) {
         let nft = self.nfts.get_nft(nft_id);
-        require!(
-            env::signer_account_id() == nft.owner_id,
-            "Only for NFT owner."
-        );
+        require!(account_id == nft.owner_id, "Only for NFT owner.");
         self.nfts.change_price_nft(&nft_id, price);
     }
 }

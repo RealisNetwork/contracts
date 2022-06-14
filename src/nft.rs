@@ -135,7 +135,7 @@ impl NftManager {
 
     /// Return map of NFTs listed on the marketplace.
     pub fn get_marketplace_nft_map(&self) -> &UnorderedMap<NftId, Balance> {
-        self.marketplace_nft_map.get_map()
+        self.marketplace_nft_map.get_marketplace_nfts()
     }
 
     /// Return map of NFTs listed on the auction.
@@ -214,7 +214,7 @@ impl NftManager {
     pub fn confirm_deal(&mut self, nft_id: &NftId, account_id: AccountId) -> DealData {
         let nft = self.get_if_available(nft_id);
         let deal_data = self.auction_nft_map.confirm_deal(nft_id, account_id);
-        match &deal_data.get_last_bid() {
+        match &deal_data.get_bid() {
             None => self.nft_map.insert(nft_id, &nft.unlock_nft()),
             Some(bid) => {
                 let nft = nft.unlock_nft().set_owner_id(bid.get_owner());
@@ -297,8 +297,6 @@ impl NftManager {
 #[cfg(test)]
 mod tests {
     use crate::utils::tests_utils::*;
-
-
 
     #[test]
     fn id_test() {

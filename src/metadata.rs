@@ -144,16 +144,15 @@ impl NonFungibleTokenEnumeration for Contract {
 
 #[cfg(test)]
 mod tests {
-    use near_contract_standards::non_fungible_token::enumeration::NonFungibleTokenEnumeration;
     use crate::utils::tests_utils::*;
-
+    use near_contract_standards::non_fungible_token::enumeration::NonFungibleTokenEnumeration;
 
     pub fn get_contract() -> (Contract, VMContextBuilder) {
-        let (mut contract,context)  =
-            init_test_env(
-                Some(AccountId::new_unchecked("not_owner".to_string())),
-                Some( AccountId::new_unchecked("user_id".to_string())),
-                Some( AccountId::new_unchecked("user_id".to_string())));
+        let (mut contract, context) = init_test_env(
+            Some(AccountId::new_unchecked("not_owner".to_string())),
+            Some(AccountId::new_unchecked("user_id".to_string())),
+            Some(AccountId::new_unchecked("user_id".to_string())),
+        );
         for i in 0..10 {
             contract.nfts.mint_nft(
                 &AccountId::new_unchecked(format!("id_{}", i)),
@@ -161,35 +160,33 @@ mod tests {
             );
         }
 
-        (contract,context)
+        (contract, context)
     }
-
-
 
     #[test]
     fn test_nft_total_supply() {
-        let (contract,context) = get_contract();
+        let (contract, context) = get_contract();
         let result = contract.nft_total_supply();
         assert_eq!(result, U128::from(10))
     }
 
     #[test]
     fn test_nft_tokens() {
-        let (contract,context) = get_contract();
+        let (contract, context) = get_contract();
         assert_eq!(contract.nft_tokens(Some(U128::from(5)), Some(2)).len(), 2);
         assert_eq!(contract.nft_tokens(Some(U128::from(9)), Some(2)).len(), 1);
     }
 
     #[test]
     fn test_nft_supply_for_owner() {
-        let (contract,context) = get_contract();
+        let (contract, context) = get_contract();
         let result = contract.nft_supply_for_owner(AccountId::new_unchecked("id_4".to_string()));
         assert_eq!(result, U128::from(1))
     }
 
     #[test]
     fn test_nft_tokens_for_owner() {
-        let (contract,context) = get_contract();
+        let (contract, context) = get_contract();
         let result =
             contract.nft_tokens_for_owner(AccountId::new_unchecked("id_4".to_string()), None, None);
         assert_eq!(result.len(), 1)

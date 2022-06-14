@@ -1,13 +1,13 @@
 //! All the logic described here applies to the NFT auction.
 use near_sdk::{
-    AccountId,
-    Balance,
     borsh::{self, BorshDeserialize, BorshSerialize},
-    collections::{UnorderedMap, Vector},
-    env, env::panic_str, near_bindgen, require, Timestamp,
+    collections::{LazyOption, UnorderedMap},
+    env,
+    env::panic_str,
+    require, AccountId, Balance, Timestamp,
 };
 
-use crate::{Account, Contract, ContractExt, lockup::Lockup, NftId, StorageKey, VAccount};
+use crate::{Account, Contract, NftId, StorageKey};
 
 /// Auction structure implement logic of NFT auction.
 /// Manage bids and auctions deals.
@@ -28,12 +28,6 @@ impl Default for Auction {
 }
 
 impl Auction {
-    pub fn new() -> Self {
-        Self {
-            nft_map: UnorderedMap::new(StorageKey::NftsAuction),
-        }
-    }
-
     /// Count of all auction lots
     pub fn auction_lots_count(&self) -> u64 {
         self.nft_map.len()
@@ -54,7 +48,7 @@ impl Auction {
         self.nft_map
             .get(nft_id)
             .unwrap_or_else(|| panic_str("Not in auction."))
-            .get_last_bid()
+            .get_bid()
     }
 
     /// Return deal information for auction lot.
@@ -70,7 +64,7 @@ impl Auction {
         nft_id: &NftId,
         price: Balance,
         deadline: Timestamp,
-        account_id: AccountId,
+        account_id: &AccountId,
     ) {
         self.nft_map
             .insert(nft_id, &DealData::new(deadline, account_id, price));
@@ -81,7 +75,7 @@ impl Auction {
     /// Tokens of previous bid will be returned.
     pub fn make_bid(
         &mut self,
-        account_id: AccountId,
+        account_id: &AccountId,
         nft_id: &NftId,
         price: Balance,
     ) -> Option<Bid> {
@@ -93,14 +87,17 @@ impl Auction {
             deal_data.deadline > env::block_timestamp(),
             "Auction expired."
         );
-        require!(deal_data.deal_owner != account_id,"NFT owner can't make a bid.");
+        require!(
+            &deal_data.deal_owner != account_id,
+            "NFT owner can't make a bid."
+        );
         let last_bid = self.get_last_bid(nft_id);
         let highest = match &last_bid {
             Some(last_bid) => last_bid.get_price(),
             None => self.nft_map.get(nft_id).unwrap().get_start_price(),
         };
-        require!(highest >= price, "Less or equal to the last bid.");
-        deal_data.add_bid(&Bid::new(price, account_id));
+        require!(highest <= price, "Less or equal to the last bid.");
+        deal_data.set_bid(price, account_id);
         self.nft_map.insert(nft_id, &deal_data);
         last_bid
     }
@@ -116,13 +113,13 @@ impl Auction {
             deal_data.get_deadline() < env::block_timestamp(),
             "Auction in progress."
         );
-        match deal_data.get_last_bid() {
+        match deal_data.get_bid() {
             None => require!(
-                account_id == *deal_data.get_owner_id(),
+                &account_id == deal_data.get_owner_id(),
                 "Only for NFT owner or for owner of highest bid."
             ),
             Some(bid) => require!(
-                (account_id == *deal_data.get_owner_id()) || bid.is_owner(&account_id),
+                (&account_id == deal_data.get_owner_id()) || bid.is_owner(&account_id),
                 "Only for NFT owner or for owner of highest bid."
             ),
         };
@@ -141,22 +138,22 @@ pub struct DealData {
     deadline: Timestamp,
     deal_owner: AccountId,
     start_price: Balance,
-    bids: Vector<Bid>,
+    highest_bid: LazyOption<Bid>,
 }
 
 impl DealData {
-    pub fn new(deadline: Timestamp, deal_owner: AccountId, start_price: Balance) -> Self {
+    pub fn new(deadline: Timestamp, deal_owner: &AccountId, start_price: Balance) -> Self {
         Self {
             deadline,
-            deal_owner,
+            deal_owner: deal_owner.clone(),
             start_price,
-            bids: Vector::new(StorageKey::NftsAuctionBids),
+            highest_bid: LazyOption::new(StorageKey::NftsAuctionBids, None),
         }
     }
 
-    /// Return last bid.
-    pub fn get_last_bid(&self) -> Option<Bid> {
-        self.bids.get(self.bids.len() - 1)
+    /// Return bid.
+    pub fn get_bid(&self) -> Option<Bid> {
+        self.highest_bid.get()
     }
 
     /// Return date of ending a auction.
@@ -164,14 +161,9 @@ impl DealData {
         self.deadline
     }
 
-    /// All bids for lot.
-    pub fn get_all_bids(&self) -> &Vector<Bid> {
-        &self.bids
-    }
-
     /// Add bid for lot.
-    pub fn add_bid(&mut self, bid: &Bid) {
-        self.bids.push(bid);
+    pub fn set_bid(&mut self, price: Balance, account_id: &AccountId) {
+        self.highest_bid.set(&Bid::new(price, account_id.clone()));
     }
 
     /// Return owner id.
@@ -207,7 +199,7 @@ impl Bid {
 
     /// Check if `account_id` owner of bid.
     pub fn is_owner(&self, account_id: &AccountId) -> bool {
-        self.account_id == *account_id
+        &self.account_id == account_id
     }
 
     /// Return offered price for lot.
@@ -216,68 +208,59 @@ impl Bid {
     }
 }
 
-#[near_bindgen]
 impl Contract {
-    // TODO: this is need to be here?
-    pub fn start_auction(&mut self, nft_id: NftId, price: Balance, deadline: Timestamp) {
+    // TODO: left it here?
+    pub fn start_auction(
+        &mut self,
+        nft_id: NftId,
+        price: Balance,
+        deadline: Timestamp,
+        account_id: AccountId,
+    ) {
         self.nfts
-            .start_auction(&nft_id, price, deadline, env::signer_account_id());
+            .start_auction(&nft_id, price, deadline, &account_id);
     }
 
-    pub fn make_bid(&mut self, nft_id: NftId, price: Balance) {
+    pub fn make_bid(&mut self, nft_id: NftId, price: Balance, account_id: AccountId) {
         let mut buyer_account = Account::from(
             self.accounts
-                .get(&env::signer_account_id())
+                .get(&account_id)
                 .unwrap_or_else(|| panic_str("Account not found")),
         );
 
         require!(buyer_account.free >= price, "Not enough money.");
+        if let Some(last_bid) = self.nfts.make_bid(&account_id, &nft_id, price) {
+            let mut last_buyer_account: Account = self
+                .accounts
+                .get(last_bid.get_owner())
+                .unwrap_or_else(|| panic_str("Account not found"))
+                .into();
 
-        let data = self.nfts.get_deal_data(&nft_id);
-        if let Some(last_bid) = self.nfts.make_bid(env::signer_account_id(), &nft_id, price) {
-            let mut last_buyer_account = Account::from(
-                self.accounts
-                    .get(last_bid.get_owner())
-                    .unwrap_or_else(|| panic_str("Account not found")),
-            );
             last_buyer_account.free += last_bid.get_price();
-            // TODO: Lockup::new() will have same hash?
-            last_buyer_account
-                .lockups
-                .remove(&Lockup::new(last_bid.price, Some(data.deadline)));
             self.accounts
-                .insert(&last_bid.account_id, &VAccount::V1(last_buyer_account));
+                .insert(&last_bid.account_id, &last_buyer_account.into());
         }
         buyer_account.free -= price;
-        // TODO: need to be locked?
-        buyer_account
-            .lockups
-            .insert(&Lockup::new(price, Some(data.get_deadline())));
+        self.accounts.insert(&account_id, &buyer_account.into());
     }
 
     pub fn confirm_deal(&mut self, nft_id: NftId) {
         let deal_data = self.nfts.confirm_deal(&nft_id, env::signer_account_id());
-        match deal_data.get_last_bid() {
-            None => {}
-            Some(the_winner) => {
-                let mut win_buyer_account = Account::from(
-                    self.accounts
-                        .get(&the_winner.account_id)
-                        .unwrap_or_else(|| panic_str("Account not found")),
-                );
-                // TODO: Lockup::new will have same hash?
-                win_buyer_account.lockups.remove(&Lockup::new(
-                    the_winner.price,
-                    Some(deal_data.get_deadline()),
-                ));
-                self.accounts
-                    .insert(&the_winner.account_id, &VAccount::V1(win_buyer_account));
-                let mut nft_owner = Account::from(
-                    self.accounts
-                        .get(deal_data.get_owner_id())
-                        .unwrap_or_else(|| panic_str("Account not found")),
-                );
-                nft_owner.free += the_winner.price;
+
+        if let Some(the_winner) = deal_data.get_bid() {
+            let win_account: Account = self
+                .accounts
+                .get(&the_winner.account_id)
+                .unwrap_or_else(|| panic_str("Account not found"))
+                .into();
+            self.accounts
+                .insert(&the_winner.account_id, &win_account.into());
+            let mut nft_owner: Account = self
+                .accounts
+                .get(deal_data.get_owner_id())
+                .unwrap_or_else(|| panic_str("Account not found"))
+                .into();
+            nft_owner.free += the_winner.price;
 
                 self.accounts
                     .insert(deal_data.get_owner_id(), &VAccount::V1(nft_owner));

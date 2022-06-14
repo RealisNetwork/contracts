@@ -139,8 +139,8 @@ impl Contract {
 
 #[cfg(test)]
 mod tests {
-    use std::str::FromStr;
     use crate::utils::tests_utils::*;
+    use std::str::FromStr;
 
     #[test]
     fn info_log_test() {
@@ -154,8 +154,12 @@ mod tests {
             expire_on: 60,
         });
 
-        account.lockups.insert(&lockup::Lockup::new(25 * ONE_LIS, None));
-        account.lockups.insert(&lockup::Lockup::new(35 * ONE_LIS, Some(20)));
+        account
+            .lockups
+            .insert(&lockup::Lockup::new(25 * ONE_LIS, None));
+        account
+            .lockups
+            .insert(&lockup::Lockup::new(35 * ONE_LIS, Some(20)));
 
         contract.accounts.insert(&account_id, &account.into());
     }
@@ -191,8 +195,12 @@ mod tests {
             amount: 250 * ONE_LIS,
             expire_on: 60,
         });
-        account.lockups.insert(&lockup::Lockup::new(25 * ONE_LIS, None));
-        account.lockups.insert(&lockup::Lockup::new(35 * ONE_LIS, Some(20)));
+        account
+            .lockups
+            .insert(&lockup::Lockup::new(25 * ONE_LIS, None));
+        account
+            .lockups
+            .insert(&lockup::Lockup::new(35 * ONE_LIS, Some(20)));
 
         contract.accounts.insert(&account_id, &account.into());
     }

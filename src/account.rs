@@ -1,11 +1,14 @@
-use crate::{lockup::Lockup, LockupInfo, NftId, Serialize, StorageKey};
+use crate::{
+    events::{EventLog, EventLogVariant, LockupLog},
+    lockup::Lockup,
+    LockupInfo, NftId, Serialize, StorageKey,
+};
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
     collections::{LookupSet, UnorderedSet},
     json_types::U128,
     Balance,
 };
-use crate::events::{EventLog, EventLogVariant, LockupLog};
 
 #[derive(BorshSerialize, BorshDeserialize)]
 pub enum VAccount {
@@ -55,10 +58,7 @@ impl Account {
             .fold(0, |acc, lock| acc + lock.amount);
         self.free += fold;
 
-        EventLog::from(EventLogVariant::LockupLog(LockupLog {
-            amount: U128(fold),
-        }))
-        .emit();
+        EventLog::from(EventLogVariant::LockupLog(LockupLog { amount: U128(fold) })).emit();
 
         fold
     }
@@ -77,10 +77,7 @@ impl Account {
 
         self.free += fold;
 
-        EventLog::from(EventLogVariant::LockupLog(LockupLog {
-            amount: U128(fold),
-        }))
-        .emit();
+        EventLog::from(EventLogVariant::LockupLog(LockupLog { amount: U128(fold) })).emit();
 
         fold
     }
@@ -131,7 +128,6 @@ mod tests {
 
     #[test]
     pub fn check_lockups() {
-
         let (contract, mut context) = init_test_env(None, None, None);
 
         let mut account = Account::new(5);
@@ -156,7 +152,6 @@ mod tests {
 
     #[test]
     pub fn check_lockup() {
-
         let (contract, mut context) = init_test_env(None, None, None);
 
         let mut account = Account::new(5);
