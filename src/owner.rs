@@ -67,22 +67,19 @@ impl Contract {
     }
 }
 
+
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::utils::tests_utils::*;
 
     #[test]
     #[should_panic]
     fn mint_nft_test_panic() {
-        let (mut contract, mut context) = init_test_env(
+        let (mut contract, context) = init_test_env(
             Some(AccountId::new_unchecked("not_owner".to_string())),
-            None,
-            None,
+            Some(AccountId::new_unchecked("user_id".to_string())),
+            Some(AccountId::new_unchecked("user_id".to_string())),
         );
-        testing_env!(context
-            .signer_account_id(AccountId::new_unchecked("not_owner".to_string()))
-            .build());
 
         contract.mint(
             AccountId::new_unchecked("user_id".to_string()),
@@ -92,25 +89,27 @@ mod tests {
 
     #[test]
     fn mint_nft_test() {
-        let owner_id = AccountId::new_unchecked("owner".to_string());
-        let (mut contract, mut context) = init_test_env(
+        let (_, context) = init_test_env(
             Some(AccountId::new_unchecked("user_id".to_string())),
+            Some(AccountId::new_unchecked("user_id2".to_string())),
+            Some(AccountId::new_unchecked("user_id3".to_string())),
+        );
+        let mut contract = Contract::new(
+            U128(3_000_000_000 * ONE_LIS),
+            U128(5 * ONE_LIS),
+            10,
             None,
             None,
         );
-
-        testing_env!(VMContextBuilder::new()
-            .signer_account_id(owner_id)
-            .is_view(false)
-            .build());
+        contract.owner_id = AccountId::new_unchecked("user_id".to_string());
 
         contract.accounts.insert(
-            &AccountId::new_unchecked("user_id".to_string()),
+            &AccountId::new_unchecked("owner_of_nft".to_string()),
             &Account::default().into(),
         );
 
         let res = contract.mint(
-            AccountId::new_unchecked("user_id".to_string()),
+            AccountId::new_unchecked("owner_of_nft".to_string()),
             "some_metadata".to_string(),
         );
 
@@ -118,39 +117,9 @@ mod tests {
         assert!(assertion);
         let account: Account = contract
             .accounts
-            .get(&AccountId::new_unchecked("user_id".to_string()))
+            .get(&AccountId::new_unchecked("owner_of_nft".to_string()))
             .unwrap()
             .into();
         assert!(account.nfts.contains(&res));
-    }
-
-    #[test]
-    fn change_beneficiary_test() {
-        let owner_id = AccountId::new_unchecked("owner".to_string());
-        let (mut contract, mut context) = init_test_env(Some(owner_id.clone()), None, None);
-
-        testing_env!(VMContextBuilder::new()
-            .signer_account_id(owner_id)
-            .is_view(false)
-            .build());
-
-        let account_id_new = AccountId::from_str("new_beneficiary").unwrap();
-        contract.change_beneficiary(account_id_new.clone());
-        assert_eq!(contract.beneficiary_id, account_id_new);
-    }
-
-    #[test]
-    fn change_state_test() {
-        let owner_id = AccountId::new_unchecked("owner".to_string());
-        let (mut contract, mut context) = init_test_env(None, None, None);
-
-        testing_env!(VMContextBuilder::new()
-            .signer_account_id(owner_id)
-            .is_view(false)
-            .build());
-
-        let contract_new_state = State::Paused;
-        contract.change_state(contract_new_state.clone());
-        assert_eq!(contract.state, contract_new_state)
     }
 }
