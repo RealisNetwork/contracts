@@ -143,7 +143,7 @@ mod tests {
         // Indexes are default
         let (mut contract, mut context) = init_test_env(None, None, None);
         let mut account: Account = Account::new(250);
-        let account_id = AccountId::from_str("user.testnet").unwrap();
+        let account_id = accounts(0);
 
         account.lockups.insert(&lockup::Lockup {
             amount: 250 * ONE_LIS,
@@ -165,7 +165,7 @@ mod tests {
         // There are no locks
         let (mut contract, mut context) = init_test_env(None, None, None);
         let account: Account = Account::new(250 * ONE_LIS);
-        let account_id = AccountId::from_str("user.testnet").unwrap();
+        let account_id = accounts(0);
 
         contract.accounts.insert(&account_id, &account.into());
     }
@@ -175,7 +175,7 @@ mod tests {
         // Indexes are default
         let (mut contract, mut context) = init_test_env(None, None, None);
         let account: Account = Account::new(250 * ONE_LIS);
-        let account_id = AccountId::from_str("user.testnet").unwrap();
+        let account_id = accounts(0);
 
         contract.accounts.insert(&account_id, &account.into());
         assert_eq!(contract.get_balance_info(account_id).0, 250 * ONE_LIS);
@@ -185,7 +185,7 @@ mod tests {
     fn get_account_info_test() {
         let (mut contract, mut context) = init_test_env(None, None, None);
         let mut account: Account = Account::new(250 * ONE_LIS);
-        let account_id = AccountId::from_str("user.testnet").unwrap();
+        let account_id = accounts(0);
 
         account.lockups.insert(&lockup::Lockup {
             amount: 250 * ONE_LIS,

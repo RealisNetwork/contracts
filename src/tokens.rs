@@ -264,7 +264,7 @@ pub mod tests {
             .insert(&sender_id, &Account::new(250 * ONE_LIS).into()); // Will be 228
 
         // receiver
-        let receiver_id = AccountId::from_str("mike.testnet").unwrap();
+        let receiver_id = accounts(1);
 
         contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 20 * ONE_LIS);
 
