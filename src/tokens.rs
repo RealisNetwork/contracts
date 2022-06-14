@@ -4,6 +4,7 @@ use crate::*;
 use std::str::FromStr;
 use crate::{Account, Contract, *};
 use near_sdk::{env, near_bindgen, require, AccountId};
+use primitive_types::U256;
 
 
 #[near_bindgen]
@@ -70,22 +71,17 @@ impl Contract {
     /// where constant_fee >= 0
     pub fn take_fee(&mut self, sender: AccountId, amount: Option<u128>, is_fee_required: bool) -> u128 {
         // Calculate total charged amount
-        let (charge, fee) = if is_fee_required {
-            if let Some(amount) = amount {
-                // TODO: use U256
-                (
-                    (amount * (self.percent_fee as u128 + 100)) / 100,
-                    (amount * self.percent_fee as u128) / 100,
-                )
-            } else {
-                (self.constant_fee, self.constant_fee)
-            }
-        } else {
-            if let Some(amount) = amount {
-                (amount, 0)
-            } else {
-                (0, 0)
-            }
+        let (charge, fee) = match (amount, is_fee_required) {
+            (Some(amount), true) => {(
+                    ((U256::from(amount) * (U256::from(self.percent_fee) + U256::from(100)))
+                        / U256::from(100))
+                        .as_u128(),
+                    ((U256::from(amount) * U256::from(self.percent_fee as u128)) / U256::from(100))
+                        .as_u128(),
+            )},
+            (Some(amount), false) => (amount, 0),
+            (None, true) => (self.constant_fee, self.constant_fee),
+            (None, false) => (0, 0)
         };
 
         // Check if user exists and get account, if user don't exist, rollback transfer
@@ -161,6 +157,19 @@ pub mod tests {
         assert_eq!(account.free, 228 * ONE_LIS);
         let account: Account = contract.accounts.get(&receiver_id).unwrap().into();
         assert_eq!(account.free, 29 * ONE_LIS);
+    }
+
+    #[test]
+    fn transfer_overflow() {
+        let (mut contract, mut context) = init_test_env(None, None, None);
+
+        // Sender
+        let sender_id = accounts(0);
+        contract
+            .accounts
+            .insert(&sender_id, &Account::new(u128::MAX).into()); // Will be 228
+
+        contract.internal_transfer(sender_id.clone(), accounts(1), u128::MAX - (u128::MAX/100) * 11, true);
     }
 
     #[test]
