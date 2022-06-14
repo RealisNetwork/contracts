@@ -69,7 +69,7 @@ jobs:
         name: "Rust Toolchain Setup"
         with:
           profile: minimal
-          toolchain: stable-x86_64-unknown-linux-gnu
+          toolchain: nightly
           target: wasm32-unknown-unknown
       - uses: actions-rs/cargo@v1
         name: "Udeps Installation"
@@ -80,10 +80,9 @@ jobs:
         name: "Unused Dependency Check"
         with:
           profile: minimal
-#          toolchain: nightly
           target: wasm32-unknown-unknown
           components: udeps
-      - run: cargo udeps
+      - run: cargo +nightly udeps
 
   tests:
     runs-on: ubuntu-latest
