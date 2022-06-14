@@ -1,5 +1,5 @@
 use crate::*;
-use near_sdk::{json_types::U128, near_bindgen, AccountId};
+use near_sdk::{json_types::U128, near_bindgen, AccountId, Timestamp};
 
 #[near_bindgen]
 impl Contract {
@@ -45,10 +45,11 @@ impl Contract {
     }
 
     //TODO check lockups
-    pub fn backend_claim_lockup(&mut self, expire_on: u64) -> U128 {
+    pub fn backend_claim_lockup(&mut self, expire_on: Timestamp) -> U128 {
         self.assert_running();
         self.assert_backend();
-        let mut target_account: Account = self.accounts.get(&env::signer_account_id()).unwrap_or_else(|| env::panic_str("No such account id")).into();
+        let target_id = self.resolve_account(env::signer_account_pk());
+        let mut target_account: Account = self.accounts.get(&target_id).unwrap_or_else(|| env::panic_str("No such account id")).into();
         let res = target_account.claim_lockup(expire_on);
         self.accounts.insert(&env::signer_account_id(), &target_account.into());
         U128(res)
@@ -58,7 +59,8 @@ impl Contract {
     pub fn backend_claim_all_lockup(& mut self) ->U128 {
         self.assert_running();
         self.assert_backend();
-        let mut target_account: Account = self.accounts.get(&env::signer_account_id()).unwrap_or_else(|| env::panic_str("No such account id")).into();
+        let target_id = self.resolve_account(env::signer_account_pk());
+        let mut target_account: Account = self.accounts.get(&target_id).unwrap_or_else(|| env::panic_str("No such account id")).into();
         let res = target_account.claim_all_lockups();
         self.accounts.insert(&env::signer_account_id(), &target_account.into());
         U128(res)
@@ -202,7 +204,7 @@ mod tests {
     }
 
     #[test]
-    fn backend_claim_all_loockups() {
+    fn backend_claim_all_loockups() {//TODO fix me
         let mut owner = accounts(0);
         let (mut contract, mut context) = init_test_env(Some(owner.clone()), None, Some(owner.clone()));
 
@@ -231,7 +233,7 @@ mod tests {
     }
 
     #[test]
-    fn backend_claim_loockup(){
+    fn backend_claim_loockup(){//TODO fix me
         let mut owner = accounts(0);
         let (mut contract, mut context) = init_test_env(Some(owner.clone()), None, Some(owner.clone()));
 
