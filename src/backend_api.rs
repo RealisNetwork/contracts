@@ -44,8 +44,22 @@ impl Contract {
         todo!()
     }
 
-    //TODO lockups
+    //TODO check lockups
+    pub fn backend_claim_lockup(&mut self, expire_on: u64) -> U128 {
+        self.assert_running();
+        self.assert_backend();
+        let target_id = self.resolve_account(env::signer_account_pk());
+        let mut target_account: Account = self.accounts.get(&target_id).unwrap().into();
+        U128(target_account.claim_lockup(expire_on))
+    }
 
+
+    pub fn backend_claim_all_lockup(& mut self) ->U128 {
+        self.assert_running();
+        self.assert_backend();
+        let mut target_account: Account = self.accounts.get(&env::signer_account_id()).unwrap().into();
+        U128(target_account.claim_all_lockups())
+    }
 
     // TODO: delegate nft
     // Discuss general structure of delegation
@@ -159,7 +173,7 @@ mod tests {
     }
 
     #[test]
-    fn transfer_nft_test() {
+    fn backend_transfer_nft_test() {
         let mut owner = accounts(0);
         let mut reciver = accounts(1);
         let (mut contract, _context) = init_test_env(Some(owner.clone()), None, None);
@@ -183,4 +197,27 @@ mod tests {
         testing_env!(context.predecessor_account_id(accounts(2)).build());
         contract.backend_buy_nft(U128(100));
     }
+
+    #[test]
+    fn backend_claim_all_loockups() {
+        let mut owner = accounts(0);
+        let (mut contract, mut context) = init_test_env(Some(owner.clone()), None, Some(owner.clone()));
+
+        let mut owner_account = Account::new(5);
+        owner_account.lockups.insert(&Lockup::new(5, None));
+        contract.accounts.insert(&owner, &owner_account.into());
+
+        testing_env!(context.signer_account_id(accounts(0)).block_timestamp(99999999999999).build());
+
+        println!("{:#?}",contract.backend_claim_all_lockup());
+        let res_owner_account: Account = contract.accounts.get(&owner).unwrap().into();
+        assert_eq!(res_owner_account.free, 10);
+    }
+
+    // #[test]
+    // fn backend_claim_loockup(){
+    //     let mut owner = accounts(0);
+    //     let (mut contract, _context) = init_test_env(Some(owner.clone()), None, None);
+    //     let mut owner_account = Account::new(50);
+    // }
 }
