@@ -43,10 +43,7 @@ impl Contract {
 
     pub fn change_beneficiary(&mut self, new_beneficiary_id: AccountId) {
         self.assert_owner();
-        require!(
-            self.beneficiary_id != new_beneficiary_id,
-            "Beneficiary can't be the same"
-        );
+        require!(self.beneficiary_id != new_beneficiary_id,"Beneficiary can't be the same");
         EventLog::from(EventLogVariant::ChangeBeneficiary(ChangeBeneficiaryLog {
             from: self.beneficiary_id.clone(),
             to: new_beneficiary_id.clone(),
@@ -140,7 +137,40 @@ mod tests {
     }
 
     #[test]
+    #[should_panic = "Beneficiary can't be the same"]
+    fn change_the_same_beneficiary_test() {
+        let owner_id = AccountId::new_unchecked("owner".to_string());
+        let beneficiary_id = AccountId::from_str("new_beneficiary").unwrap();
+        let (mut contract, mut context) = init_test_env(Some(owner_id.clone()), Some(beneficiary_id.clone()), None);
+
+        testing_env!(VMContextBuilder::new()
+            .signer_account_id(owner_id)
+            .is_view(false)
+            .build());
+
+
+        contract.change_beneficiary(beneficiary_id.clone());
+        assert_eq!(contract.beneficiary_id, beneficiary_id);
+    }
+
+    #[test]
+    #[should_panic = "State can't be the same"]
     fn change_state_test() {
+        let owner_id = AccountId::new_unchecked("owner".to_string());
+        let (mut contract, mut context) = init_test_env(None, None, None);
+
+        testing_env!(VMContextBuilder::new()
+            .signer_account_id(owner_id)
+            .is_view(false)
+            .build());
+
+        let contract_new_state = State::Running;
+        contract.change_state(contract_new_state.clone());
+        assert_eq!(contract.state, contract_new_state)
+    }
+
+    #[test]
+    fn change_the_same_state_test() {
         let owner_id = AccountId::new_unchecked("owner".to_string());
         let (mut contract, mut context) = init_test_env(None, None, None);
 

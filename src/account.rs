@@ -156,7 +156,6 @@ mod tests {
         }); // Lock from 1970
 
         // Balance of lock from 1970 will be transferred to main balance
-
         testing_env!(context
             .block_timestamp(999)
             .predecessor_account_id(accounts(0))
