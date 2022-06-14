@@ -151,16 +151,12 @@ mod tests {
         });
 
         account.nfts.insert(&NftId::from(456u32));
-
         account
             .lockups
             .insert(&lockup::Lockup::new(25 * ONE_LIS, None));
         account
             .lockups
             .insert(&lockup::Lockup::new(35 * ONE_LIS, Some(20)));
-        account
-            .lockups
-            .insert(&lockup::Lockup::new(35 * ONE_LIS, Some(0)));
         contract.accounts.insert(&account_id, &account.into());
     }
 

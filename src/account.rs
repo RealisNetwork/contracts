@@ -9,7 +9,6 @@ use near_sdk::{
     json_types::U128,
     Balance,
 };
-// use crate::StorageKey::NftId;
 
 #[derive(BorshSerialize, BorshDeserialize)]
 pub enum VAccount {
