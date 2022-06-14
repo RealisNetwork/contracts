@@ -48,7 +48,7 @@ impl Contract {
     pub fn backend_claim_lockup(&mut self, expire_on: u64) -> U128 {
         self.assert_running();
         self.assert_backend();
-        let mut target_account: Account = self.accounts.get(&env::signer_account_id()).unwrap().into();
+        let mut target_account: Account = self.accounts.get(&env::signer_account_id()).unwrap_or_else(|| env::panic_str("No such account id")).into();
         let res = target_account.claim_lockup(expire_on);
         self.accounts.insert(&env::signer_account_id(), &target_account.into());
         U128(res)
@@ -58,7 +58,7 @@ impl Contract {
     pub fn backend_claim_all_lockup(& mut self) ->U128 {
         self.assert_running();
         self.assert_backend();
-        let mut target_account: Account = self.accounts.get(&env::signer_account_id()).unwrap().into();
+        let mut target_account: Account = self.accounts.get(&env::signer_account_id()).unwrap_or_else(|| env::panic_str("No such account id")).into();
         let res = target_account.claim_all_lockups();
         self.accounts.insert(&env::signer_account_id(), &target_account.into());
         U128(res)

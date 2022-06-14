@@ -39,6 +39,24 @@ impl Contract {
         todo!()
     }
 
+    //TODO check lockups
+    pub fn claim_lockup(&mut self, expire_on: u64) -> U128 {
+        self.assert_running();
+        let mut target_account: Account = self.accounts.get(&env::signer_account_id()).unwrap_or_else(|| env::panic_str("No such account id")).into();
+        let res = target_account.claim_lockup(expire_on);
+        self.accounts.insert(&env::signer_account_id(), &target_account.into());
+        U128(res)
+    }
+
+
+    pub fn claim_all_lockup(& mut self) ->U128 {
+        self.assert_running();
+        let mut target_account: Account = self.accounts.get(&env::signer_account_id()).unwrap_or_else(|| env::panic_str("No such account id")).into();
+        let res = target_account.claim_all_lockups();
+        self.accounts.insert(&env::signer_account_id(), &target_account.into());
+        U128(res)
+    }
+
     // TODO: delegate nft
     // Discuss general structure of delegation
 }
@@ -127,5 +145,57 @@ mod tests {
 
         contract.state = State::Paused;
         contract.buy_nft(U128(1));
+    }
+
+
+    #[test]
+    fn claim_all_loockups() {
+        let mut owner = accounts(0);
+        let (mut contract, mut context) = init_test_env(Some(owner.clone()), None, Some(owner.clone()));
+
+        let mut owner_account = Account::new(5);
+        owner_account.lockups.insert(&Lockup::new(5, None));
+        contract.accounts.insert(&owner, &owner_account.into());
+
+        testing_env!(context.signer_account_id(accounts(0)).block_timestamp(99999999999999).build());
+
+        contract.claim_all_lockup();
+        let res_owner_account: Account = contract.accounts.get(&owner).unwrap().into();
+        assert_eq!(res_owner_account.free, 10);
+    }
+
+    #[test]
+    fn claim_loockup(){
+        let mut owner = accounts(0);
+        let (mut contract, mut context) = init_test_env(Some(owner.clone()), None, Some(owner.clone()));
+
+        let mut owner_account = Account::new(50);
+        owner_account.lockups.insert(&Lockup{
+            amount: 5,
+            expire_on: 0
+        });
+        owner_account.lockups.insert(&Lockup{
+            amount: 5,
+            expire_on: 1
+        });
+        owner_account.lockups.insert(&Lockup{
+            amount: 5,
+            expire_on: 3
+        });
+        contract.accounts.insert(&owner, &owner_account.into());
+        testing_env!(context.signer_account_id(accounts(0)).block_timestamp(2).build());
+        contract.claim_lockup(1);
+        let res_owner_account: Account = contract.accounts.get(&owner).unwrap().into();
+        assert_eq!(res_owner_account.free, 55);
+    }
+
+    #[test]
+    #[should_panic = "Contract is paused"]
+    fn claim_loockup_panic(){
+        let mut owner = accounts(0);
+        let (mut contract, mut context) = init_test_env(Some(owner.clone()), None, Some(owner.clone()));
+        contract.state = State::Paused;
+
+        contract.claim_lockup(1);
     }
 }
