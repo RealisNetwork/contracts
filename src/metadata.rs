@@ -12,7 +12,7 @@ use near_sdk::{
     AccountId,
 };
 
-use crate::Contract;
+use crate::{nft::Nft, Contract};
 
 /// `SPEC_TOKEN` a string.
 /// Should be ft-1.0.0 to indicate that a Fungible Token contract
@@ -97,11 +97,14 @@ impl NonFungibleTokenEnumeration for Contract {
             .iter()
             .skip(from.0 as usize)
             .take(limit as usize)
-            .map(|(key, value)| Token {
-                token_id: key.to_string(),
-                owner_id: value.owner_id,
-                metadata: None,
-                approved_account_ids: None,
+            .map(|(key, value)| {
+                let nft: Nft = value.into();
+                Token {
+                    token_id: key.to_string(),
+                    owner_id: nft.owner_id,
+                    metadata: None,
+                    approved_account_ids: None,
+                }
             })
             .collect()
     }
@@ -111,7 +114,7 @@ impl NonFungibleTokenEnumeration for Contract {
             .nfts
             .get_nft_map()
             .values()
-            .filter(|value| value.is_owner(&account_id))
+            .filter(|value| Nft::from(value.clone()).is_owner(&account_id))
             .count();
         U128::from(count as u128)
     }
@@ -129,10 +132,10 @@ impl NonFungibleTokenEnumeration for Contract {
         self.nfts
             .get_nft_map()
             .iter()
-            .filter(|(_key, value)| value.is_owner(&account_id))
+            .filter(|(_key, value)| Nft::from(value.clone()).is_owner(&account_id))
             .skip(from.0 as usize)
             .take(limit as usize)
-            .map(|(key, _value)| Token {
+            .map(|(key, _)| Token {
                 token_id: key.to_string(),
                 owner_id: account_id.clone(),
                 metadata: None,
@@ -148,16 +151,10 @@ mod tests {
     use near_contract_standards::non_fungible_token::enumeration::NonFungibleTokenEnumeration;
 
     pub fn get_contract() -> (Contract, VMContextBuilder) {
-        let (mut contract, context) = init_test_env(
-            Some(AccountId::new_unchecked("not_owner".to_string())),
-            Some(AccountId::new_unchecked("user_id".to_string())),
-            Some(AccountId::new_unchecked("user_id".to_string())),
-        );
+        let (mut contract, context) =
+            init_test_env(Some(accounts(0)), Some(accounts(0)), Some(accounts(0)));
         for i in 0..10 {
-            contract.nfts.mint_nft(
-                &AccountId::new_unchecked(format!("id_{}", i)),
-                "some".to_string(),
-            );
+            contract.nfts.mint_nft(&accounts(0), "some".to_string());
         }
 
         (contract, context)
@@ -180,15 +177,14 @@ mod tests {
     #[test]
     fn test_nft_supply_for_owner() {
         let (contract, context) = get_contract();
-        let result = contract.nft_supply_for_owner(AccountId::new_unchecked("id_4".to_string()));
-        assert_eq!(result, U128::from(1))
+        let result = contract.nft_supply_for_owner(accounts(0));
+        assert_eq!(result, U128::from(10))
     }
 
     #[test]
     fn test_nft_tokens_for_owner() {
         let (contract, context) = get_contract();
-        let result =
-            contract.nft_tokens_for_owner(AccountId::new_unchecked("id_4".to_string()), None, None);
-        assert_eq!(result.len(), 1)
+        let result = contract.nft_tokens_for_owner(accounts(0), None, None);
+        assert_eq!(result.len(), 10)
     }
 }

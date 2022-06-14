@@ -68,25 +68,15 @@ mod tests {
     #[test]
     #[should_panic]
     fn mint_nft_test_panic() {
-        let (mut contract, context) = init_test_env(
-            Some(AccountId::new_unchecked("not_owner".to_string())),
-            Some(AccountId::new_unchecked("user_id".to_string())),
-            Some(AccountId::new_unchecked("user_id".to_string())),
-        );
+        let (mut contract, context) =
+            init_test_env(Some(accounts(0)), Some(accounts(0)), Some(accounts(0)));
 
-        contract.mint(
-            AccountId::new_unchecked("user_id".to_string()),
-            "some_metadata".to_string(),
-        );
+        contract.mint(accounts(0), "some_metadata".to_string());
     }
 
     #[test]
     fn mint_nft_test() {
-        let (_, context) = init_test_env(
-            Some(AccountId::new_unchecked("user_id".to_string())),
-            Some(AccountId::new_unchecked("user_id2".to_string())),
-            Some(AccountId::new_unchecked("user_id3".to_string())),
-        );
+        let (_, context) = init_test_env(Some(accounts(0)), Some(accounts(0)), Some(accounts(0)));
         let mut contract = Contract::new(
             U128(3_000_000_000 * ONE_LIS),
             U128(5 * ONE_LIS),
@@ -94,15 +84,15 @@ mod tests {
             None,
             None,
         );
-        contract.owner_id = AccountId::new_unchecked("user_id".to_string());
+        contract.owner_id = accounts(0);
 
         contract.accounts.insert(
-            &AccountId::new_unchecked("owner_of_nft".to_string()),
+            &accounts(1),
             &Account::default().into(),
         );
 
         let res = contract.mint(
-            AccountId::new_unchecked("owner_of_nft".to_string()),
+            accounts(1),
             "some_metadata".to_string(),
         );
 
@@ -110,7 +100,7 @@ mod tests {
         assert!(assertion);
         let account: Account = contract
             .accounts
-            .get(&AccountId::new_unchecked("owner_of_nft".to_string()))
+            .get(&accounts(1))
             .unwrap()
             .into();
         assert!(account.nfts.contains(&res));
