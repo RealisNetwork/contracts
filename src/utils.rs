@@ -36,7 +36,6 @@ pub mod tests_utils {
     };
     pub use std::str::FromStr;
 
-
     pub const DECIMALS: u8 = 12;
     pub const ONE_LIS: Balance = 10_u128.pow(DECIMALS as _);
 

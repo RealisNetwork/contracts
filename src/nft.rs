@@ -46,6 +46,7 @@ impl From<VNft> for Nft {
         }
     }
 }
+
 impl From<Nft> for VNft {
     fn from(nft: Nft) -> Self {
         VNft::V1(nft)

@@ -110,7 +110,7 @@ mod tests {
         assert!(assertion);
         let account: Account = contract
             .accounts
-            .get(&AccountId::new_unchecked("owner_of_nft".to_string()))
+            .get(&accounts(1))
             .unwrap()
             .into();
         assert!(account.nfts.contains(&res));
