@@ -300,7 +300,7 @@ mod tests {
 
     #[test]
     fn id_test() {
-        let (mut contract, context) = init_test_env(Account(0), Account(0), Account(0));
+        let (mut contract, context) = init_test_env(Some(accounts(0)), Some(accounts(1)), Some(accounts(2)));
         contract.accounts.insert(
             &AccountId::new_unchecked("id".to_string()),
             &VAccount::V1(Account::new(0)),
