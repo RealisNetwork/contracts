@@ -39,6 +39,10 @@ pub mod tests_utils {
     pub const DECIMALS: u8 = 12;
     pub const ONE_LIS: Balance = 10_u128.pow(DECIMALS as _);
 
+    /// If you need to change context config outside of
+    /// this function,you need to use testing_env! macro after
+    /// changes.
+
     #[allow(dead_code)]
     pub fn init_test_env(
         owner_id: Option<AccountId>,
