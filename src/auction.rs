@@ -110,7 +110,6 @@ impl Auction {
             .get(nft_id)
             .unwrap_or_else(|| panic_str("Not in auction."));
         require!(
-            
             deal_data.get_deadline() <= env::block_timestamp(),
             "Auction in progress."
         );

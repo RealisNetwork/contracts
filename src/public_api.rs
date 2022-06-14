@@ -12,12 +12,12 @@ impl Contract {
 
     pub fn burn(&mut self, nft_id: U128) {
         self.assert_running();
-        self.nfts.burn_nft(nft_id.0);
+        self.nfts.burn_nft(&nft_id.0);
     }
 
     pub fn transfer_nft(&mut self, recipient_id: AccountId, nft_id: U128) {
         self.assert_running();
-        self.nfts.transfer_nft(recipient_id, nft_id.0);
+        self.nfts.transfer_nft(recipient_id, &nft_id.0);
     }
 
     #[allow(unused_variables)]

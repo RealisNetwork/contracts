@@ -6,7 +6,7 @@ impl Contract {
     pub fn backend_transfer(&mut self, recipient_id: AccountId, amount: U128) -> U128 {
         self.assert_running();
         self.assert_backend();
-        self.internal_transfer(env::signer_account_id(), recipient_id, amount.0,true)
+        self.internal_transfer(env::signer_account_id(), recipient_id, amount.0, true)
             .into()
     }
 
@@ -14,8 +14,8 @@ impl Contract {
         self.assert_running();
         self.assert_backend();
         let sender_id = self.resolve_account(env::signer_account_pk());
-        self.take_fee(sender_id, None,true);
-        self.nfts.burn_nft(nft_id.0);
+        self.take_fee(sender_id, None, true);
+        self.nfts.burn_nft(&nft_id.0);
     }
 
     pub fn backend_transfer_nft(&mut self, recipient_id: AccountId, nft_id: U128) {
@@ -23,7 +23,7 @@ impl Contract {
         self.assert_backend();
         let sender_id = self.resolve_account(env::signer_account_pk());
         self.take_fee(sender_id, None, true);
-        self.nfts.transfer_nft(recipient_id, nft_id.0);
+        self.nfts.transfer_nft(recipient_id, &nft_id.0);
     }
 
     #[allow(unused_variables)]
@@ -31,7 +31,7 @@ impl Contract {
         self.assert_running();
         self.assert_backend();
         let sender_id = self.resolve_account(env::signer_account_pk());
-        self.take_fee(sender_id, None,true);
+        self.take_fee(sender_id, None, true);
         todo!()
     }
 
@@ -53,12 +53,10 @@ impl Contract {
         todo!()
     }
 
-    //TODO lockups
-
+    // TODO lockups
 
     // TODO: delegate nft
     // Discuss general structure of delegation
-
 }
 
 #[cfg(test)]
@@ -101,7 +99,6 @@ mod tests {
         assert_eq!(account_1.free, 23);
         assert_eq!(account_2.free, 35);
     }
-
 
     #[test]
     #[should_panic = "Contract is paused"]

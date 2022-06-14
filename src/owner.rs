@@ -54,7 +54,10 @@ impl Contract {
 
     pub fn change_beneficiary(&mut self, new_beneficiary_id: AccountId) {
         self.assert_owner();
-        require!(self.beneficiary_id != new_beneficiary_id,"Beneficiary can't be the same");
+        require!(
+            self.beneficiary_id != new_beneficiary_id,
+            "Beneficiary can't be the same"
+        );
         EventLog::from(EventLogVariant::ChangeBeneficiary(ChangeBeneficiaryLog {
             from: self.beneficiary_id.clone(),
             to: new_beneficiary_id.clone(),
@@ -100,23 +103,15 @@ mod tests {
         );
         contract.owner_id = accounts(0);
 
-        contract.accounts.insert(
-            &accounts(1),
-            &Account::default().into(),
-        );
+        contract
+            .accounts
+            .insert(&accounts(1), &Account::default().into());
 
-        let res = contract.mint(
-            accounts(1),
-            "some_metadata".to_string(),
-        );
+        let res = contract.mint(accounts(1), "some_metadata".to_string());
 
         let assertion = contract.nfts.get_nft_map().keys().any(|key| key == res);
         assert!(assertion);
-        let account: Account = contract
-            .accounts
-            .get(&accounts(1))
-            .unwrap()
-            .into();
+        let account: Account = contract.accounts.get(&accounts(1)).unwrap().into();
         assert!(account.nfts.contains(&res));
     }
 
@@ -136,7 +131,8 @@ mod tests {
     fn change_the_same_beneficiary_test() {
         let owner_id = accounts(0);
         let beneficiary_id = accounts(1);
-        let (mut contract, mut context) = init_test_env(Some(owner_id.clone()), Some(beneficiary_id.clone()), None);
+        let (mut contract, mut context) =
+            init_test_env(Some(owner_id.clone()), Some(beneficiary_id.clone()), None);
         contract.owner_id = owner_id;
 
         contract.change_beneficiary(beneficiary_id.clone());
