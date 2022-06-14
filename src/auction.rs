@@ -110,7 +110,8 @@ impl Auction {
             .get(nft_id)
             .unwrap_or_else(|| panic_str("Not in auction."));
         require!(
-            deal_data.get_deadline() < env::block_timestamp(),
+            // NOW => END START--HERE--END-----NOW-->
+            deal_data.get_deadline() <= env::block_timestamp(),
             "Auction in progress."
         );
         match deal_data.get_bid() {
@@ -225,11 +226,11 @@ impl Contract {
     }
 
     pub fn make_bid(&mut self, nft_id: NftId, price: Balance, account_id: AccountId) {
-        let mut buyer_account = Account::from(
-            self.accounts
-                .get(&account_id)
-                .unwrap_or_else(|| panic_str("Account not found")),
-        );
+        let mut buyer_account: Account = self
+            .accounts
+            .get(&account_id)
+            .unwrap_or_else(|| panic_str("Account not found"))
+            .into();
 
         require!(buyer_account.free >= price, "Not enough money.");
         if let Some(last_bid) = self.nfts.make_bid(&account_id, &nft_id, price) {
@@ -247,8 +248,8 @@ impl Contract {
         self.accounts.insert(&account_id, &buyer_account.into());
     }
 
-    pub fn confirm_deal(&mut self, nft_id: NftId) {
-        let deal_data = self.nfts.confirm_deal(&nft_id, env::signer_account_id());
+    pub fn confirm_deal(&mut self, nft_id: NftId, account_id: AccountId) {
+        let deal_data = self.nfts.confirm_deal(&nft_id, account_id);
 
         if let Some(the_winner) = deal_data.get_bid() {
             let win_account: Account = self
@@ -272,4 +273,118 @@ impl Contract {
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use std::time::Duration;
+    use crate::nft::Nft;
+    use crate::utils::tests_utils::*;
+
+    fn get_contract() -> (Contract, VMContextBuilder) {
+        let (mut cn, ct)
+            =
+            init_test_env(
+                Some(accounts(0)),
+                Some(accounts(0)),
+                Some(accounts(0)));
+
+        let ac: VAccount = Account::new(1000).into();
+        cn.accounts.insert(&accounts(1), &ac);
+        let id = cn.nfts.mint_nft(&accounts(1), "metadata".to_string());
+
+        cn.nfts.mint_nft(&accounts(1), "metadata".to_string());
+
+        let ac: VAccount = Account::new(0).into();
+        cn.accounts.insert(&accounts(2), &ac);
+
+        let ac: VAccount = Account::new(1000).into();
+        cn.accounts.insert(&accounts(3), &ac);
+
+        let ac: VAccount = Account::new(1000).into();
+        cn.accounts.insert(&accounts(4), &ac);
+
+        let ac: VAccount = Account::new(1000).into();
+        cn.accounts.insert(&accounts(5), &ac);
+
+        (cn, ct)
+    }
+
+    #[test]
+    #[should_panic(expected = "Auction expired.")]
+    fn bid_after_deadline_test() {
+        let (mut contract, context) = get_contract();
+        contract.start_auction(0, 10, env::block_timestamp(), accounts(1));
+        std::thread::sleep(Duration::new(0, 100));
+        contract.make_bid(0, 20, accounts(3));
+    }
+
+    #[test]
+    #[should_panic(expected = "Not enough money.")]
+    fn bid_with_out_money_test() {
+        let (mut contract, context) = get_contract();
+        contract.start_auction(0, 10, env::block_timestamp() + 100, accounts(1));
+
+        contract.make_bid(0, 20, accounts(2));
+    }
+
+    #[test]
+    #[should_panic(expected = "NFT owner can't make a bid.")]
+    fn buy_own_nft_test() {
+        let (mut contract, context) = get_contract();
+        contract.start_auction(0, 10, env::block_timestamp() + 100, accounts(1));
+
+        contract.make_bid(0, 20, accounts(1));
+    }
+
+    #[test]
+    #[should_panic(expected = "Less or equal to the last bid.")]
+    fn less_then_price_test() {
+        let (mut contract, context) = get_contract();
+        contract.start_auction(0, 10, env::block_timestamp() + 100, accounts(1));
+
+        contract.make_bid(0, 5, accounts(3));
+    }
+
+    #[test]
+    fn money_blocked_test() {
+        let (mut contract, context) = get_contract();
+        contract.start_auction(0, 10, env::block_timestamp() + 100, accounts(1));
+
+        contract.make_bid(0, 20, accounts(3));
+        let ac: Account = contract.accounts.get(&accounts(3)).unwrap().into();
+        assert_eq!(ac.free, 980);
+    }
+
+    #[test]
+    fn money_back_if_highest_bid_test() {
+        let (mut contract, context) = get_contract();
+        contract.start_auction(0, 10, env::block_timestamp() + 100, accounts(1));
+
+        contract.make_bid(0, 20, accounts(3));
+        contract.make_bid(0, 50, accounts(5));
+        let ac: Account = contract.accounts.get(&accounts(3)).unwrap().into();
+        let ac2: Account = contract.accounts.get(&accounts(5)).unwrap().into();
+        assert_eq!(ac.free, 1000);
+        assert_eq!(ac2.free, 950);
+    }
+
+    #[test]
+    fn correct_deal_test() {
+        let (mut contract, mut context) = get_contract();
+
+        let time = context.context.block_timestamp + 5;
+        contract.start_auction(0, 10, time, accounts(1));
+        contract.make_bid(0, 50, accounts(5));
+
+        let buyer: Account = contract.accounts.get(&accounts(5)).unwrap().into();
+        assert_eq!(buyer.free, 950);
+
+        context.block_timestamp(10);
+        testing_env!(context.context);
+
+        contract.confirm_deal(0,accounts(5));
+        let nft: Nft = contract.nfts.get_nft(&0).into();
+        assert!(nft.is_owner(&accounts(5)));
+
+        let owner: Account = contract.accounts.get(&accounts(1)).unwrap().into();
+        assert_eq!(owner.free, 1050);
+    }
+}

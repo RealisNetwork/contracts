@@ -97,11 +97,14 @@ impl NonFungibleTokenEnumeration for Contract {
             .iter()
             .skip(from.0 as usize)
             .take(limit as usize)
-            .map(|(key, value)| Token {
-                token_id: key.to_string(),
-                owner_id: value.owner_id,
-                metadata: None,
-                approved_account_ids: None,
+            .map(|(key, value)| {
+                let nft: Nft = value.into();
+                Token {
+                    token_id: key.to_string(),
+                    owner_id: nft.owner_id,
+                    metadata: None,
+                    approved_account_ids: None,
+                }
             })
             .collect()
     }
@@ -132,7 +135,7 @@ impl NonFungibleTokenEnumeration for Contract {
             .filter(|(_key, value)| Nft::from(value.clone()).is_owner(&account_id))
             .skip(from.0 as usize)
             .take(limit as usize)
-            .map(|(key, _value)| Token {
+            .map(|(key, _)| Token {
                 token_id: key.to_string(),
                 owner_id: account_id.clone(),
                 metadata: None,

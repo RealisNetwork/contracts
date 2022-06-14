@@ -167,7 +167,7 @@ impl NftManager {
     /// Get NFT by ID if ID exist.
     pub fn get_nft(&self, nft_id: &NftId) -> VNft {
         self.nft_map
-            .get(&nft_id)
+            .get(nft_id)
             .unwrap_or_else(|| env::panic_str("Nft not exist"))
     }
 
