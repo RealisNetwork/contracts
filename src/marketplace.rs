@@ -62,11 +62,12 @@ impl Contract {
     }
 
     pub fn internal_buy_nft(&mut self, nft_id: NftId, price: Balance, account_id: AccountId) {
-        let mut buyer_account = Account::from(
-            self.accounts
-                .get(&account_id)
-                .unwrap_or_else(|| panic_str("Account not found")),
-        );
+        let mut buyer_account: Account = self
+            .accounts
+            .get(&account_id)
+            .unwrap_or_else(|| panic_str("Account not found"))
+            .into();
+
         require!(buyer_account.free >= price, "Not enough money");
 
         let nft = self.nfts.get_nft(nft_id);
