@@ -15,7 +15,7 @@ jobs:
         name: "Rust Toolchain Setup"
         with:
           profile: minimal
-#          toolchain: nightly
+          toolchain: default
           target: wasm32-unknown-unknown
       - run: cargo build
 
