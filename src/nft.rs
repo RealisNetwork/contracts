@@ -10,7 +10,6 @@ use crate::{
     marketplace::Marketplace,
     NftId, StorageKey,
 };
-
 /// State of NFT.
 /// Displays the current state of an NFT.
 /// # States
@@ -33,6 +32,24 @@ pub struct Nft {
     pub owner_id: AccountId,
     metadata: String,
     state: NftState,
+}
+
+#[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
+pub enum VNft {
+    V1(Nft),
+}
+
+impl From<VNft> for Nft {
+    fn from(nft: VNft) -> Self {
+        match nft {
+            VNft::V1(account) => account,
+        }
+    }
+}
+impl From<Nft> for VNft {
+    fn from(nft: Nft) -> Self {
+        VNft::V1(nft)
+    }
 }
 
 impl Nft {
@@ -90,7 +107,7 @@ impl Nft {
 /// * `nft_id_counter` - counter for generating NFT id.
 #[derive(BorshSerialize, BorshDeserialize, Debug)]
 pub struct NftManager {
-    nft_map: UnorderedMap<NftId, Nft>,
+    nft_map: UnorderedMap<NftId, VNft>,
     marketplace_nft_map: Marketplace,
     auction_nft_map: Auction,
     nft_id_counter: NftId,
@@ -124,12 +141,12 @@ impl NftManager {
     }
 
     /// Get all NFTs with ID.
-    pub fn get_nft_map(&self) -> &UnorderedMap<NftId, Nft> {
+    pub fn get_nft_map(&self) -> &UnorderedMap<NftId, VNft> {
         &self.nft_map
     }
 
     /// Get all NFTs.
-    pub fn get_all_nft(&self) -> &Vector<Nft> {
+    pub fn get_all_nft(&self) -> &Vector<VNft> {
         self.nft_map.values_as_vector()
     }
 
@@ -148,18 +165,21 @@ impl NftManager {
     }
 
     /// Get NFT by ID if ID exist.
-    pub fn get_nft(&self, nft_id: NftId) -> Nft {
+    pub fn get_nft(&self, nft_id: &NftId) -> VNft {
         self.nft_map
             .get(&nft_id)
             .unwrap_or_else(|| env::panic_str("Nft not exist"))
     }
 
     /// Get NFT by ID if ID exist and NFT is available.
-    pub fn get_if_available(&self, nft_id: &NftId) -> Nft {
-        self.nft_map
+    pub fn get_if_available(&self, nft_id: &NftId) -> VNft {
+        let nft: Nft = self
+            .nft_map
             .get(nft_id)
             .unwrap_or_else(|| env::panic_str("Nft not exist"))
-            .assert_available()
+            .into();
+
+        nft.assert_available().into()
     }
 
     /// Get all available NFTs.
@@ -185,11 +205,11 @@ impl NftManager {
         deadline: Timestamp,
         account_id: &AccountId,
     ) {
-        let nft = self.get_if_available(nft_id);
+        let nft: Nft = self.get_if_available(nft_id).into();
         require!(nft.is_owner(account_id), "Not the owner of NFT");
         self.auction_nft_map
             .start_auction(nft_id, price, deadline, account_id);
-        self.nft_map.insert(nft_id, &nft.lock_nft());
+        self.nft_map.insert(nft_id, &nft.lock_nft().into());
     }
 
     /// Make asserts of:
@@ -212,13 +232,13 @@ impl NftManager {
     /// Unlock NFT if nobody made bids.
     /// Change NFT owner and unlock for future operations.
     pub fn confirm_deal(&mut self, nft_id: &NftId, account_id: AccountId) -> DealData {
-        let nft = self.get_if_available(nft_id);
+        let nft: Nft = self.get_nft(nft_id).into();
         let deal_data = self.auction_nft_map.confirm_deal(nft_id, account_id);
         match &deal_data.get_bid() {
-            None => self.nft_map.insert(nft_id, &nft.unlock_nft()),
+            None => self.nft_map.insert(nft_id, &nft.unlock_nft().into()),
             Some(bid) => {
                 let nft = nft.unlock_nft().set_owner_id(bid.get_owner());
-                self.nft_map.insert(nft_id, &nft)
+                self.nft_map.insert(nft_id, &nft.into())
             }
         };
         deal_data
@@ -230,11 +250,11 @@ impl NftManager {
     /// Remove NFT from for sale list.
     /// Change NFT owner and unlock for future operations.
     pub fn buy_nft(&mut self, nft_id: &NftId, new_owner: &AccountId) -> Balance {
-        let nft = self.get_if_available(nft_id);
+        let nft: Nft = self.get_nft(nft_id).into();
         require!(&nft.owner_id != new_owner, "Owner can't buy own NFT.");
         let balance = self.marketplace_nft_map.buy_nft(nft_id);
         self.nft_map
-            .insert(nft_id, &nft.unlock_nft().set_owner_id(new_owner));
+            .insert(nft_id, &nft.unlock_nft().set_owner_id(new_owner).into());
         balance
     }
 
@@ -245,10 +265,10 @@ impl NftManager {
 
     /// Manage of sell NFT.
     pub fn sell_nft(&mut self, nft_id: &NftId, price: &Balance, account_id: AccountId) {
-        let nft = self.get_if_available(nft_id);
+        let nft: Nft = self.get_if_available(nft_id).into();
         require!(nft.is_owner(&account_id), "Not the owner of NFT");
         self.marketplace_nft_map.sell_nft(nft_id, price);
-        self.nft_map.insert(nft_id, &nft.lock_nft());
+        self.nft_map.insert(nft_id, &nft.lock_nft().into());
     }
 
     /// Remove NFT if NFT available.
@@ -267,7 +287,7 @@ impl NftManager {
     /// Mint new `NFT` with generated id.
     pub fn mint_nft(&mut self, owner_id: &AccountId, metadata: String) -> u128 {
         let new_nft_id = self.generate_nft_id();
-        let nft = Nft::new(owner_id, metadata);
+        let nft: VNft = Nft::new(owner_id, metadata).into();
 
         self.nft_map.insert(&new_nft_id, &nft);
 
@@ -276,8 +296,9 @@ impl NftManager {
 
     /// Transfer `NFT` between two users if NFT available.
     pub fn transfer_nft(&mut self, new_owner: AccountId, nft_id: &NftId) {
-        let nft = self.get_if_available(nft_id).set_owner_id(&new_owner);
-        self.nft_map.insert(nft_id, &nft);
+        let nft: Nft = self.get_if_available(nft_id).into();
+        self.nft_map
+            .insert(nft_id, &nft.set_owner_id(&new_owner).into());
     }
 
     /// Generate new id for new `NFT`.
@@ -300,7 +321,8 @@ mod tests {
 
     #[test]
     fn id_test() {
-        let (mut contract, context) = init_test_env(Some(accounts(0)), Some(accounts(1)), Some(accounts(2)));
+        let (mut contract, context) =
+            init_test_env(Some(accounts(0)), Some(accounts(1)), Some(accounts(2)));
         contract.accounts.insert(
             &AccountId::new_unchecked("id".to_string()),
             &VAccount::V1(Account::new(0)),

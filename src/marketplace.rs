@@ -94,7 +94,7 @@ impl Contract {
         price: Balance,
         account_id: AccountId,
     ) {
-        let nft = self.nfts.get_nft(nft_id);
+        let nft: Nft = self.nfts.get_nft(&nft_id).into();
         require!(account_id == nft.owner_id, "Only for NFT owner.");
         self.nfts.change_price_nft(&nft_id, price);
     }
