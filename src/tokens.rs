@@ -1,17 +1,11 @@
-
-use crate::lockup::Lockup;
-use crate::*;
-use std::str::FromStr;
 use crate::{Account, Contract, *};
 use near_sdk::{env, near_bindgen, require, AccountId};
 use primitive_types::U256;
 
-
 #[near_bindgen]
 impl Contract {
-
-    /// `fn internal_transfer` transfers tokens from one user to another, returns sender balance left
-    ///  # Examples
+    /// `fn internal_transfer` transfers tokens from one user to another,
+    /// returns sender balance left  # Examples
     /// ```
     /// let sender_id = accounts(0);
     /// let receiver_id = accounts(1);
@@ -54,9 +48,8 @@ impl Contract {
         sender_balance_left
     }
 
-
-    /// `fn take_fee` used to take users money and fee, returns sender balance left
-    ///  # Examples
+    /// `fn take_fee` used to take users money and fee, returns sender balance
+    /// left  # Examples
     /// ```
     ///  let sender_balance_left = self.take_fee(sender, Some(amount));
     /// ```
@@ -223,7 +216,6 @@ pub mod tests {
     #[test]
     #[should_panic = "You can't transfer tokens to yourself"]
     fn transfer_tokens_to_itself() {
-
         let (mut contract, mut context) = init_test_env(None, None, None);
 
         // Sender
@@ -338,7 +330,7 @@ pub mod tests {
             .insert(&sender_id, &Account::new(250 * ONE_LIS).into()); // Will be 228
 
         // receiver
-        let receiver_id = AccountId::from_str("mike.testnet").unwrap();
+        let receiver_id = accounts(1);
 
         contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 20 * ONE_LIS, true);
 
