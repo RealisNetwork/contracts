@@ -274,17 +274,11 @@ impl Contract {
 
 #[cfg(test)]
 mod tests {
+    use crate::{nft::Nft, utils::tests_utils::*};
     use std::time::Duration;
-    use crate::nft::Nft;
-    use crate::utils::tests_utils::*;
 
     fn get_contract() -> (Contract, VMContextBuilder) {
-        let (mut cn, ct)
-            =
-            init_test_env(
-                Some(accounts(0)),
-                Some(accounts(0)),
-                Some(accounts(0)));
+        let (mut cn, ct) = init_test_env(Some(accounts(0)), Some(accounts(0)), Some(accounts(0)));
 
         let ac: VAccount = Account::new(1000).into();
         cn.accounts.insert(&accounts(1), &ac);
@@ -372,6 +366,8 @@ mod tests {
 
         let time = context.context.block_timestamp + 5;
         contract.start_auction(0, 10, time, accounts(1));
+        contract.make_bid(0, 30, accounts(3));
+        contract.make_bid(0, 40, accounts(4));
         contract.make_bid(0, 50, accounts(5));
 
         let buyer: Account = contract.accounts.get(&accounts(5)).unwrap().into();
@@ -380,11 +376,14 @@ mod tests {
         context.block_timestamp(10);
         testing_env!(context.context);
 
-        contract.confirm_deal(0,accounts(5));
+        contract.confirm_deal(0, accounts(5));
         let nft: Nft = contract.nfts.get_nft(&0).into();
         assert!(nft.is_owner(&accounts(5)));
 
         let owner: Account = contract.accounts.get(&accounts(1)).unwrap().into();
         assert_eq!(owner.free, 1050);
+
+        let participant: Account = contract.accounts.get(&accounts(4)).unwrap().into();
+        assert_eq!(participant.free, 1000);
     }
 }

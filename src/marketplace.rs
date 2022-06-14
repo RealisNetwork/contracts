@@ -103,16 +103,10 @@ impl Contract {
 
 #[cfg(test)]
 mod tests {
-    use crate::nft::Nft;
-    use crate::utils::tests_utils::*;
+    use crate::{nft::Nft, utils::tests_utils::*};
 
     fn get_contract() -> (Contract, VMContextBuilder) {
-        let (mut cn, ct)
-            =
-            init_test_env(
-                Some(accounts(0)),
-                Some(accounts(0)),
-                Some(accounts(0)));
+        let (mut cn, ct) = init_test_env(Some(accounts(0)), Some(accounts(0)), Some(accounts(0)));
 
         let ac: VAccount = Account::new(1000).into();
         cn.accounts.insert(&accounts(1), &ac);
@@ -152,14 +146,6 @@ mod tests {
     }
 
     #[test]
-    fn change_price_test() {
-        let (mut contract, context) = get_contract();
-        contract.internal_change_price_nft(0, 2000, accounts(1));
-        let res = contract.nfts.get_marketplace_nft_map().get(&0).unwrap();
-        assert_eq!(res, 2000);
-    }
-
-    #[test]
     #[should_panic(expected = "Nft not in marketplace.")]
     fn buy_if_not_on_sale_test() {
         let (mut contract, context) = get_contract();
@@ -177,6 +163,60 @@ mod tests {
     #[should_panic(expected = "Nft locked up")]
     fn sell_again_test() {
         let (mut contract, context) = get_contract();
-        contract.start_auction(0, 1000, env::block_timestamp()+100,accounts(1));
+        contract.start_auction(0, 1000, env::block_timestamp() + 100, accounts(1));
+    }
+
+    #[test]
+    #[should_panic(expected = "Nft locked up")]
+    fn sell_again2_test() {
+        let (mut contract, context) = get_contract();
+        contract.internal_sell_nft(0, 1000, accounts(1));
+    }
+
+    #[test]
+    #[should_panic(expected = "Not the owner of NFT")]
+    fn sell_not_nft_owner_test() {
+        let (mut contract, context) = get_contract();
+        contract.nfts.mint_nft(&accounts(1), "metadata".to_string());
+        contract.internal_sell_nft(1, 1000, accounts(2));
+    }
+
+    #[test]
+    fn change_price_test() {
+        let (mut contract, context) = get_contract();
+        contract.internal_change_price_nft(0, 2000, accounts(1));
+        let res = contract.nfts.get_marketplace_nft_map().get(&0).unwrap();
+        assert_eq!(res, 2000);
+    }
+
+    #[test]
+    #[should_panic(expected = "Only for NFT owner.")]
+    fn change_price_not_nft_owner_test() {
+        let (mut contract, context) = get_contract();
+        contract.internal_change_price_nft(0, 2000, accounts(2));
+    }
+
+    #[test]
+    fn sell_nft_test() {
+        let (mut contract, context) = get_contract();
+        let nft_id = contract.nfts.mint_nft(&accounts(3), "".to_owned());
+        contract.internal_sell_nft(nft_id, 1000, accounts(3));
+        let nft_map = contract.nfts.get_marketplace_nft_map();
+        assert!(nft_map.get(&nft_id).is_some())
+    }
+
+    #[test]
+    #[should_panic(expected = "Not the owner of NFT")]
+    fn sell_someone_nft_test() {
+        let (mut contract, context) = get_contract();
+        let nft_id = contract.nfts.mint_nft(&accounts(3), "".to_owned());
+        contract.internal_sell_nft(nft_id, 1000, accounts(4));
+    }
+
+    #[test]
+    #[should_panic(expected = "Nft locked up")]
+    fn sell_locked_nft_test() {
+        let (mut contract, context) = get_contract();
+        contract.internal_sell_nft(0, 1000, accounts(3));
     }
 }

@@ -151,16 +151,10 @@ mod tests {
     use near_contract_standards::non_fungible_token::enumeration::NonFungibleTokenEnumeration;
 
     pub fn get_contract() -> (Contract, VMContextBuilder) {
-        let (mut contract, context) = init_test_env(
-            Some(AccountId::new_unchecked("not_owner".to_string())),
-            Some(AccountId::new_unchecked("user_id".to_string())),
-            Some(AccountId::new_unchecked("user_id".to_string())),
-        );
+        let (mut contract, context) =
+            init_test_env(Some(accounts(0)), Some(accounts(0)), Some(accounts(0)));
         for i in 0..10 {
-            contract.nfts.mint_nft(
-                &AccountId::new_unchecked(format!("id_{}", i)),
-                "some".to_string(),
-            );
+            contract.nfts.mint_nft(&accounts(0), "some".to_string());
         }
 
         (contract, context)
@@ -183,15 +177,14 @@ mod tests {
     #[test]
     fn test_nft_supply_for_owner() {
         let (contract, context) = get_contract();
-        let result = contract.nft_supply_for_owner(AccountId::new_unchecked("id_4".to_string()));
-        assert_eq!(result, U128::from(1))
+        let result = contract.nft_supply_for_owner(accounts(0));
+        assert_eq!(result, U128::from(10))
     }
 
     #[test]
     fn test_nft_tokens_for_owner() {
         let (contract, context) = get_contract();
-        let result =
-            contract.nft_tokens_for_owner(AccountId::new_unchecked("id_4".to_string()), None, None);
-        assert_eq!(result.len(), 1)
+        let result = contract.nft_tokens_for_owner(accounts(0), None, None);
+        assert_eq!(result.len(), 10)
     }
 }

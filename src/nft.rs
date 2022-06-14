@@ -324,21 +324,18 @@ mod tests {
     fn id_test() {
         let (mut contract, context) =
             init_test_env(Some(accounts(0)), Some(accounts(1)), Some(accounts(2)));
-        contract.accounts.insert(
-            &AccountId::new_unchecked("id".to_string()),
-            &VAccount::V1(Account::new(0)),
-        );
+        contract
+            .accounts
+            .insert(&accounts(0), &VAccount::V1(Account::new(0)));
 
-        let m_id = contract.nfts.mint_nft(
-            &AccountId::new_unchecked("id".to_string()),
-            String::from("metadata"),
-        );
+        let m_id = contract
+            .nfts
+            .mint_nft(&accounts(0), String::from("metadata"));
         assert_eq!(m_id, 0);
         contract.nfts.burn_nft(&m_id);
-        let f_id = contract.nfts.mint_nft(
-            &AccountId::new_unchecked("id".to_string()),
-            String::from("metadata"),
-        );
+        let f_id = contract
+            .nfts
+            .mint_nft(&accounts(0), String::from("metadata"));
         assert_eq!(f_id, 0);
     }
 }
