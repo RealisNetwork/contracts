@@ -5,7 +5,7 @@ use near_sdk::{
     env,
     json_types::U128,
     serde::{Deserialize, Serialize},
-    serde_json,
+    serde_json, AccountId,
 };
 
 /// Rules of logging events on `Near`.
@@ -87,6 +87,6 @@ pub struct ChangeStateLog {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(crate = "near_sdk::serde")]
 pub struct ChangeBeneficiaryLog {
-    pub from: String,
-    pub to: String,
+    pub from: AccountId,
+    pub to: AccountId,
 }

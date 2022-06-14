@@ -94,7 +94,6 @@ impl Account {
     pub fn get_lockups_free(&self) -> u128 {
         let fold = self
             .lockups
-            .to_vec()
             .iter()
             .filter(|lock| lock.is_expired())
             .fold(0, |acc, lock| acc + lock.amount);

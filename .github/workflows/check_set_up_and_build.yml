@@ -17,7 +17,7 @@ jobs:
           profile: minimal
           toolchain: nightly
           target: wasm32-unknown-unknown
-      - run: cargo +nightly build
+      - run: cargo build
 
   build-release:
     runs-on: ubuntu-latest
@@ -30,7 +30,7 @@ jobs:
           profile: minimal
           toolchain: nightly
           target: wasm32-unknown-unknown
-      - run: cargo +nightly build --release
+      - run: cargo build --release
 
   fmt:
     runs-on: ubuntu-latest
@@ -44,7 +44,7 @@ jobs:
           toolchain: nightly
           target: wasm32-unknown-unknown
           components: rustfmt
-      - run: cargo +nightly fmt
+      - run: cargo fmt
 
   lint:
     runs-on: ubuntu-latest
@@ -58,7 +58,7 @@ jobs:
           toolchain: nightly
           target: wasm32-unknown-unknown
           components: clippy
-      - run: cargo +nightly clippy
+      - run: cargo clippy
 
   udeps:
     runs-on: ubuntu-latest
@@ -83,7 +83,7 @@ jobs:
           #toolchain: nightly
           target: wasm32-unknown-unknown
           components: udeps
-      - run: cargo +nightly udeps
+      - run: cargo udeps
 
   tests:
     runs-on: ubuntu-latest
@@ -96,4 +96,4 @@ jobs:
           profile: minimal
           toolchain: nightly
           target: wasm32-unknown-unknown
-      - run: cargo +nightly test
+      - run: cargo test

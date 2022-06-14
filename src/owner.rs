@@ -1,4 +1,4 @@
-use near_sdk::{json_types::U128, AccountId, Timestamp};
+use near_sdk::{json_types::U128, require, AccountId, Timestamp};
 
 use crate::{
     events::{ChangeBeneficiaryLog, ChangeStateLog, EventLog, EventLogVariant, NftMintLog},
@@ -30,6 +30,8 @@ impl Contract {
     }
 
     pub fn change_state(&mut self, state: State) {
+        self.assert_owner();
+        require!(self.state != state, "State can't be the same");
         EventLog::from(EventLogVariant::ChangeState(ChangeStateLog {
             from: self.state.clone(),
             to: state.clone(),
@@ -40,9 +42,14 @@ impl Contract {
     }
 
     pub fn change_beneficiary(&mut self, new_beneficiary_id: AccountId) {
+        self.assert_owner();
+        require!(
+            self.beneficiary_id != new_beneficiary_id,
+            "Beneficiary can't be the same"
+        );
         EventLog::from(EventLogVariant::ChangeBeneficiary(ChangeBeneficiaryLog {
-            from: self.beneficiary_id.clone().to_string(),
-            to: new_beneficiary_id.to_string(),
+            from: self.beneficiary_id.clone(),
+            to: new_beneficiary_id.clone(),
         }))
         .emit();
 
@@ -64,33 +71,18 @@ impl Contract {
 mod tests {
     use super::*;
     use crate::utils::tests_utils::*;
-    use near_sdk::{test_utils::VMContextBuilder, testing_env, VMContext};
-
-    use super::*;
-
-    pub fn get_context(caller_id: String) -> VMContext {
-        VMContextBuilder::new()
-            .signer_account_id(AccountId::new_unchecked(caller_id))
-            .is_view(false)
-            .build()
-    }
-
-    pub fn get_contract() -> Contract {
-        Contract::new(
-            U128::from(123),
-            U128(1),
-            10,
-            Some(AccountId::from_str("beneficiary").unwrap()),
-            None,
-        )
-    }
 
     #[test]
     #[should_panic]
     fn mint_nft_test_panic() {
-        let mut contract = get_contract();
-        let context = get_context("not owner".to_string());
-        testing_env!(context);
+        let (mut contract, mut context) = init_test_env(
+            Some(AccountId::new_unchecked("not_owner".to_string())),
+            None,
+            None,
+        );
+        testing_env!(context
+            .signer_account_id(AccountId::new_unchecked("not_owner".to_string()))
+            .build());
 
         contract.mint(
             AccountId::new_unchecked("user_id".to_string()),
@@ -100,9 +92,17 @@ mod tests {
 
     #[test]
     fn mint_nft_test() {
-        let mut contract = get_contract();
-        let context = get_context("user_id".to_string());
-        testing_env!(context);
+        let owner_id = AccountId::new_unchecked("owner".to_string());
+        let (mut contract, mut context) = init_test_env(
+            Some(AccountId::new_unchecked("user_id".to_string())),
+            None,
+            None,
+        );
+
+        testing_env!(VMContextBuilder::new()
+            .signer_account_id(owner_id)
+            .is_view(false)
+            .build());
 
         contract.accounts.insert(
             &AccountId::new_unchecked("user_id".to_string()),
@@ -126,7 +126,14 @@ mod tests {
 
     #[test]
     fn change_beneficiary_test() {
-        let mut contract = get_contract();
+        let owner_id = AccountId::new_unchecked("owner".to_string());
+        let (mut contract, mut context) = init_test_env(Some(owner_id.clone()), None, None);
+
+        testing_env!(VMContextBuilder::new()
+            .signer_account_id(owner_id)
+            .is_view(false)
+            .build());
+
         let account_id_new = AccountId::from_str("new_beneficiary").unwrap();
         contract.change_beneficiary(account_id_new.clone());
         assert_eq!(contract.beneficiary_id, account_id_new);
@@ -134,7 +141,14 @@ mod tests {
 
     #[test]
     fn change_state_test() {
-        let mut contract = get_contract();
+        let owner_id = AccountId::new_unchecked("owner".to_string());
+        let (mut contract, mut context) = init_test_env(None, None, None);
+
+        testing_env!(VMContextBuilder::new()
+            .signer_account_id(owner_id)
+            .is_view(false)
+            .build());
+
         let contract_new_state = State::Paused;
         contract.change_state(contract_new_state.clone());
         assert_eq!(contract.state, contract_new_state)
