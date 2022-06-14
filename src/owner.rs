@@ -1,4 +1,4 @@
-use near_sdk::{json_types::U128, require, AccountId, Timestamp};
+use near_sdk::{env::panic_str, json_types::U128, require, AccountId, Timestamp};
 
 use crate::{
     events::{ChangeBeneficiaryLog, ChangeStateLog, EventLog, EventLogVariant, NftMintLog},
@@ -26,7 +26,18 @@ impl Contract {
         }))
         .emit();
 
-        self.nfts.mint_nft(recipient_id, nft_metadata)
+        let mut nft_owner_id = Account::from(
+            self.accounts
+                .get(&recipient_id)
+                .unwrap_or_else(|| panic_str("Account not found")),
+        );
+
+        let nft_id = self.nfts.mint_nft(&recipient_id, nft_metadata);
+        nft_owner_id.nfts.insert(&nft_id);
+        self.accounts
+            .insert(&recipient_id, &VAccount::V1(nft_owner_id));
+
+        nft_id
     }
 
     pub fn change_state(&mut self, state: State) {
@@ -43,7 +54,10 @@ impl Contract {
 
     pub fn change_beneficiary(&mut self, new_beneficiary_id: AccountId) {
         self.assert_owner();
-        require!(self.beneficiary_id != new_beneficiary_id,"Beneficiary can't be the same");
+        require!(
+            self.beneficiary_id != new_beneficiary_id,
+            "Beneficiary can't be the same"
+        );
         EventLog::from(EventLogVariant::ChangeBeneficiary(ChangeBeneficiaryLog {
             from: self.beneficiary_id.clone(),
             to: new_beneficiary_id.clone(),
@@ -66,55 +80,38 @@ impl Contract {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::utils::tests_utils::*;
 
     #[test]
     #[should_panic]
     fn mint_nft_test_panic() {
-        let owner_id = accounts(0);
-        let not_owner_id = accounts(1);
-        let (mut contract, mut context) = init_test_env(
-            Some(owner_id.clone()),
-            None,
-            None,
-        );
-        contract.owner_id = not_owner_id;
+        let (mut contract, context) =
+            init_test_env(Some(accounts(0)), Some(accounts(0)), Some(accounts(0)));
 
-        contract.mint(
-            AccountId::new_unchecked("user_id".to_string()),
-            "some_metadata".to_string(),
-        );
+        contract.mint(accounts(0), "some_metadata".to_string());
     }
 
     #[test]
     fn mint_nft_test() {
-        let owner_id = accounts(0);
-        let user_id = accounts(1);
-        let (mut contract, mut context) = init_test_env(
-            Some(owner_id.clone()),
+        let (_, context) = init_test_env(Some(accounts(0)), Some(accounts(0)), Some(accounts(0)));
+        let mut contract = Contract::new(
+            U128(3_000_000_000 * ONE_LIS),
+            U128(5 * ONE_LIS),
+            10,
             None,
             None,
         );
-        contract.owner_id = owner_id;
+        contract.owner_id = accounts(0);
 
-        contract.accounts.insert(
-            &user_id,
-            &Account::default().into(),
-        );
+        contract
+            .accounts
+            .insert(&accounts(1), &Account::default().into());
 
-        let res = contract.mint(
-            user_id.clone(),
-            "some_metadata".to_string(),
-        );
+        let res = contract.mint(accounts(1), "some_metadata".to_string());
 
         let assertion = contract.nfts.get_nft_map().keys().any(|key| key == res);
         assert!(assertion);
-        let account: Account = contract
-            .accounts
-            .get(&user_id)
-            .unwrap()
-            .into();
+        let account: Account = contract.accounts.get(&accounts(1)).unwrap().into();
         assert!(account.nfts.contains(&res));
     }
 
@@ -134,7 +131,8 @@ mod tests {
     fn change_the_same_beneficiary_test() {
         let owner_id = accounts(0);
         let beneficiary_id = accounts(1);
-        let (mut contract, mut context) = init_test_env(Some(owner_id.clone()), Some(beneficiary_id.clone()), None);
+        let (mut contract, mut context) =
+            init_test_env(Some(owner_id.clone()), Some(beneficiary_id.clone()), None);
         contract.owner_id = owner_id;
 
         contract.change_beneficiary(beneficiary_id.clone());
