@@ -1,12 +1,13 @@
 //! All the logic described here applies to the NFT auction.
-use crate::{lockup::Lockup, Account, Contract, ContractExt, NftId, StorageKey, VAccount};
 use near_sdk::{
+    AccountId,
+    Balance,
     borsh::{self, BorshDeserialize, BorshSerialize},
     collections::{UnorderedMap, Vector},
-    env,
-    env::panic_str,
-    near_bindgen, require, AccountId, Balance, Timestamp,
+    env, env::panic_str, near_bindgen, require, Timestamp,
 };
+
+use crate::{Account, Contract, ContractExt, lockup::Lockup, NftId, StorageKey, VAccount};
 
 /// Auction structure implement logic of NFT auction.
 /// Manage bids and auctions deals.
@@ -34,12 +35,12 @@ impl Auction {
     }
 
     /// Count of all auction lots
-    pub fn auction_nft_count(&self) -> u64 {
+    pub fn auction_lots_count(&self) -> u64 {
         self.nft_map.len()
     }
 
     /// HashMap of all auction lots.
-    pub fn get_map(&self) -> &UnorderedMap<NftId, DealData> {
+    pub fn get_auction_lots(&self) -> &UnorderedMap<NftId, DealData> {
         &self.nft_map
     }
 
@@ -92,6 +93,7 @@ impl Auction {
             deal_data.deadline > env::block_timestamp(),
             "Auction expired."
         );
+        require!(deal_data.deal_owner != account_id,"NFT owner can't make a bid.");
         let last_bid = self.get_last_bid(nft_id);
         let highest = match &last_bid {
             Some(last_bid) => last_bid.get_price(),
@@ -283,3 +285,6 @@ impl Contract {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {}
