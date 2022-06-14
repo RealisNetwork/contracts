@@ -36,20 +36,20 @@ pub struct Nft {
 }
 
 impl Nft {
-    pub fn new(owner_id: AccountId, metadata: String) -> Self {
+    pub fn new(owner_id: &AccountId, metadata: String) -> Self {
         Self {
-            owner_id,
+            owner_id: owner_id.clone(),
             metadata,
             state: NftState::Available,
         }
     }
 
-    pub fn get_metadata(&self) -> String {
-        self.metadata.clone()
+    pub fn get_metadata(&self) -> &str {
+        &self.metadata
     }
 
     pub fn is_owner(&self, account_id: &AccountId) -> bool {
-        self.owner_id == *account_id
+        &self.owner_id == account_id
     }
 
     pub fn set_owner_id(self, id: &AccountId) -> Self {
@@ -267,7 +267,7 @@ impl NftManager {
     /// Mint new `NFT` with generated id.
     pub fn mint_nft(&mut self, owner_id: &AccountId, metadata: String) -> u128 {
         let new_nft_id = self.generate_nft_id();
-        let nft = Nft::new(owner_id.clone(), metadata);
+        let nft = Nft::new(owner_id, metadata);
 
         self.nft_map.insert(&new_nft_id, &nft);
 

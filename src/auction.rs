@@ -163,7 +163,7 @@ impl DealData {
 
     /// Add bid for lot.
     pub fn set_bid(&mut self, price: Balance, account_id: &AccountId) {
-        self.highest_bid.set(&Bid::new(price, account_id.clone()));
+        self.highest_bid.set(&Bid::new(price, account_id));
     }
 
     /// Return owner id.
@@ -188,8 +188,11 @@ pub struct Bid {
 }
 
 impl Bid {
-    pub fn new(price: Balance, account_id: AccountId) -> Self {
-        Self { account_id, price }
+    pub fn new(price: Balance, account_id: &AccountId) -> Self {
+        Self {
+            account_id: account_id.clone(),
+            price,
+        }
     }
 
     /// Return owner of bid.
