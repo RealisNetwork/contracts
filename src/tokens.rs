@@ -73,11 +73,11 @@ impl Contract {
         // Calculate total charged amount
         let (charge, fee) = match (amount, is_fee_required) {
             (Some(amount), true) => {(
-                    ((U256::from(amount) * (U256::from(self.percent_fee) + U256::from(100)))
-                        / U256::from(100))
-                        .as_u128(),
-                    ((U256::from(amount) * U256::from(self.percent_fee as u128)) / U256::from(100))
-                        .as_u128(),
+                ((U256::from(amount) * (U256::from(self.percent_fee) + U256::from(100)))
+                    / U256::from(100))
+                    .as_u128(),
+                ((U256::from(amount) * U256::from(self.percent_fee as u128)) / U256::from(100))
+                    .as_u128(),
             )},
             (Some(amount), false) => (amount, 0),
             (None, true) => (self.constant_fee, self.constant_fee),
@@ -169,7 +169,7 @@ pub mod tests {
             .accounts
             .insert(&sender_id, &Account::new(u128::MAX).into()); // Will be 228
 
-        contract.internal_transfer(sender_id.clone(), accounts(1), u128::MAX - (u128::MAX/100) * 11, true);
+        contract.internal_transfer(sender_id.clone(), accounts(1), u128::MAX - u128::MAX / 100 * 11, true);
     }
 
     #[test]
@@ -200,6 +200,24 @@ pub mod tests {
         assert_eq!(account.free, 230 * ONE_LIS);
         let account: Account = contract.accounts.get(&receiver_id).unwrap().into();
         assert_eq!(account.free, 29 * ONE_LIS);
+    }
+
+    #[test]
+    fn take_fee_without_fee() {
+        let (mut contract, mut context) = init_test_env(None, None, None);
+
+        // Sender
+        let sender_id = accounts(0);
+        contract
+            .accounts
+            .insert(&sender_id, &Account::new(250 * ONE_LIS).into()); // Will be 228
+
+
+        contract.take_fee(sender_id.clone(), None, false);
+
+        let account: Account = contract.accounts.get(&sender_id).unwrap().into();
+        assert_eq!(account.free, 250 * ONE_LIS);
+
     }
 
     #[test]
