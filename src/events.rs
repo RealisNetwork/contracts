@@ -1,10 +1,11 @@
 use std::fmt;
 
+use crate::State;
 use near_sdk::{
     env,
     json_types::U128,
     serde::{Deserialize, Serialize},
-    serde_json,
+    serde_json, AccountId,
 };
 
 /// Rules of logging events on `Near`.
@@ -24,6 +25,8 @@ pub const NFT_STANDARD_NAME: &str = "nep171";
 pub enum EventLogVariant {
     NftMint(NftMintLog),
     LockupLog(LockupLog),
+    ChangeState(ChangeStateLog),
+    ChangeBeneficiary(ChangeBeneficiaryLog),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -72,4 +75,18 @@ pub struct NftMintLog {
 #[serde(crate = "near_sdk::serde")]
 pub struct LockupLog {
     pub amount: U128,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
+pub struct ChangeStateLog {
+    pub from: State,
+    pub to: State,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
+pub struct ChangeBeneficiaryLog {
+    pub from: AccountId,
+    pub to: AccountId,
 }

@@ -32,7 +32,7 @@ use near_sdk::{
     AccountId, BorshStorageKey, PanicOnDefault, PublicKey,
 };
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
 #[serde(crate = "near_sdk::serde")]
 pub enum State {
     Paused,
@@ -142,66 +142,15 @@ mod tests {
     use crate::utils::tests_utils::*;
     use std::str::FromStr;
 
-    #[test]
-    fn info_log_test() {
-        // Indexes are default
-        let (mut contract, mut context) = init_test_env(None, None, None);
-        let mut account: Account = Account::new(250);
-        let account_id = AccountId::from_str("user.testnet").unwrap();
-
-        account.lockups.insert(&lockup::Lockup {
-            amount: 250 * ONE_LIS,
-            expire_on: 60,
-        });
-
-        account
-            .lockups
-            .insert(&lockup::Lockup::new(25 * ONE_LIS, None));
-        account
-            .lockups
-            .insert(&lockup::Lockup::new(35 * ONE_LIS, Some(20)));
-
-        contract.accounts.insert(&account_id, &account.into());
-    }
-
-    #[test]
-    fn info_no_locks() {
-        // There are no locks
-        let (mut contract, mut context) = init_test_env(None, None, None);
-        let account: Account = Account::new(250 * ONE_LIS);
-        let account_id = AccountId::from_str("user.testnet").unwrap();
-
-        contract.accounts.insert(&account_id, &account.into());
-    }
 
     #[test]
     fn info_get_balance_test() {
         // Indexes are default
         let (mut contract, mut context) = init_test_env(None, None, None);
         let account: Account = Account::new(250 * ONE_LIS);
-        let account_id = AccountId::from_str("user.testnet").unwrap();
+        let account_id = accounts(0);
 
         contract.accounts.insert(&account_id, &account.into());
         assert_eq!(contract.get_balance_info(account_id).0, 250 * ONE_LIS);
-    }
-
-    #[test]
-    fn get_account_info_test() {
-        let (mut contract, mut context) = init_test_env(None, None, None);
-        let mut account: Account = Account::new(250 * ONE_LIS);
-        let account_id = AccountId::from_str("user.testnet").unwrap();
-
-        account.lockups.insert(&lockup::Lockup {
-            amount: 250 * ONE_LIS,
-            expire_on: 60,
-        });
-        account
-            .lockups
-            .insert(&lockup::Lockup::new(25 * ONE_LIS, None));
-        account
-            .lockups
-            .insert(&lockup::Lockup::new(35 * ONE_LIS, Some(20)));
-
-        contract.accounts.insert(&account_id, &account.into());
     }
 }

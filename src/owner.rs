@@ -1,7 +1,7 @@
-use near_sdk::{env::panic_str, json_types::U128, AccountId, Timestamp};
+use near_sdk::{env::panic_str, json_types::U128, require, AccountId, Timestamp};
 
 use crate::{
-    events::{EventLog, EventLogVariant, NftMintLog},
+    events::{ChangeBeneficiaryLog, ChangeStateLog, EventLog, EventLogVariant, NftMintLog},
     *,
 };
 
@@ -40,14 +40,28 @@ impl Contract {
         nft_id
     }
 
-    #[allow(unused_variables)]
     pub fn change_state(&mut self, state: State) {
-        todo!()
+        self.assert_owner();
+        require!(self.state != state, "State can't be the same");
+        EventLog::from(EventLogVariant::ChangeState(ChangeStateLog {
+            from: self.state.clone(),
+            to: state.clone(),
+        }))
+        .emit();
+
+        self.state = state;
     }
 
-    #[allow(unused_variables)]
     pub fn change_beneficiary(&mut self, new_beneficiary_id: AccountId) {
-        todo!()
+        self.assert_owner();
+        require!(self.beneficiary_id != new_beneficiary_id,"Beneficiary can't be the same");
+        EventLog::from(EventLogVariant::ChangeBeneficiary(ChangeBeneficiaryLog {
+            from: self.beneficiary_id.clone(),
+            to: new_beneficiary_id.clone(),
+        }))
+        .emit();
+
+        self.beneficiary_id = new_beneficiary_id;
     }
 
     #[allow(unused_variables)]
@@ -104,5 +118,51 @@ mod tests {
             .unwrap()
             .into();
         assert!(account.nfts.contains(&res));
+    }
+
+    #[test]
+    fn change_beneficiary_test() {
+        let owner_id = accounts(0);
+        let (mut contract, mut context) = init_test_env(Some(owner_id.clone()), None, None);
+        contract.owner_id = owner_id;
+
+        let account_id_new = accounts(1);
+        contract.change_beneficiary(account_id_new.clone());
+        assert_eq!(contract.beneficiary_id, account_id_new);
+    }
+
+    #[test]
+    #[should_panic = "Beneficiary can't be the same"]
+    fn change_the_same_beneficiary_test() {
+        let owner_id = accounts(0);
+        let beneficiary_id = accounts(1);
+        let (mut contract, mut context) = init_test_env(Some(owner_id.clone()), Some(beneficiary_id.clone()), None);
+        contract.owner_id = owner_id;
+
+        contract.change_beneficiary(beneficiary_id.clone());
+        assert_eq!(contract.beneficiary_id, beneficiary_id);
+    }
+
+    #[test]
+    #[should_panic = "State can't be the same"]
+    fn change_the_same_state_test() {
+        let owner_id = accounts(0);
+        let (mut contract, mut context) = init_test_env(None, None, None);
+        contract.owner_id = owner_id;
+
+        let contract_new_state = State::Running;
+        contract.change_state(contract_new_state.clone());
+        assert_eq!(contract.state, contract_new_state)
+    }
+
+    #[test]
+    fn change_state_test() {
+        let owner_id = accounts(0);
+        let (mut contract, mut context) = init_test_env(None, None, None);
+        contract.owner_id = owner_id;
+
+        let contract_new_state = State::Paused;
+        contract.change_state(contract_new_state.clone());
+        assert_eq!(contract.state, contract_new_state)
     }
 }
