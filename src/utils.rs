@@ -11,7 +11,7 @@ pub fn convert_pk_to_account_id(pk: PublicKey) -> AccountId {
 impl Contract {
     pub fn assert_owner(&self) {
         require!(
-            env::predecessor_account_id() == self.owner_id.clone(),
+            env::signer_account_id() == self.owner_id.clone(),
             "Only owner can do this"
         );
     }
@@ -50,7 +50,7 @@ pub mod tests_utils {
 
         testing_env!(context
             .block_timestamp(0)
-            .predecessor_account_id(owner_id.clone().unwrap_or_else(|| accounts(0)))
+            .signer_account_id(owner_id.clone().unwrap_or_else(|| accounts(0)))
             .build());
         let contract = Contract::new(
             U128(3_000_000_000 * ONE_LIS),
