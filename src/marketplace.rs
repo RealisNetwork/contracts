@@ -28,7 +28,7 @@ impl Marketplace {
     }
 
     /// Return all available for sale NFTs.
-    pub fn get_map(&self) -> &UnorderedMap<NftId, Balance> {
+    pub fn get_marketplace_nfts(&self) -> &UnorderedMap<NftId, Balance> {
         &self.nft_map
     }
 
@@ -82,6 +82,7 @@ impl Contract {
         require!(buyer_account.free >= price, "Not enough money");
 
         let nft = self.nfts.get_nft(nft_id);
+
 
         let price = self.nfts.buy_nft(&nft_id, price, env::signer_account_id());
 

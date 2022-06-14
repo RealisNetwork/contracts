@@ -120,7 +120,7 @@ impl NftManager {
 
     /// Get count of all NFTs listed on the auction.
     pub fn auction_nft_count(&self) -> u64 {
-        self.auction_nft_map.auction_nft_count()
+        self.auction_nft_map.auction_lots_count()
     }
 
     /// Get all NFTs with ID.
@@ -140,7 +140,7 @@ impl NftManager {
 
     /// Return map of NFTs listed on the auction.
     pub fn get_auction_nft_map(&self) -> &UnorderedMap<NftId, DealData> {
-        self.auction_nft_map.get_map()
+        self.auction_nft_map.get_auction_lots()
     }
 
     pub fn get_deal_data(&self, nft_id: &NftId) -> DealData {
@@ -194,6 +194,7 @@ impl NftManager {
 
     /// Make asserts of:
     ///  - Auction expired,
+    ///  - account id is not NFT owner id.
     ///  - Price less or eq last on.
     /// Change currant bid for new one.
     pub fn make_bid(
@@ -225,10 +226,12 @@ impl NftManager {
 
     /// Make assert of:
     ///  - Price in params eq to NFT price.
+    ///  - buyer is not an owner of NTF.
     /// Remove NFT from for sale list.
     /// Change NFT owner and unlock for future operations.
     pub fn buy_nft(&mut self, nft_id: &NftId, price: Balance, new_owner: AccountId) -> Balance {
         let nft = self.get_if_available(nft_id);
+        require!(nft.owner_id != new_owner, "Owner can't buy own NFT.");
         let balance = self.marketplace_nft_map.buy_nft(nft_id, price);
         self.nft_map
             .insert(nft_id, &nft.unlock_nft().set_owner_id(&new_owner));
