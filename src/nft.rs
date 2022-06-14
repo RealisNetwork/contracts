@@ -135,7 +135,7 @@ impl NftManager {
 
     /// Return map of NFTs listed on the marketplace.
     pub fn get_marketplace_nft_map(&self) -> &UnorderedMap<NftId, Balance> {
-        self.marketplace_nft_map.get_map()
+        self.marketplace_nft_map.get_marketplace_nfts()
     }
 
     /// Return map of NFTs listed on the auction.
