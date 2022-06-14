@@ -4,6 +4,7 @@ use crate::*;
 use std::str::FromStr;
 use crate::{Account, Contract, *};
 use near_sdk::{env, near_bindgen, require, AccountId};
+use primitive_types::U256;
 
 
 #[near_bindgen]
@@ -31,6 +32,7 @@ impl Contract {
         sender: AccountId,
         recipient_id: AccountId,
         amount: u128,
+        is_fee_required: bool
     ) -> u128 {
         require!(amount > 0, "You can't transfer 0 tokens");
         require!(
@@ -39,7 +41,7 @@ impl Contract {
         );
 
         // Charge fee and amount
-        let sender_balance_left = self.take_fee(sender, Some(amount));
+        let sender_balance_left = self.take_fee(sender, Some(amount), is_fee_required);
         // Try to get recipient
         let mut recipient_account: Account =
             self.accounts.get(&recipient_id).unwrap_or_default().into();
@@ -67,16 +69,19 @@ impl Contract {
     /// In case amount in None, function decreases sender balance by
     /// constant_fee and increases beneficiary balance by constant_fee,
     /// where constant_fee >= 0
-    pub fn take_fee(&mut self, sender: AccountId, amount: Option<u128>) -> u128 {
+    pub fn take_fee(&mut self, sender: AccountId, amount: Option<u128>, is_fee_required: bool) -> u128 {
         // Calculate total charged amount
-        let (charge, fee) = if let Some(amount) = amount {
-            // TODO: use U256
-            (
-                (amount * (self.percent_fee as u128 + 100)) / 100,
-                (amount * self.percent_fee as u128) / 100,
-            )
-        } else {
-            (self.constant_fee, self.constant_fee)
+        let (charge, fee) = match (amount, is_fee_required) {
+            (Some(amount), true) => {(
+                ((U256::from(amount) * (U256::from(self.percent_fee) + U256::from(100)))
+                    / U256::from(100))
+                    .as_u128(),
+                ((U256::from(amount) * U256::from(self.percent_fee as u128)) / U256::from(100))
+                    .as_u128(),
+            )},
+            (Some(amount), false) => (amount, 0),
+            (None, true) => (self.constant_fee, self.constant_fee),
+            (None, false) => (0, 0)
         };
 
         // Check if user exists and get account, if user don't exist, rollback transfer
@@ -140,7 +145,7 @@ pub mod tests {
             .accounts
             .insert(&receiver_id, &Account::new(9 * ONE_LIS).into()); // Will be 29
 
-        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 20 * ONE_LIS);
+        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 20 * ONE_LIS, true);
 
         let account: Account = contract
             .accounts
@@ -155,6 +160,67 @@ pub mod tests {
     }
 
     #[test]
+    fn transfer_overflow() {
+        let (mut contract, mut context) = init_test_env(None, None, None);
+
+        // Sender
+        let sender_id = accounts(0);
+        contract
+            .accounts
+            .insert(&sender_id, &Account::new(u128::MAX).into()); // Will be 228
+
+        contract.internal_transfer(sender_id.clone(), accounts(1), u128::MAX - u128::MAX / 100 * 11, true);
+    }
+
+    #[test]
+    fn transfer_without_fee() {
+        let (mut contract, mut context) = init_test_env(None, None, None);
+
+        // Sender
+        let sender_id = accounts(0);
+        contract
+            .accounts
+            .insert(&sender_id, &Account::new(250 * ONE_LIS).into()); // Will be 228
+
+        // receiver
+        let receiver_id = accounts(1);
+        contract
+            .accounts
+            .insert(&receiver_id, &Account::new(9 * ONE_LIS).into()); // Will be 29
+
+        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 20 * ONE_LIS, false);
+
+        let account: Account = contract
+            .accounts
+            .get(&contract.beneficiary_id.clone())
+            .unwrap()
+            .into();
+        assert_eq!(account.free, 3000000000 * ONE_LIS);
+        let account: Account = contract.accounts.get(&sender_id).unwrap().into();
+        assert_eq!(account.free, 230 * ONE_LIS);
+        let account: Account = contract.accounts.get(&receiver_id).unwrap().into();
+        assert_eq!(account.free, 29 * ONE_LIS);
+    }
+
+    #[test]
+    fn take_fee_without_fee() {
+        let (mut contract, mut context) = init_test_env(None, None, None);
+
+        // Sender
+        let sender_id = accounts(0);
+        contract
+            .accounts
+            .insert(&sender_id, &Account::new(250 * ONE_LIS).into()); // Will be 228
+
+
+        contract.take_fee(sender_id.clone(), None, false);
+
+        let account: Account = contract.accounts.get(&sender_id).unwrap().into();
+        assert_eq!(account.free, 250 * ONE_LIS);
+
+    }
+
+    #[test]
     #[should_panic = "You can't transfer tokens to yourself"]
     fn transfer_tokens_to_itself() {
 
@@ -166,7 +232,7 @@ pub mod tests {
             .accounts
             .insert(&sender_id, &Account::new(250 * ONE_LIS).into());
 
-        contract.internal_transfer(sender_id.clone(), sender_id, 20 * ONE_LIS);
+        contract.internal_transfer(sender_id.clone(), sender_id, 20 * ONE_LIS, true);
     }
 
     #[test]
@@ -186,7 +252,7 @@ pub mod tests {
             .accounts
             .insert(&receiver_id, &Account::new(9 * ONE_LIS).into()); // Will be 9
 
-        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 251 * ONE_LIS);
+        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 251 * ONE_LIS, true);
 
         let account: Account = contract
             .accounts
@@ -214,7 +280,7 @@ pub mod tests {
             .accounts
             .insert(&receiver_id, &Account::new(9 * ONE_LIS).into()); // Will be 9
 
-        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 250 * ONE_LIS);
+        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 250 * ONE_LIS, true);
 
         let account: Account = contract
             .accounts
@@ -246,7 +312,7 @@ pub mod tests {
             .accounts
             .insert(&receiver_id, &Account::new(9 * ONE_LIS).into()); // Will be 9
 
-        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 0);
+        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 0,true);
 
         let account: Account = contract
             .accounts
@@ -274,7 +340,7 @@ pub mod tests {
         // receiver
         let receiver_id = AccountId::from_str("mike.testnet").unwrap();
 
-        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 20 * ONE_LIS);
+        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 20 * ONE_LIS, true);
 
         let account: Account = contract
             .accounts
@@ -317,7 +383,7 @@ pub mod tests {
             .predecessor_account_id(accounts(0))
             .build());
 
-        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 260 * ONE_LIS);
+        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 260 * ONE_LIS, true);
 
         let account: Account = contract
             .accounts
@@ -379,7 +445,7 @@ pub mod tests {
 
         println!("TS after: {}", context.context.block_timestamp);
 
-        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 260 * ONE_LIS);
+        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 260 * ONE_LIS, true);
 
         let account: Account = contract
             .accounts
@@ -433,7 +499,7 @@ pub mod tests {
             .accounts
             .insert(&receiver_id, &Account::new(9 * ONE_LIS).into()); // Will be 9
 
-        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 251 * ONE_LIS);
+        contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 251 * ONE_LIS,true);
 
         let account: Account = contract
             .accounts

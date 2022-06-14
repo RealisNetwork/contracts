@@ -5,9 +5,8 @@ use near_sdk::{json_types::U128, AccountId};
 impl Contract {
     pub fn transfer(&mut self, recipient_id: AccountId, amount: U128) -> U128 {
         self.assert_running();
-        let sender_id = env::signer_account_id();
         // TODO: do not take fee from sender
-        self.internal_transfer(sender_id, recipient_id, amount.0)
+        self.internal_transfer(env::signer_account_id(), recipient_id, amount.0, false)
             .into()
     }
 
@@ -56,6 +55,25 @@ mod tests {
 
         contract.state = State::Paused;
         contract.transfer(accounts(1), U128(100));
+    }
+
+    #[test]
+    fn transfer() {
+        let (mut contract, mut context) = init_test_env(None, None, Some(accounts(1)));
+        let account_1 = Account::new(50);
+        let account_2 = Account::new(10);
+
+        contract.accounts.insert(&accounts(1), &account_1.into());
+        contract.accounts.insert(&accounts(2), &account_2.into());
+
+        testing_env!(context.signer_account_id(accounts(1)).build());
+
+        contract.transfer(accounts(2), U128(25));
+
+        let account_1: Account = contract.accounts.get(&accounts(1)).unwrap().into();
+        let account_2: Account = contract.accounts.get(&accounts(2)).unwrap().into();
+        assert_eq!(account_1.free, 25);
+        assert_eq!(account_2.free, 35);
     }
 
     #[test]
