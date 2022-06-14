@@ -183,10 +183,10 @@ impl NftManager {
         nft_id: &NftId,
         price: Balance,
         deadline: Timestamp,
-        account_id: AccountId,
+        account_id: &AccountId,
     ) {
         let nft = self.get_if_available(nft_id);
-        require!(nft.is_owner(&account_id), "Not the owner of NFT");
+        require!(nft.is_owner(account_id), "Not the owner of NFT");
         self.auction_nft_map
             .start_auction(nft_id, price, deadline, account_id);
         self.nft_map.insert(nft_id, &nft.lock_nft());
@@ -199,7 +199,7 @@ impl NftManager {
     /// Change currant bid for new one.
     pub fn make_bid(
         &mut self,
-        account_id: AccountId,
+        account_id: &AccountId,
         nft_id: &NftId,
         price: Balance,
     ) -> Option<Bid> {
@@ -229,12 +229,12 @@ impl NftManager {
     ///  - buyer is not an owner of NTF.
     /// Remove NFT from for sale list.
     /// Change NFT owner and unlock for future operations.
-    pub fn buy_nft(&mut self, nft_id: &NftId, price: Balance, new_owner: AccountId) -> Balance {
+    pub fn buy_nft(&mut self, nft_id: &NftId, new_owner: &AccountId) -> Balance {
         let nft = self.get_if_available(nft_id);
-        require!(nft.owner_id != new_owner, "Owner can't buy own NFT.");
-        let balance = self.marketplace_nft_map.buy_nft(nft_id, price);
+        require!(&nft.owner_id != new_owner, "Owner can't buy own NFT.");
+        let balance = self.marketplace_nft_map.buy_nft(nft_id);
         self.nft_map
-            .insert(nft_id, &nft.unlock_nft().set_owner_id(&new_owner));
+            .insert(nft_id, &nft.unlock_nft().set_owner_id(new_owner));
         balance
     }
 
@@ -300,10 +300,11 @@ mod tests {
 
     #[test]
     fn id_test() {
-       let (mut contract,context)  =
-           init_test_env(
-               Some(AccountId::new_unchecked("user_id".to_string())), None,None);
- contract.accounts.insert(&AccountId::new_unchecked("id".to_string()),&VAccount::V1(Account::new(0)));
+        let (mut contract, context) = init_test_env(Account(0), Account(0), Account(0));
+        contract.accounts.insert(
+            &AccountId::new_unchecked("id".to_string()),
+            &VAccount::V1(Account::new(0)),
+        );
 
         let m_id = contract.nfts.mint_nft(
             &AccountId::new_unchecked("id".to_string()),

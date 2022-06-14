@@ -262,9 +262,8 @@ impl Contract {
                 .into();
             nft_owner.free += the_winner.price;
 
-                self.accounts
-                    .insert(deal_data.get_owner_id(), &VAccount::V1(nft_owner));
-            }
+            self.accounts
+                .insert(deal_data.get_owner_id(), &nft_owner.into());
         }
     }
 }
