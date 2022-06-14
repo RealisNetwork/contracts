@@ -44,8 +44,12 @@ impl Contract {
         todo!()
     }
 
+    //TODO lockups
+
+
     // TODO: delegate nft
     // Discuss general structure of delegation
+
 }
 
 #[cfg(test)]
