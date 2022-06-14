@@ -6,6 +6,7 @@ impl Contract {
     pub fn transfer(&mut self, recipient_id: AccountId, amount: U128) -> U128 {
         self.assert_running();
         let sender_id = env::signer_account_id();
+        // TODO: do not take fee from sender
         self.internal_transfer(sender_id, recipient_id, amount.0)
             .into()
     }

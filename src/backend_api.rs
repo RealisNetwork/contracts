@@ -15,6 +15,8 @@ impl Contract {
     pub fn backend_burn(&mut self, nft_id: U128) {
         self.assert_running();
         self.assert_backend();
+        let sender_id = self.resolve_account(env::signer_account_pk());
+        self.take_fee(sender_id, None);
         todo!()
     }
 
@@ -22,6 +24,8 @@ impl Contract {
     pub fn backend_transfer_nft(&mut self, recipient_id: AccountId, nft_id: U128) {
         self.assert_running();
         self.assert_backend();
+        let sender_id = self.resolve_account(env::signer_account_pk());
+        self.take_fee(sender_id, None);
         todo!()
     }
 
@@ -29,6 +33,8 @@ impl Contract {
     pub fn backend_sell_nft(&mut self, nft_id: U128, price: U128) {
         self.assert_running();
         self.assert_backend();
+        let sender_id = self.resolve_account(env::signer_account_pk());
+        self.take_fee(sender_id, None);
         todo!()
     }
 
@@ -36,6 +42,8 @@ impl Contract {
     pub fn backend_buy_nft(&mut self, nft_id: U128) -> U128 {
         self.assert_running();
         self.assert_backend();
+        let sender_id = self.resolve_account(env::signer_account_pk());
+        self.take_fee(sender_id, None);
         todo!()
     }
 
@@ -43,6 +51,8 @@ impl Contract {
     pub fn backend_change_price(&mut self, nft_id: U128, price: U128) {
         self.assert_running();
         self.assert_backend();
+        let sender_id = self.resolve_account(env::signer_account_pk());
+        self.take_fee(sender_id, None);
         todo!()
     }
 
