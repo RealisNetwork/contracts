@@ -1,12 +1,14 @@
-use crate::{lockup::Lockup, LockupInfo, NftId, Serialize, StorageKey};
+use crate::{
+    events::{EventLog, EventLogVariant, LockupLog},
+    lockup::Lockup,
+    LockupInfo, NftId, Serialize, StorageKey,
+};
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
-    collections::{LookupSet, UnorderedSet},
+    collections::UnorderedSet,
     json_types::U128,
     Balance,
 };
-use crate::events::{EventLog, EventLogVariant, LockupLog};
-
 
 #[derive(BorshSerialize, BorshDeserialize)]
 pub enum VAccount {
@@ -31,7 +33,7 @@ impl From<VAccount> for Account {
 pub struct Account {
     pub free: Balance,
     pub lockups: UnorderedSet<Lockup>,
-    pub nfts: LookupSet<NftId>,
+    pub nfts: UnorderedSet<NftId>,
 }
 
 impl Account {
@@ -39,7 +41,7 @@ impl Account {
         Self {
             free: balance,
             lockups: UnorderedSet::new(StorageKey::Lockups),
-            nfts: LookupSet::new(StorageKey::NftId),
+            nfts: UnorderedSet::new(StorageKey::NftId),
         }
     }
 
@@ -56,10 +58,7 @@ impl Account {
             .fold(0, |acc, lock| acc + lock.amount);
         self.free += fold;
 
-        EventLog::from(EventLogVariant::LockupLog(LockupLog {
-            amount: U128(fold),
-        }))
-        .emit();
+        EventLog::from(EventLogVariant::LockupLog(LockupLog { amount: U128(fold) })).emit();
 
         fold
     }
@@ -78,10 +77,7 @@ impl Account {
 
         self.free += fold;
 
-        EventLog::from(EventLogVariant::LockupLog(LockupLog {
-            amount: U128(fold),
-        }))
-        .emit();
+        EventLog::from(EventLogVariant::LockupLog(LockupLog { amount: U128(fold) })).emit();
 
         fold
     }
@@ -93,6 +89,20 @@ impl Account {
             .take(limit.unwrap_or_else(|| self.lockups.len() as usize))
             .map(|lockup| lockup.into())
             .collect::<Vec<LockupInfo>>()
+    }
+
+    pub fn get_lockups_free(&self) -> u128 {
+        let fold = self
+            .lockups
+            .iter()
+            .filter(|lock| lock.is_expired())
+            .fold(0, |acc, lock| acc + lock.amount);
+        fold
+    }
+
+    pub fn get_nfts(&self) -> Vec<NftId> {
+        let nfts = self.nfts.iter().collect::<Vec<NftId>>();
+        nfts
     }
 }
 
@@ -113,7 +123,8 @@ impl Default for Account {
 pub struct AccountInfo {
     pub free: U128,
     pub lockups: Vec<LockupInfo>,
-    // TODO: add nfts
+    pub nfts: Vec<NftId>,
+    pub lockups_free: U128,
 }
 
 impl From<Account> for AccountInfo {
@@ -121,6 +132,8 @@ impl From<Account> for AccountInfo {
         AccountInfo {
             free: U128(account.free),
             lockups: account.get_lockups(None, None),
+            nfts: account.get_nfts(),
+            lockups_free: U128(account.get_lockups_free()),
         }
     }
 }
@@ -132,7 +145,6 @@ mod tests {
 
     #[test]
     pub fn check_lockups() {
-
         let (contract, mut context) = init_test_env(None, None, None);
 
         let mut account = Account::new(5);
@@ -144,7 +156,6 @@ mod tests {
         }); // Lock from 1970
 
         // Balance of lock from 1970 will be transferred to main balance
-
         testing_env!(context
             .block_timestamp(999)
             .predecessor_account_id(accounts(0))
@@ -157,7 +168,6 @@ mod tests {
 
     #[test]
     pub fn check_lockup() {
-
         let (contract, mut context) = init_test_env(None, None, None);
 
         let mut account = Account::new(5);
@@ -183,4 +193,3 @@ mod tests {
         assert_eq!(account.free, 13);
     }
 }
-

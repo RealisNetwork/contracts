@@ -14,20 +14,15 @@ mod types;
 mod update;
 mod utils;
 
-
-
-
-use crate::nft::NftMap;
-use near_sdk::{require,log};
 use crate::{
     account::{Account, AccountInfo, VAccount},
     lockup::LockupInfo,
-    nft::Nft,
+    nft::{Nft, NftMap},
     types::NftId,
 };
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
-    collections::{LookupMap, UnorderedMap,Vector},
+    collections::LookupMap,
     env,
     json_types::U128,
     near_bindgen,
@@ -35,8 +30,7 @@ use near_sdk::{
     AccountId, BorshStorageKey, PanicOnDefault, PublicKey,
 };
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq)]
-
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
 #[serde(crate = "near_sdk::serde")]
 pub enum State {
     Paused,
@@ -129,7 +123,7 @@ impl Contract {
     }
 
     pub fn get_account_info(&self, account_id: &AccountId) -> AccountInfo {
-        match self.accounts.get(&account_id) {
+        match self.accounts.get(account_id) {
             Some(user) => {
                 let user_account: Account = user.into();
                 user_account.into()
@@ -141,24 +135,28 @@ impl Contract {
 
 #[cfg(test)]
 mod tests {
-    use std::str::FromStr;
     use crate::utils::tests_utils::*;
+    use std::str::FromStr;
 
     #[test]
     fn info_log_test() {
         // Indexes are default
         let (mut contract, mut context) = init_test_env(None, None, None);
         let mut account: Account = Account::new(250);
-        let account_id = AccountId::from_str("user.testnet").unwrap();
+        let account_id = accounts(0);
 
         account.lockups.insert(&lockup::Lockup {
             amount: 250 * ONE_LIS,
             expire_on: 60,
         });
 
-        account.lockups.insert(&lockup::Lockup::new(25 * ONE_LIS, None));
-        account.lockups.insert(&lockup::Lockup::new(35 * ONE_LIS, Some(20)));
-
+        account.nfts.insert(&NftId::from(456u32));
+        account
+            .lockups
+            .insert(&lockup::Lockup::new(25 * ONE_LIS, None));
+        account
+            .lockups
+            .insert(&lockup::Lockup::new(35 * ONE_LIS, Some(20)));
         contract.accounts.insert(&account_id, &account.into());
     }
 
@@ -167,7 +165,7 @@ mod tests {
         // There are no locks
         let (mut contract, mut context) = init_test_env(None, None, None);
         let account: Account = Account::new(250 * ONE_LIS);
-        let account_id = AccountId::from_str("user.testnet").unwrap();
+        let account_id = accounts(0);
 
         contract.accounts.insert(&account_id, &account.into());
     }
@@ -177,7 +175,7 @@ mod tests {
         // Indexes are default
         let (mut contract, mut context) = init_test_env(None, None, None);
         let account: Account = Account::new(250 * ONE_LIS);
-        let account_id = AccountId::from_str("user.testnet").unwrap();
+        let account_id = accounts(0);
 
         contract.accounts.insert(&account_id, &account.into());
         assert_eq!(contract.get_balance_info(account_id).0, 250 * ONE_LIS);
@@ -187,14 +185,18 @@ mod tests {
     fn get_account_info_test() {
         let (mut contract, mut context) = init_test_env(None, None, None);
         let mut account: Account = Account::new(250 * ONE_LIS);
-        let account_id = AccountId::from_str("user.testnet").unwrap();
+        let account_id = accounts(0);
 
         account.lockups.insert(&lockup::Lockup {
             amount: 250 * ONE_LIS,
             expire_on: 60,
         });
-        account.lockups.insert(&lockup::Lockup::new(25 * ONE_LIS, None));
-        account.lockups.insert(&lockup::Lockup::new(35 * ONE_LIS, Some(20)));
+        account
+            .lockups
+            .insert(&lockup::Lockup::new(25 * ONE_LIS, None));
+        account
+            .lockups
+            .insert(&lockup::Lockup::new(35 * ONE_LIS, Some(20)));
 
         contract.accounts.insert(&account_id, &account.into());
     }

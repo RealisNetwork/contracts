@@ -1,9 +1,9 @@
 //! Designed to interact with the NFT, NFT marketplace.
-use near_sdk::{AccountId, Balance, env, require};
-use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::collections::{LookupMap, LookupSet, UnorderedMap, Vector};
-use near_sdk::json_types::U128;
-
+use near_sdk::{
+    borsh::{self, BorshDeserialize, BorshSerialize},
+    collections::{UnorderedMap, Vector},
+    env, require, AccountId, Balance,
+};
 
 use crate::{NftId, StorageKey};
 
@@ -102,16 +102,19 @@ impl NftMap {
     pub fn nft_count(&self) -> u64 {
         self.nft_map.len()
     }
+
     /// Get count of all NFTs listed on the marketplace.
     pub fn marketplace_nft_count(&self) -> u64 {
         self.marketplace_nft_map.len()
     }
+
     /// Get NFT by ID if ID exist.
     pub fn get_nft(&self, nft_id: NftId) -> Nft {
         self.nft_map
             .get(&nft_id)
             .unwrap_or_else(|| env::panic_str("Nft not exist"))
     }
+
     /// Get NFT by ID if ID exist and NFT is available.
     pub fn get_if_available(&self, nft_id: NftId) -> Nft {
         self.nft_map
@@ -127,7 +130,7 @@ impl NftMap {
 
     /// Get all NFTs.
     pub fn get_all_nft(&self) -> &Vector<Nft> {
-        &self.nft_map.values_as_vector()
+        self.nft_map.values_as_vector()
     }
 
     /// Get all available NFTs.
@@ -137,6 +140,7 @@ impl NftMap {
             .filter(|key| self.marketplace_nft_map.get(key).is_none())
             .collect()
     }
+
     /// Return map of NFTs listed on the marketplace.
     pub fn get_marketplace_nft_map(&self) -> &UnorderedMap<NftId, Balance> {
         &self.marketplace_nft_map
@@ -157,17 +161,19 @@ impl NftMap {
     /// Mint new `NFT` with generated id.
     pub fn mint_nft(&mut self, owner_id: AccountId, metadata: String) -> u128 {
         let new_nft_id = self.generate_nft_id();
-        let nft = Nft::new(owner_id.clone(), metadata.clone());
+        let nft = Nft::new(owner_id, metadata);
 
         self.nft_map.insert(&new_nft_id, &nft);
 
         new_nft_id
     }
+
     /// Transfer `NFT` between two users if NFT available.
     pub fn transfer_nft(&mut self, new_owner: AccountId, nft_id: NftId) {
         let nft = self.get_if_available(nft_id).set_owner_id(new_owner);
         self.nft_map.insert(&nft_id, &nft);
     }
+
     /// List `NFT` with `price` on marketplace.
     pub fn sell_nft(&mut self, nft_id: u128, price: Balance) {
         let nft = self
@@ -178,6 +184,7 @@ impl NftMap {
         self.marketplace_nft_map.insert(&nft_id, &price);
         self.nft_map.insert(&nft_id, &nft.lock_nft());
     }
+
     /// Remove `NFT` from `marketplace_nft_map` and transfer to the new owner.
     pub fn buy_nft(&mut self, nft_id: u128, new_owner_id: AccountId) {
         require!(self.nft_map.get(&nft_id).is_some(), "Nft not exist");
@@ -212,19 +219,21 @@ impl NftMap {
 #[cfg(test)]
 mod tests {
     use near_contract_standards::non_fungible_token::enumeration::NonFungibleTokenEnumeration;
-    use near_sdk::{AccountId, Gas, RuntimeFeesConfig, testing_env, VMConfig, VMContext};
-    use near_sdk::collections::{LookupMap, UnorderedMap, UnorderedSet};
-    use near_sdk::json_types::U128;
-    use near_sdk::test_utils::VMContextBuilder;
+    use near_sdk::{
+        collections::{LookupMap, UnorderedMap, UnorderedSet},
+        json_types::U128,
+        test_utils::VMContextBuilder,
+        testing_env, AccountId, Gas, RuntimeFeesConfig, VMConfig, VMContext,
+    };
 
-    use crate::{Contract, Nft, NftMap, State};
+    use crate::{Contract, NftMap, State};
 
     pub fn get_contract() -> Contract {
         let mut contract = Contract {
             constant_fee: 0,
             percent_fee: 0,
             accounts: LookupMap::new(b"m"),
-            nfts: NftMap::new(),
+            nfts: NftMap::default(),
             owner_id: AccountId::new_unchecked("id".to_string()),
             backend_id: AccountId::new_unchecked("id".to_string()),
             beneficiary_id: AccountId::new_unchecked("id".to_string()),
@@ -232,15 +241,13 @@ mod tests {
             registered_accounts: LookupMap::new(b"a"),
         };
         for i in 0..10 {
-            let nft_id = contract.nfts
-                .mint_nft(
-                    AccountId::new_unchecked("id".to_string()),
-                    String::from("metadata"),
-                );
+            let nft_id = contract.nfts.mint_nft(
+                AccountId::new_unchecked("id".to_string()),
+                String::from("metadata"),
+            );
         }
         contract
     }
-
 
     pub fn get_context(caller_id: String) -> VMContext {
         VMContextBuilder::new()
@@ -254,10 +261,16 @@ mod tests {
         let mut contract = get_contract();
         let context = get_context("smbd".to_string());
         testing_env!(context, VMConfig::free(), RuntimeFeesConfig::free());
-        let m_id = contract.nfts.mint_nft(AccountId::new_unchecked("id".to_string()), String::from("metadata"));
+        let m_id = contract.nfts.mint_nft(
+            AccountId::new_unchecked("id".to_string()),
+            String::from("metadata"),
+        );
         assert_eq!(m_id, 10);
         contract.nfts.burn_nft(m_id);
-        let f_id = contract.nfts.mint_nft(AccountId::new_unchecked("id".to_string()), String::from("metadata"));
+        let f_id = contract.nfts.mint_nft(
+            AccountId::new_unchecked("id".to_string()),
+            String::from("metadata"),
+        );
         assert_eq!(f_id, 10);
     }
 }
