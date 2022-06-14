@@ -82,7 +82,7 @@ impl Nft {
 /// * `nft_id_counter` - counter for generating NFT id.
 #[derive(BorshSerialize, BorshDeserialize, Debug)]
 pub struct NftMap {
-    pub nft_map: UnorderedMap<NftId, Nft>,
+    nft_map: UnorderedMap<NftId, Nft>,
     marketplace_nft_map: UnorderedMap<NftId, Balance>,
     nft_id_counter: NftId,
 }

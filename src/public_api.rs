@@ -10,13 +10,11 @@ impl Contract {
             .into()
     }
 
-    #[allow(unused_variables)]
     pub fn burn(&mut self, nft_id: U128) {
         self.assert_running();
         self.nfts.burn_nft(nft_id.0);
     }
 
-    #[allow(unused_variables)]
     pub fn transfer_nft(&mut self, recipient_id: AccountId, nft_id: U128) {
         self.assert_running();
         self.nfts.transfer_nft(recipient_id, nft_id.0);
@@ -69,18 +67,18 @@ mod tests {
 
     #[test]
     fn burn_nft_test() {
-        let mut owner = AccountId::from_str("owner.testnet").unwrap();
+        let mut owner = accounts(0);
         let (mut contract, _context) = init_test_env(Some(owner.clone()), None, None);
         let nft_id = contract.nfts.mint_nft(owner, "Duck".to_string());
-        assert_eq!(contract.nfts.nft_map.len(), 1);
+        assert_eq!(contract.nfts.nft_count(), 1);
         contract.burn(U128(nft_id));
-        assert_eq!(contract.nfts.nft_map.len(), 0);
+        assert_eq!(contract.nfts.nft_count(), 0);
     }
 
     #[test]
     #[should_panic = "Nft not exist"]
     fn burn_nft_test_not_exists() {
-        let mut owner = AccountId::from_str("user.testnet").unwrap();
+        let mut owner = accounts(0);
         let (mut contract, _context) = init_test_env(Some(owner.clone()), None, None);
         contract.burn(U128(1));
     }
@@ -114,13 +112,13 @@ mod tests {
 
     #[test]
     fn transfer_nft_test() {
-        let mut owner = AccountId::from_str("owner.testnet").unwrap();
-        let mut reciver = AccountId::from_str("reciver.testnet").unwrap();
+        let mut owner = accounts(0);
+        let mut reciver = accounts(1);
         let (mut contract, _context) = init_test_env(Some(owner.clone()), None, None);
         let nft_id = contract.nfts.mint_nft(owner, "Duck".to_string());
         contract.transfer_nft(reciver.clone(), U128(nft_id));
         assert_eq!(
-            contract.nfts.nft_map.get(&nft_id).unwrap().owner_id,
+            contract.nfts.get_nft(nft_id).owner_id,
             reciver
         );
     }
