@@ -4,23 +4,24 @@ use primitive_types::U256;
 
 #[near_bindgen]
 impl Contract {
-    /// `fn internal_transfer` transfers tokens from one user to another,
-    /// returns sender balance left  # Examples
+    /// `fn internal_transfer` transfers tokens from one user to another, returns sender balance left
+    /// # Examples
     /// ```
     /// let sender_id = accounts(0);
     /// let receiver_id = accounts(1);
-    /// contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 20 * ONE_LIS);
+    /// contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 20 * ONE_LIS, false);
     /// ```
     /// # Arguments
     ///  * `sender` - `AccountId` of transferring user
     ///  * `recipient_id`- `AccountId` of user to be transferred.
     ///  * `amount` - The amount of tokens to be transferred
-    /// This function checks if amount != 0 (if no it would panic), taskes fee
+    ///  * `is_fee_required` - Is the user pays for transaction
+    /// This function checks if amount != 0 (if no it would panic), takes fee
     /// and amount from sender (via take_fee() function), increases
     /// beneficiary balance for fee and increases recipient balance
     /// by amount, if beneficiary exists, balance will be increased, in case
     /// beneficiary account doesn't exist, account will be created with
-    /// balance of amount
+    /// balance of amount.
     pub fn internal_transfer(
         &mut self,
         sender: AccountId,
@@ -48,20 +49,22 @@ impl Contract {
         sender_balance_left
     }
 
-    /// `fn take_fee` used to take users money and fee, returns sender balance
-    /// left  # Examples
+    /// `fn take_fee` used to take users money and fee, returns sender balance left
+    /// # Examples
     /// ```
-    ///  let sender_balance_left = self.take_fee(sender, Some(amount));
+    ///  let sender_balance_left = self.take_fee(sender, Some(amount), false);
     /// ```
     /// # Arguments
     ///  * `sender` - `AccountId` of transferring user
     ///  * `amount` - The amount of tokens to be taken while transaction
+    ///  * `is_fee_required` - Is the user pays for transaction
     /// This function decreases sender balance in (100 + percent_fee) * amount
     /// and increases beneficiary balance by percent_fee * amount where amount
     /// is Some(u128) and percent_fee is > 0
     /// In case amount in None, function decreases sender balance by
     /// constant_fee and increases beneficiary balance by constant_fee,
-    /// where constant_fee >= 0
+    /// where constant_fee >= 0; Function will take and redirect fee to beneficiary
+    /// if and only if flag is_fee_required is true
     pub fn take_fee(
         &mut self,
         sender: AccountId,
