@@ -214,6 +214,17 @@ impl Bid {
 
 #[near_bindgen]
 impl Contract {
+    // TODO: fix or remove duplicate methods. Created for testing.
+    pub fn auction(&mut self, nft_id: U128, price: U128, deadline: U128) {
+        self.start_auction(nft_id.0, price.0, deadline.0 as u64, env::signer_account_id());
+    }
+    pub fn bid(&mut self, nft_id: U128, price: U128) {
+        self.make_bid(nft_id.0, nft_id.0, env::signer_account_id());
+    }
+    pub fn confirm(&mut self, nft_id: U128) {
+        self.confirm_deal(nft_id.0, env::signer_account_id());
+    }
+
     // TODO: left it here?
     #[private]
     pub fn start_auction(
@@ -354,7 +365,7 @@ mod tests {
     #[test]
     fn money_back_if_highest_bid_test() {
         let (mut contract, context) = get_contract();
-        contract.start_auction(0, 10, env::block_timestamp() + 100, accounts(1));
+        contract.start_auction(0, U128::from(10), env::block_timestamp() + 100, accounts(1));
 
         contract.make_bid(0, 20, accounts(3));
         contract.make_bid(0, 50, accounts(5));

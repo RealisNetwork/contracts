@@ -1,6 +1,6 @@
 //! All the logic described here applies to the NFT marketplace.
 use crate::{Account, Contract, NftId, StorageKey};
-use near_sdk::{collections::UnorderedMap, env::panic_str, require, AccountId, Balance};
+use near_sdk::{collections::UnorderedMap, env::panic_str, require, AccountId, Balance, env};
 
 use crate::nft::Nft;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
@@ -66,16 +66,18 @@ impl Contract {
         self.nfts.sell_nft(&nft_id, &price, account_id)
     }
 
-    pub fn internal_buy_nft(&mut self, nft_id: NftId, price: Balance, account_id: AccountId) {
+    pub fn internal_buy_nft(&mut self, nft_id: NftId, account_id: AccountId)->Balance {
         let mut buyer_account: Account = self
             .accounts
             .get(&account_id)
             .unwrap_or_else(|| panic_str("Account not found"))
             .into();
 
-        require!(buyer_account.free >= price, "Not enough money");
+
 
         let nft: Nft = self.nfts.get_nft(&nft_id).into();
+
+        require!(buyer_account.free >= self.nfts.get_marketplace_nft_map().get(&nft_id).unwrap_or_else(||panic_str("Nft not found")), "Not enough money");
 
         let price = self.nfts.buy_nft(&nft_id, &account_id);
 
@@ -91,6 +93,7 @@ impl Contract {
         self.accounts
             .insert(&nft.owner_id, &nft_owner_account.into());
         self.accounts.insert(&account_id, &buyer_account.into());
+        price
     }
 
     pub fn internal_change_price_nft(
@@ -101,7 +104,7 @@ impl Contract {
     ) {
         let nft: Nft = self.nfts.get_nft(&nft_id).into();
         require!(account_id == nft.owner_id, "Only for NFT owner.");
-        self.nfts.change_price_nft(&nft_id, price);
+        self.nfts.change_price_nft(&nft_id, price,env::signer_account_id());
     }
 }
 

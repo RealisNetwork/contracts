@@ -12,25 +12,27 @@ impl Contract {
 
     pub fn burn(&mut self, nft_id: U128) {
         self.assert_running();
-        self.nfts.burn_nft(&nft_id.0);
+        self.nfts.burn_nft(&nft_id.0,env::signer_account_id());
     }
 
     pub fn transfer_nft(&mut self, recipient_id: AccountId, nft_id: U128) {
         self.assert_running();
-        self.nfts.transfer_nft(recipient_id, &nft_id.0);
+        self.nfts.transfer_nft(env::signer_account_id(),recipient_id, &nft_id.0);
     }
 
     #[allow(unused_variables)]
     pub fn sell_nft(&mut self, nft_id: U128, price: U128) {
         self.assert_running();
+        self.internal_sell_nft(nft_id.0, price.0,env::signer_account_id());
 
-        todo!()
     }
 
     #[allow(unused_variables)]
     pub fn buy_nft(&mut self, nft_id: U128) -> U128 {
         self.assert_running();
-        todo!()
+        let result =  self.internal_buy_nft(nft_id.0,env::signer_account_id());
+
+        U128::from(result)
     }
 
     #[allow(unused_variables)]
@@ -88,7 +90,7 @@ mod tests {
     fn burn_nft_test() {
         let mut owner = accounts(0);
         let (mut contract, _context) = init_test_env(Some(owner.clone()), None, None);
-        let nft_id = contract.nfts.mint_nft(owner, "Duck".to_string());
+        let nft_id = contract.nfts.mint_nft(&owner, "Duck".to_string());
         assert_eq!(contract.nfts.nft_count(), 1);
         contract.burn(U128(nft_id));
         assert_eq!(contract.nfts.nft_count(), 0);
@@ -134,9 +136,9 @@ mod tests {
         let mut owner = accounts(0);
         let mut reciver = accounts(1);
         let (mut contract, _context) = init_test_env(Some(owner.clone()), None, None);
-        let nft_id = contract.nfts.mint_nft(owner, "Duck".to_string());
+        let nft_id = contract.nfts.mint_nft(&owner, "Duck".to_string());
         contract.transfer_nft(reciver.clone(), U128(nft_id));
-        assert_eq!(contract.nfts.get_nft(nft_id).owner_id, reciver);
+        assert_eq!(contract.nfts.get_nft(&nft_id).owner_id, reciver);
     }
 
     #[test]

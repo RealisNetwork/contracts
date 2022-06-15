@@ -10,11 +10,6 @@ use near_sdk::json_types::U128;
 use crate::ContractExt;
 use crate::{auction::{Auction, Bid, DealData}, Contract, marketplace::Marketplace, NftId, StorageKey};
 
-use crate::{
-    auction::{Auction, Bid, DealData},
-    marketplace::Marketplace,
-    NftId, StorageKey,
-};
 /// State of NFT.
 /// Displays the current state of an NFT.
 /// # States
@@ -307,8 +302,9 @@ impl NftManager {
     }
 
     /// Transfer `NFT` between two users if NFT available.
-    pub fn transfer_nft(&mut self, new_owner: AccountId, nft_id: &NftId) {
+    pub fn transfer_nft(&mut self, old_owner: AccountId, new_owner: AccountId, nft_id: &NftId) {
         let nft: Nft = self.get_if_available(nft_id).into();
+        require!(nft.is_owner(&old_owner), "Only for NFT owner.");
         self.nft_map
             .insert(nft_id, &nft.set_owner_id(&new_owner).into());
     }

@@ -35,8 +35,9 @@ pub enum State {
 #[derive(BorshSerialize, BorshDeserialize, PanicOnDefault)]
 pub struct Contract {
     pub constant_fee: u128,
-    pub percent_fee: u8, /* Commission in percents over transferring amount. for example, 10
-                          * (like 10%) */
+    pub percent_fee: u8,
+    /* Commission in percents over transferring amount. for example, 10
+                             * (like 10%) */
     pub accounts: LookupMap<AccountId, VAccount>,
     pub nfts: NftManager,
     // Owner of the contract. Example, `Realis.near` or `Volvo.near`
@@ -97,6 +98,7 @@ impl Contract {
         from_index: Option<usize>,
         limit: Option<usize>,
     ) -> Vec<LockupInfo> {
+
         match self.accounts.get(&account_id) {
             Some(user) => {
                 let user_account: Account = user.into();
@@ -109,6 +111,7 @@ impl Contract {
     }
 
     pub fn get_balance_info(&self, account_id: AccountId) -> U128 {
+        /// do we need to check does it owner of account use this?
         match self.accounts.get(&account_id) {
             Some(user) => {
                 let user_account: Account = user.into();
