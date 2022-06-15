@@ -1,7 +1,7 @@
 # See full list at:
 # https://github.com/rust-lang/rustfmt/blob/master/Configurations.md
 
-#format_strings = false
+format_strings = false
 imports_granularity = "Crate"
 normalize_comments = false
 wrap_comments = false
