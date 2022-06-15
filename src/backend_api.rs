@@ -61,6 +61,7 @@ impl Contract {
 
 #[cfg(test)]
 mod tests {
+    use crate::nft::Nft;
     use crate::utils::tests_utils::*;
 
     #[test]
@@ -130,7 +131,7 @@ mod tests {
     fn backend_burn_nft_test() {
         let mut owner = accounts(0);
         let (mut contract, _context) = init_test_env(Some(owner.clone()), None, None);
-        let nft_id = contract.nfts.mint_nft(owner, "Duck".to_string());
+        let nft_id = contract.nfts.mint_nft(&owner, "Duck".to_string());
         assert_eq!(contract.nfts.nft_count(), 1);
         contract.backend_burn(U128(nft_id));
         assert_eq!(contract.nfts.nft_count(), 0);
@@ -189,9 +190,10 @@ mod tests {
         let mut owner = accounts(0);
         let mut reciver = accounts(1);
         let (mut contract, _context) = init_test_env(Some(owner.clone()), None, None);
-        let nft_id = contract.nfts.mint_nft(owner, "Duck".to_string());
+        let nft_id = contract.nfts.mint_nft(&owner, "Duck".to_string());
         contract.backend_transfer_nft(reciver.clone(), U128(nft_id));
-        assert_eq!(contract.nfts.get_nft(nft_id).owner_id, reciver);
+        let nft:Nft = contract.nfts.get_nft(&nft_id).into();
+        assert_eq!(nft.owner_id, reciver);
     }
 
     #[test]
