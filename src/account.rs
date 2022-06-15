@@ -92,12 +92,10 @@ impl Account {
     }
 
     pub fn get_lockups_free(&self) -> u128 {
-        let fold = self
-            .lockups
+        self.lockups
             .iter()
             .filter(|lock| lock.is_expired())
-            .fold(0, |acc, lock| acc + lock.amount);
-        fold
+            .fold(0, |acc, lock| acc + lock.amount)
     }
 
     pub fn get_nfts(&self) -> Vec<NftId> {
