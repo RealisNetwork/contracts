@@ -1,7 +1,8 @@
-use near_sdk::{env::panic_str, json_types::U128, require, AccountId, Timestamp};
+use near_sdk::{json_types::U128, require, AccountId, Timestamp};
 
 use crate::{
     events::{ChangeBeneficiaryLog, ChangeStateLog, EventLog, EventLogVariant, NftMintLog},
+    lockup::Lockup,
     *,
 };
 
@@ -29,7 +30,7 @@ impl Contract {
         let mut nft_owner_id = Account::from(
             self.accounts
                 .get(&recipient_id)
-                .unwrap_or_else(|| panic_str("Account not found")),
+                .unwrap_or_else(|| env::panic_str("Account not found")),
         );
 
         let nft_id = self.nfts.mint_nft(&recipient_id, nft_metadata);
@@ -67,14 +68,65 @@ impl Contract {
         self.beneficiary_id = new_beneficiary_id;
     }
 
-    #[allow(unused_variables)]
+    /// Create lockup for account and get tokens from owner account
     pub fn create_lockup(
         &mut self,
         recipient_id: AccountId,
         amount: U128,
         duration: Option<Timestamp>,
-    ) -> Timestamp {
-        todo!()
+    ) {
+        self.assert_owner();
+
+        let mut owner_account: Account = self
+            .accounts
+            .get(&self.owner_id)
+            .unwrap_or_else(|| env::panic_str("No such account"))
+            .into();
+        owner_account.free = owner_account
+            .free
+            .checked_sub(amount.0)
+            .unwrap_or_else(|| env::panic_str("Not enough balance"));
+        self.accounts.insert(&self.owner_id, &owner_account.into());
+
+        let mut recipient_account: Account = self
+            .accounts
+            .get(&recipient_id)
+            .unwrap_or_else(|| env::panic_str("No such account"))
+            .into();
+        recipient_account
+            .lockups
+            .insert(&Lockup::new(amount.0, duration));
+        self.accounts
+            .insert(&recipient_id, &recipient_account.into());
+    }
+
+    /// Remove lockup from account and return balance to owner
+    pub fn refund_lockup(&mut self, recipient_id: AccountId, duration: Timestamp) -> U128 {
+        self.assert_owner();
+
+        let mut recipient_account: Account = self
+            .accounts
+            .get(&recipient_id)
+            .unwrap_or_else(|| env::panic_str("No such account"))
+            .into();
+        let lockup = recipient_account
+            .lockups
+            .iter()
+            .find(|lockup| lockup.expire_on == duration)
+            .unwrap_or_else(|| env::panic_str("No such lockup"));
+        recipient_account.lockups.remove(&lockup);
+        self.accounts
+            .insert(&recipient_id, &recipient_account.into());
+
+        let mut owner_account: Account = self
+            .accounts
+            .get(&self.owner_id)
+            .unwrap_or_else(|| env::panic_str("No such account"))
+            .into();
+        owner_account.free += lockup.amount;
+        self.accounts.insert(&self.owner_id, &owner_account.into());
+
+        lockup.amount.into()
     }
 }
 
