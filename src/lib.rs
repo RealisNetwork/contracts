@@ -145,7 +145,6 @@ impl Contract {
 #[cfg(test)]
 mod tests {
     use crate::utils::tests_utils::*;
-    use std::str::FromStr;
 
     #[test]
     fn info_get_balance_test() {
