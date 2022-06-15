@@ -140,7 +140,7 @@ mod tests {
         let (mut contract, context) =
             init_test_env(Some(accounts(0)), Some(accounts(0)), Some(accounts(0)));
 
-        contract.mint(accounts(0), "some_metadata".to_string());
+        contract.mint(accounts(2), "some_metadata".to_string());
     }
 
     #[test]
