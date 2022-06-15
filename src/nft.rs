@@ -5,11 +5,7 @@ use near_sdk::{
     env, require, AccountId, Balance, Timestamp,
 };
 
-use crate::{
-    auction::{Auction, Bid, DealData},
-    marketplace::Marketplace,
-    NftId, StorageKey,
-};
+use crate::{Account, auction::{Auction, Bid, DealData}, marketplace::Marketplace, NftId, StorageKey};
 /// State of NFT.
 /// Displays the current state of an NFT.
 /// # States
@@ -326,7 +322,7 @@ mod tests {
             init_test_env(Some(accounts(0)), Some(accounts(1)), Some(accounts(2)));
         contract
             .accounts
-            .insert(&accounts(0), &VAccount::V1(Account::new(0)));
+            .insert(&accounts(0), &VAccount::V1(Account::new(accounts(0), 0)));
 
         let m_id = contract
             .nfts

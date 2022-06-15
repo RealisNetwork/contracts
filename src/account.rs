@@ -1,14 +1,5 @@
-use crate::{
-    events::{EventLog, EventLogVariant, LockupLog},
-    lockup::Lockup,
-    LockupInfo, NftId, Serialize, StorageKey,
-};
-use near_sdk::{
-    borsh::{self, BorshDeserialize, BorshSerialize},
-    collections::UnorderedSet,
-    json_types::U128,
-    Balance,
-};
+use crate::{events::{EventLog, EventLogVariant, LockupLog}, lockup::Lockup, LockupInfo, NftId, Serialize, State, StorageKey};
+use near_sdk::{borsh::{self, BorshDeserialize, BorshSerialize}, collections::UnorderedSet, json_types::U128, Balance, AccountId, env};
 
 #[derive(BorshSerialize, BorshDeserialize)]
 pub enum VAccount {
@@ -29,7 +20,7 @@ impl From<VAccount> for Account {
     }
 }
 
-#[derive(BorshSerialize, BorshDeserialize)]
+#[derive(BorshSerialize, BorshDeserialize, Debug)]
 pub struct Account {
     pub free: Balance,
     pub lockups: UnorderedSet<Lockup>,
@@ -37,11 +28,16 @@ pub struct Account {
 }
 
 impl Account {
-    pub fn new(balance: Balance) -> Self {
+    pub fn new(account_id: AccountId, balance: Balance) -> Self {
+        let mut hash = env::sha256(account_id.as_bytes());
+        let mut lockups_key: Vec<u8> = hash.clone();
+        lockups_key.push(StorageKey::Lockups as u8);
+        let mut nfts_key: Vec<u8> = hash.clone();
+        nfts_key.push(StorageKey::NftId as u8);
         Self {
             free: balance,
-            lockups: UnorderedSet::new(StorageKey::Lockups),
-            nfts: UnorderedSet::new(StorageKey::NftId),
+            lockups: UnorderedSet::new(lockups_key),
+            nfts: UnorderedSet::new(nfts_key),
         }
     }
 
@@ -114,7 +110,7 @@ impl From<Account> for VAccount {
 
 impl Default for Account {
     fn default() -> Self {
-        Self::new(0)
+        Self::new(AccountId::new_unchecked("".to_string()),0)
     }
 }
 
@@ -147,7 +143,7 @@ mod tests {
     pub fn check_lockups() {
         let (contract, mut context) = init_test_env(None, None, None);
 
-        let mut account = Account::new(5);
+        let mut account = Account::new(accounts(0), 5);
         // Just locked (will unlock in 3 days (default lifetime))
         account.lockups.insert(&Lockup::new(55, None));
         account.lockups.insert(&Lockup {
@@ -170,7 +166,7 @@ mod tests {
     pub fn check_lockup() {
         let (contract, mut context) = init_test_env(None, None, None);
 
-        let mut account = Account::new(5);
+        let mut account = Account::new(accounts(0), 5);
         // Just locked (will unlock in 3 days (default lifetime))
         account.lockups.insert(&Lockup::new(55, None));
         account.lockups.insert(&Lockup {

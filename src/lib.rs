@@ -84,7 +84,7 @@ impl Contract {
         let owner_id = env::signer_account_id();
 
         let mut accounts = LookupMap::new(StorageKey::Accounts);
-        accounts.insert(&owner_id, &Account::new(total_supply.0).into());
+        accounts.insert(&owner_id, &Account::new(owner_id.clone(), total_supply.0).into());
 
         Self {
             constant_fee: constant_fee.0,
@@ -135,6 +135,18 @@ impl Contract {
             None => Account::default().into(),
         }
     }
+
+    // TODO: Debug only, remove
+    pub fn get_account_panic(&self, account_id: &AccountId) {
+        match self.accounts.get(account_id) {
+            Some(user) => {
+                let user_account: Account = user.into();
+                env::panic_str(format!("{:#?}", user_account).as_str())
+            }
+            None => env::panic_str("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
+        }
+    }
+
 }
 
 #[cfg(test)]
@@ -146,7 +158,7 @@ mod tests {
     fn info_get_balance_test() {
         // Indexes are default
         let (mut contract, mut context) = init_test_env(None, None, None);
-        let account: Account = Account::new(250 * ONE_LIS);
+        let account: Account = Account::new(accounts(0), 250 * ONE_LIS);
         let account_id = accounts(0);
 
         contract.accounts.insert(&account_id, &account.into());

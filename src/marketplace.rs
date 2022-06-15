@@ -108,16 +108,16 @@ mod tests {
     fn get_contract() -> (Contract, VMContextBuilder) {
         let (mut cn, ct) = init_test_env(Some(accounts(0)), Some(accounts(0)), Some(accounts(0)));
 
-        let ac: VAccount = Account::new(1000).into();
+        let ac: VAccount = Account::new(accounts(0),1000).into();
         cn.accounts.insert(&accounts(1), &ac);
         let id = cn.nfts.mint_nft(&accounts(1), "metadata".to_string());
         cn.nfts.mint_nft(&accounts(1), "metadata".to_string());
         cn.internal_sell_nft(id, 1000, accounts(1));
 
-        let ac: VAccount = Account::new(0).into();
+        let ac: VAccount = Account::new(accounts(2),0).into();
         cn.accounts.insert(&accounts(2), &ac);
 
-        let ac: VAccount = Account::new(1000).into();
+        let ac: VAccount = Account::new(accounts(3),1000).into();
         cn.accounts.insert(&accounts(3), &ac);
 
         (cn, ct)
