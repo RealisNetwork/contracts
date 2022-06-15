@@ -99,8 +99,7 @@ impl Account {
     }
 
     pub fn get_nfts(&self) -> Vec<NftId> {
-        let nfts = self.nfts.iter().collect::<Vec<NftId>>();
-        nfts
+        self.nfts.iter().collect()
     }
 }
 
