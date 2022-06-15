@@ -23,7 +23,7 @@ nearAPI.utils.PublicKey.fromString(pk58).data.hexSlice()
 - name: create_lockup
 - signer: contract owner
 - args:
-duration - optional arg, in milliseconds, default 3 days
+duration - optional arg, in nanoseconds, default 3 days
 ```json
 {
   "recipient_id": "AccountId",
@@ -31,14 +31,14 @@ duration - optional arg, in milliseconds, default 3 days
   "duration": 12345
 }
 ```
-- return: expire_on - timestamp, in milliseconds
+- return: expire_on - timestamp, in nanoseconds
 
 ### GooglePlay refund
 - type: call
 - name: refund_lockup
 - signer: contract owner
 - args:
-expire_on - lockup expire time in milliseconds
+expire_on - lockup expire time in nanoseconds
 ```json
 {
   "recipient_id": "AccountId",
@@ -92,7 +92,7 @@ expire_on - lockup expire time in milliseconds
 - name: backend_claim_lockup
 - signer: backend account using user `PublicKey`
 - args:
-expire_on - lockup expire time in milliseconds
+expire_on - lockup expire time in nanoseconds
 ```json
 {
   "expire_on": 12345
