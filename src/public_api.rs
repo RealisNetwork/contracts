@@ -179,7 +179,7 @@ mod tests {
 
     #[test]
     #[ignore]
-    fn claim_all_loockups() {
+    fn claim_all_lockups() {
         // TODO fix me
         let mut owner = accounts(0);
         let (mut contract, mut context) =
@@ -201,7 +201,7 @@ mod tests {
 
     #[test]
     #[ignore]
-    fn claim_loockup() {
+    fn claim_lockup() {
         // TODO fix me
         let mut owner = accounts(0);
         let (mut contract, mut context) =
@@ -232,7 +232,7 @@ mod tests {
 
     #[test]
     #[should_panic = "Contract is paused"]
-    fn claim_loockup_panic() {
+    fn claim_lockup_panic() {
         let mut owner = accounts(0);
         let (mut contract, mut context) =
             init_test_env(Some(owner.clone()), None, Some(owner.clone()));
