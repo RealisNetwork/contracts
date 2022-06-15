@@ -11,7 +11,7 @@ pub fn convert_pk_to_account_id(pk: PublicKey) -> AccountId {
 impl Contract {
     pub fn assert_owner(&self) {
         require!(
-            env::predecessor_account_id() == self.owner_id.clone(),
+            env::signer_account_id() == self.owner_id.clone(),
             "Only owner can do this"
         );
     }
@@ -27,19 +27,21 @@ impl Contract {
 
 #[cfg(test)]
 pub mod tests_utils {
-    pub use crate::*;
+    pub use crate::{lockup::Lockup, *};
     pub use near_sdk::{
+        collections::LookupMap,
         json_types::U128,
         test_utils::{accounts, VMContextBuilder},
-        testing_env, Balance, Gas, AccountId,
-        collections::LookupMap,
+        testing_env, AccountId, Balance, Gas,
     };
     pub use std::str::FromStr;
-    pub use crate::lockup::Lockup;
-
 
     pub const DECIMALS: u8 = 12;
     pub const ONE_LIS: Balance = 10_u128.pow(DECIMALS as _);
+
+    /// If you need to change context config outside of
+    /// this function,you need to use testing_env! macro after
+    /// changes.
 
     #[allow(dead_code)]
     pub fn init_test_env(
@@ -52,7 +54,7 @@ pub mod tests_utils {
 
         testing_env!(context
             .block_timestamp(0)
-            .predecessor_account_id(owner_id.clone().unwrap_or_else(|| accounts(0)))
+            .signer_account_id(owner_id.clone().unwrap_or_else(|| accounts(0)))
             .build());
         let contract = Contract::new(
             U128(3_000_000_000 * ONE_LIS),

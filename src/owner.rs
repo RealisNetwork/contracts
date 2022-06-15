@@ -1,8 +1,7 @@
-use near_sdk::{json_types::U128, AccountId, Timestamp};
+use near_sdk::{env::panic_str, json_types::U128, require, AccountId, Timestamp};
 
 use crate::{
-    events::{EventLog, EventLogVariant, NftMintLog},
-    lockup::Lockup,
+    events::{ChangeBeneficiaryLog, ChangeStateLog, EventLog, EventLogVariant, NftMintLog},
     *,
 };
 
@@ -27,18 +26,45 @@ impl Contract {
         }))
         .emit();
 
-        self.nfts
-            .mint_nft(recipient_id.clone(), nft_metadata.clone())
+        let mut nft_owner_id = Account::from(
+            self.accounts
+                .get(&recipient_id)
+                .unwrap_or_else(|| env::panic_str("Account not found")),
+        );
+
+        let nft_id = self.nfts.mint_nft(recipient_id, nft_metadata);
+        nft_owner_id.nfts.insert(&nft_id);
+        self.accounts
+            .insert(&recipient_id, &VAccount::V1(nft_owner_id));
+
+        nft_id
     }
 
-    #[allow(unused_variables)]
     pub fn change_state(&mut self, state: State) {
-        todo!()
+        self.assert_owner();
+        require!(self.state != state, "State can't be the same");
+        EventLog::from(EventLogVariant::ChangeState(ChangeStateLog {
+            from: self.state.clone(),
+            to: state.clone(),
+        }))
+        .emit();
+
+        self.state = state;
     }
 
-    #[allow(unused_variables)]
     pub fn change_beneficiary(&mut self, new_beneficiary_id: AccountId) {
-        todo!()
+        self.assert_owner();
+        require!(
+            self.beneficiary_id != new_beneficiary_id,
+            "Beneficiary can't be the same"
+        );
+        EventLog::from(EventLogVariant::ChangeBeneficiary(ChangeBeneficiaryLog {
+            from: self.beneficiary_id.clone(),
+            to: new_beneficiary_id.clone(),
+        }))
+        .emit();
+
+        self.beneficiary_id = new_beneficiary_id;
     }
 
     /// Create lockup for account and get tokens from owner account
@@ -105,59 +131,85 @@ impl Contract {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::utils::tests_utils::*;
-    use near_sdk::{test_utils::VMContextBuilder, testing_env, VMContext};
-
-    use super::*;
-
-    pub fn get_context(caller_id: String) -> VMContext {
-        VMContextBuilder::new()
-            .signer_account_id(AccountId::new_unchecked(caller_id))
-            .is_view(false)
-            .build()
-    }
-
-    pub fn get_contract() -> Contract {
-        Contract::new(U128::from(123), U128(1), 10, None, None)
-    }
 
     #[test]
     #[should_panic]
     fn mint_nft_test_panic() {
-        let mut contract = get_contract();
-        let context = get_context("not owner".to_string());
-        testing_env!(context);
+        let (mut contract, context) =
+            init_test_env(Some(accounts(0)), Some(accounts(0)), Some(accounts(0)));
 
-        contract.mint(
-            AccountId::new_unchecked("user_id".to_string()),
-            "some_metadata".to_string(),
-        );
+        contract.mint(accounts(0), "some_metadata".to_string());
     }
 
     #[test]
     fn mint_nft_test() {
-        let mut contract = get_contract();
-        let context = get_context("user_id".to_string());
-        testing_env!(context);
-
-        contract.accounts.insert(
-            &AccountId::new_unchecked("user_id".to_string()),
-            &Account::default().into(),
+        let (_, context) = init_test_env(Some(accounts(0)), Some(accounts(0)), Some(accounts(0)));
+        let mut contract = Contract::new(
+            U128(3_000_000_000 * ONE_LIS),
+            U128(5 * ONE_LIS),
+            10,
+            None,
+            None,
         );
+        contract.owner_id = accounts(0);
 
-        let res = contract.mint(
-            AccountId::new_unchecked("user_id".to_string()),
-            "some_metadata".to_string(),
-        );
+        contract
+            .accounts
+            .insert(&accounts(1), &Account::default().into());
+
+        let res = contract.mint(accounts(1), "some_metadata".to_string());
 
         let assertion = contract.nfts.get_nft_map().keys().any(|key| key == res);
         assert!(assertion);
-        let account: Account = contract
-            .accounts
-            .get(&AccountId::new_unchecked("user_id".to_string()))
-            .unwrap()
-            .into();
+        let account: Account = contract.accounts.get(&accounts(1)).unwrap().into();
         assert!(account.nfts.contains(&res));
+    }
+
+    #[test]
+    fn change_beneficiary_test() {
+        let owner_id = accounts(0);
+        let (mut contract, mut context) = init_test_env(Some(owner_id.clone()), None, None);
+        contract.owner_id = owner_id;
+
+        let account_id_new = accounts(1);
+        contract.change_beneficiary(account_id_new.clone());
+        assert_eq!(contract.beneficiary_id, account_id_new);
+    }
+
+    #[test]
+    #[should_panic = "Beneficiary can't be the same"]
+    fn change_the_same_beneficiary_test() {
+        let owner_id = accounts(0);
+        let beneficiary_id = accounts(1);
+        let (mut contract, mut context) =
+            init_test_env(Some(owner_id.clone()), Some(beneficiary_id.clone()), None);
+        contract.owner_id = owner_id;
+
+        contract.change_beneficiary(beneficiary_id.clone());
+        assert_eq!(contract.beneficiary_id, beneficiary_id);
+    }
+
+    #[test]
+    #[should_panic = "State can't be the same"]
+    fn change_the_same_state_test() {
+        let owner_id = accounts(0);
+        let (mut contract, mut context) = init_test_env(None, None, None);
+        contract.owner_id = owner_id;
+
+        let contract_new_state = State::Running;
+        contract.change_state(contract_new_state.clone());
+        assert_eq!(contract.state, contract_new_state)
+    }
+
+    #[test]
+    fn change_state_test() {
+        let owner_id = accounts(0);
+        let (mut contract, mut context) = init_test_env(None, None, None);
+        contract.owner_id = owner_id;
+
+        let contract_new_state = State::Paused;
+        contract.change_state(contract_new_state.clone());
+        assert_eq!(contract.state, contract_new_state)
     }
 }

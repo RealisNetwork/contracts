@@ -2,9 +2,11 @@ extern crate core;
 
 mod account;
 mod account_manager;
+mod auction;
 mod backend_api;
 mod events;
 mod lockup;
+mod marketplace;
 mod metadata;
 mod nft;
 mod owner;
@@ -14,20 +16,15 @@ mod types;
 mod update;
 mod utils;
 
-
-
-
-use crate::nft::NftMap;
-use near_sdk::{require,log};
 use crate::{
     account::{Account, AccountInfo, VAccount},
     lockup::LockupInfo,
-    nft::Nft,
+    nft::NftManager,
     types::NftId,
 };
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
-    collections::{LookupMap, UnorderedMap,Vector},
+    collections::LookupMap,
     env,
     json_types::U128,
     near_bindgen,
@@ -35,8 +32,7 @@ use near_sdk::{
     AccountId, BorshStorageKey, PanicOnDefault, PublicKey,
 };
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq)]
-
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
 #[serde(crate = "near_sdk::serde")]
 pub enum State {
     Paused,
@@ -50,7 +46,7 @@ pub struct Contract {
     pub percent_fee: u8, /* Commission in percents over transferring amount. for example, 10
                           * (like 10%) */
     pub accounts: LookupMap<AccountId, VAccount>,
-    pub nfts: NftMap,
+    pub nfts: NftManager,
     // Owner of the contract. Example, `Realis.near` or `Volvo.near`
     pub owner_id: AccountId,
     // Allowed user from backend, with admin permission.
@@ -67,7 +63,9 @@ pub struct Contract {
 pub(crate) enum StorageKey {
     Accounts,
     NftsMap,
-    NftsOnSale,
+    NftsMarketplace,
+    NftsAuction,
+    NftsAuctionBids,
     NftId,
     RegisteredAccounts,
     Lockups,
@@ -91,7 +89,7 @@ impl Contract {
         Self {
             constant_fee: constant_fee.0,
             percent_fee,
-            nfts: NftMap::default(),
+            nfts: NftManager::default(),
             owner_id: owner_id.clone(),
             backend_id: backend_id.unwrap_or_else(|| owner_id.clone()),
             beneficiary_id: beneficiary_id.unwrap_or(owner_id),
@@ -129,7 +127,7 @@ impl Contract {
     }
 
     pub fn get_account_info(&self, account_id: &AccountId) -> AccountInfo {
-        match self.accounts.get(&account_id) {
+        match self.accounts.get(account_id) {
             Some(user) => {
                 let user_account: Account = user.into();
                 user_account.into()
@@ -141,61 +139,17 @@ impl Contract {
 
 #[cfg(test)]
 mod tests {
-    use std::str::FromStr;
     use crate::utils::tests_utils::*;
-
-    #[test]
-    fn info_log_test() {
-        // Indexes are default
-        let (mut contract, mut context) = init_test_env(None, None, None);
-        let mut account: Account = Account::new(250);
-        let account_id = AccountId::from_str("user.testnet").unwrap();
-
-        account.lockups.insert(&lockup::Lockup {
-            amount: 250 * ONE_LIS,
-            expire_on: 60,
-        });
-
-        account.lockups.insert(&lockup::Lockup::new(25 * ONE_LIS, None));
-        account.lockups.insert(&lockup::Lockup::new(35 * ONE_LIS, Some(20)));
-
-        contract.accounts.insert(&account_id, &account.into());
-    }
-
-    #[test]
-    fn info_no_locks() {
-        // There are no locks
-        let (mut contract, mut context) = init_test_env(None, None, None);
-        let account: Account = Account::new(250 * ONE_LIS);
-        let account_id = AccountId::from_str("user.testnet").unwrap();
-
-        contract.accounts.insert(&account_id, &account.into());
-    }
+    use std::str::FromStr;
 
     #[test]
     fn info_get_balance_test() {
         // Indexes are default
         let (mut contract, mut context) = init_test_env(None, None, None);
         let account: Account = Account::new(250 * ONE_LIS);
-        let account_id = AccountId::from_str("user.testnet").unwrap();
+        let account_id = accounts(0);
 
         contract.accounts.insert(&account_id, &account.into());
         assert_eq!(contract.get_balance_info(account_id).0, 250 * ONE_LIS);
-    }
-
-    #[test]
-    fn get_account_info_test() {
-        let (mut contract, mut context) = init_test_env(None, None, None);
-        let mut account: Account = Account::new(250 * ONE_LIS);
-        let account_id = AccountId::from_str("user.testnet").unwrap();
-
-        account.lockups.insert(&lockup::Lockup {
-            amount: 250 * ONE_LIS,
-            expire_on: 60,
-        });
-        account.lockups.insert(&lockup::Lockup::new(25 * ONE_LIS, None));
-        account.lockups.insert(&lockup::Lockup::new(35 * ONE_LIS, Some(20)));
-
-        contract.accounts.insert(&account_id, &account.into());
     }
 }
