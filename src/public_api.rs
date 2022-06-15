@@ -117,7 +117,7 @@ mod tests {
     fn burn_nft_test() {
         let mut owner = accounts(0);
         let (mut contract, _context) = init_test_env(Some(owner.clone()), None, None);
-        let nft_id = contract.nfts.mint_nft(owner, "Duck".to_string());
+        let nft_id = contract.nfts.mint_nft(&owner, "Duck".to_string());
         assert_eq!(contract.nfts.nft_count(), 1);
         contract.burn(U128(nft_id));
         assert_eq!(contract.nfts.nft_count(), 0);
@@ -163,9 +163,9 @@ mod tests {
         let mut owner = accounts(0);
         let mut reciver = accounts(1);
         let (mut contract, _context) = init_test_env(Some(owner.clone()), None, None);
-        let nft_id = contract.nfts.mint_nft(owner, "Duck".to_string());
+        let nft_id = contract.nfts.mint_nft(&owner, "Duck".to_string());
         contract.transfer_nft(reciver.clone(), U128(nft_id));
-        assert_eq!(contract.nfts.get_nft(nft_id).owner_id, reciver);
+        assert_eq!(contract.nfts.get_nft(&nft_id).owner_id, reciver);
     }
 
     #[test]
