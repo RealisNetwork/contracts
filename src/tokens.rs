@@ -4,7 +4,7 @@ use primitive_types::U256;
 
 #[near_bindgen]
 impl Contract {
-    /// `fn internal_transfer` transfers tokens from one user to another, returns sender balance left
+    /// `fn internal_transfer`transfers tokens from one user to another, returns sender balance left
     /// # Examples
     /// ```
     /// let sender_id = accounts(0);
