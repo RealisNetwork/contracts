@@ -4,7 +4,7 @@ use near_sdk::{env, require};
 pub const MILLISECOND: u64 = 1;
 pub const SECOND: u64 = 1000 * MILLISECOND;
 pub const MINUTE: u64 = 60 * SECOND;
-pub const HOUR: u64 = 60 + MINUTE;
+pub const HOUR: u64 = 60 * MINUTE;
 pub const DAY: u64 = 24 * HOUR;
 
 pub const DEFAULT_LOCK_LIFE_TIME: u64 = 3 * DAY;
