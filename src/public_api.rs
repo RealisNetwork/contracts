@@ -21,13 +21,11 @@ impl Contract {
             .transfer_nft(env::signer_account_id(), recipient_id, &nft_id.0);
     }
 
-    #[allow(unused_variables)]
     pub fn sell_nft(&mut self, nft_id: U128, price: U128) {
         self.assert_running();
         self.internal_sell_nft(nft_id.0, price.0, env::signer_account_id());
     }
 
-    #[allow(unused_variables)]
     pub fn buy_nft(&mut self, nft_id: U128) -> U128 {
         self.assert_running();
         let result = self.internal_buy_nft(nft_id.0, env::signer_account_id());
@@ -35,7 +33,6 @@ impl Contract {
         U128::from(result)
     }
 
-    #[allow(unused_variables)]
     pub fn change_price(&mut self, nft_id: U128, price: U128) {
         self.assert_running();
         self.nfts
