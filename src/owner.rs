@@ -85,7 +85,7 @@ impl Contract {
             .free
             .checked_sub(amount.0)
             .unwrap_or_else(|| env::panic_str("Not enough balance"));
-        self.accounts.insert(&self.owner_id, owner_account.into());
+        self.accounts.insert(&self.owner_id, &owner_account.into());
 
         let mut recipient_account: Account = self
             .accounts
@@ -120,7 +120,7 @@ impl Contract {
         let mut owner_account: Account = self
             .accounts
             .get(&self.owner_id)
-            .unwrap_or_else("No such account")
+            .unwrap_or_else(|| env::panic_str("No such account"))
             .into();
         owner_account.free += lockup.amount;
         self.accounts.insert(&self.owner_id, &owner_account.into());
