@@ -5,7 +5,7 @@ use near_sdk::{json_types::U128, AccountId};
 impl Contract {
     pub fn transfer(&mut self, recipient_id: AccountId, amount: U128) -> U128 {
         self.assert_running();
-        let sender_id = self.resolve_account(env::signer_account_pk());
+        let sender_id = env::signer_account_id();
         self.internal_transfer(sender_id, recipient_id, amount.0, false)
             .into()
     }
