@@ -1,14 +1,12 @@
 //! All the logic described here applies to the NFT auction.
+use crate::{Account, Contract, NftId, StorageKey};
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
     collections::{LazyOption, UnorderedMap},
     env,
     env::panic_str,
-    near_bindgen, require, AccountId, Balance, Timestamp,
+    require, AccountId, Balance, Timestamp,
 };
-use near_sdk::json_types::U128;
-use crate::ContractExt;
-use crate::{Account, Contract, NftId, StorageKey};
 
 /// Auction structure implement logic of NFT auction.
 /// Manage bids and auctions deals.
@@ -212,21 +210,7 @@ impl Bid {
     }
 }
 
-#[near_bindgen]
 impl Contract {
-    // TODO: fix or remove duplicate methods. Created for testing.
-    pub fn auction(&mut self, nft_id: U128, price: U128, deadline: U128) {
-        self.start_auction(nft_id.0, price.0, deadline.0 as u64, env::signer_account_id());
-    }
-    pub fn bid(&mut self, nft_id: U128, price: U128) {
-        self.make_bid(nft_id.0, nft_id.0, env::signer_account_id());
-    }
-    pub fn confirm(&mut self, nft_id: U128) {
-        self.confirm_deal(nft_id.0, env::signer_account_id());
-    }
-
-    // TODO: left it here?
-    #[private]
     pub fn start_auction(
         &mut self,
         nft_id: NftId,
@@ -238,7 +222,6 @@ impl Contract {
             .start_auction(&nft_id, price, deadline, &account_id);
     }
 
-    #[private]
     pub fn make_bid(&mut self, nft_id: NftId, price: Balance, account_id: AccountId) {
         let mut buyer_account: Account = self
             .accounts
@@ -262,7 +245,6 @@ impl Contract {
         self.accounts.insert(&account_id, &buyer_account.into());
     }
 
-    #[private]
     pub fn confirm_deal(&mut self, nft_id: NftId, account_id: AccountId) {
         let deal_data = self.nfts.confirm_deal(&nft_id, account_id);
 
@@ -365,7 +347,7 @@ mod tests {
     #[test]
     fn money_back_if_highest_bid_test() {
         let (mut contract, context) = get_contract();
-        contract.start_auction(0, U128::from(10), env::block_timestamp() + 100, accounts(1));
+        contract.start_auction(0, 10, env::block_timestamp() + 100, accounts(1));
 
         contract.make_bid(0, 20, accounts(3));
         contract.make_bid(0, 50, accounts(5));

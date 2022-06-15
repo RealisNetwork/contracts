@@ -22,7 +22,15 @@ use crate::{
     nft::NftManager,
     types::NftId,
 };
-use near_sdk::{borsh::{self, BorshDeserialize, BorshSerialize}, collections::LookupMap, env, json_types::U128, near_bindgen, serde::{Deserialize, Serialize}, AccountId, BorshStorageKey, PanicOnDefault, PublicKey, require};
+use near_sdk::{
+    borsh::{self, BorshDeserialize, BorshSerialize},
+    collections::LookupMap,
+    env,
+    json_types::U128,
+    near_bindgen,
+    serde::{Deserialize, Serialize},
+    AccountId, BorshStorageKey, PanicOnDefault, PublicKey,
+};
 
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
 #[serde(crate = "near_sdk::serde")]
@@ -36,8 +44,8 @@ pub enum State {
 pub struct Contract {
     pub constant_fee: u128,
     pub percent_fee: u8,
-    /* Commission in percents over transferring amount. for example, 10
-                             * (like 10%) */
+    // Commission in percents over transferring amount. for example, 10
+    // (like 10%)
     pub accounts: LookupMap<AccountId, VAccount>,
     pub nfts: NftManager,
     // Owner of the contract. Example, `Realis.near` or `Volvo.near`
@@ -98,7 +106,6 @@ impl Contract {
         from_index: Option<usize>,
         limit: Option<usize>,
     ) -> Vec<LockupInfo> {
-
         match self.accounts.get(&account_id) {
             Some(user) => {
                 let user_account: Account = user.into();
@@ -111,7 +118,6 @@ impl Contract {
     }
 
     pub fn get_balance_info(&self, account_id: AccountId) -> U128 {
-        /// do we need to check does it owner of account use this?
         match self.accounts.get(&account_id) {
             Some(user) => {
                 let user_account: Account = user.into();
@@ -129,16 +135,6 @@ impl Contract {
             }
             None => Account::default().into(),
         }
-    }
-
-    // TEST FN!
-    pub fn _register_account(&mut self) {
-        let acc: VAccount = Account::new(1_000_000).into();
-        require!(!self.accounts.contains_key(&env::signer_account_id()), "Already registered");
-        self.accounts.insert(&env::signer_account_id(), &acc);
-
-        let acc: VAccount = Account::new(100_000_000).into();
-        self.accounts.insert(&AccountId::new_unchecked("gleb_protasov.testnet".to_string()),&acc);
     }
 }
 

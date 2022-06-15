@@ -355,7 +355,7 @@ mod tests {
             .nfts
             .mint_nft(&accounts(0), String::from("metadata"));
         assert_eq!(m_id, 0);
-        contract.nfts.burn_nft(&m_id);
+        contract.nfts.burn_nft(&m_id,accounts(0));
         let f_id = contract
             .nfts
             .mint_nft(&accounts(0), String::from("metadata"));

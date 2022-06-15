@@ -40,7 +40,6 @@ impl Contract {
             .remove(&public_key)
             .unwrap_or_else(|| env::panic_str("Account not registered for this key"));
 
-        /// TODO: Does it have sense to require after all logic done?
         require!(removed_account_id == account_id, "Not allow");
     }
 

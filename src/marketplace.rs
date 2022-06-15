@@ -84,7 +84,7 @@ impl Contract {
                     .nfts
                     .get_marketplace_nft_map()
                     .get(&nft_id)
-                    .unwrap_or_else(|| panic_str("Nft not found")),
+                    .unwrap_or_else(|| panic_str("Nft not in marketplace.")),
             "Not enough money"
         );
 
@@ -111,10 +111,8 @@ impl Contract {
         price: Balance,
         account_id: AccountId,
     ) {
-        let nft: Nft = self.nfts.get_nft(&nft_id).into();
-        require!(account_id == nft.owner_id, "Only for NFT owner.");
         self.nfts
-            .change_price_nft(&nft_id, price, env::signer_account_id());
+            .change_price_nft(&nft_id, price, account_id);
     }
 }
 
