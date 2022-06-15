@@ -42,7 +42,7 @@ impl Contract {
     // TODO check lockups
     pub fn claim_lockup(&mut self, expire_on: u64) -> U128 {
         self.assert_running();
-        let target_id = self.resolve_account(env::signer_account_pk());
+        let target_id = env::signer_account_id();
         let mut target_account: Account = self
             .accounts
             .get(&target_id)
@@ -56,7 +56,7 @@ impl Contract {
 
     pub fn claim_all_lockup(&mut self) -> U128 {
         self.assert_running();
-        let target_id = self.resolve_account(env::signer_account_pk());
+        let target_id = env::signer_account_id();
         let mut target_account: Account = self
             .accounts
             .get(&target_id)
