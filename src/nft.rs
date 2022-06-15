@@ -1,14 +1,19 @@
 //! Designed to interact with the NFT, NFT marketplace.
 use near_sdk::{
-    serde::{Serialize, Deserialize},
     borsh::{self, BorshDeserialize, BorshSerialize},
     collections::{UnorderedMap, Vector},
-    near_bindgen, env, require, AccountId, Balance, Timestamp,
+    env,
+    json_types::U128,
+    near_bindgen, require,
+    serde::{Deserialize, Serialize},
+    AccountId, Balance, Timestamp,
 };
-use near_sdk::json_types::U128;
 
-use crate::ContractExt;
-use crate::{auction::{Auction, Bid, DealData}, Contract, marketplace::Marketplace, NftId, StorageKey};
+use crate::{
+    auction::{Auction, Bid, DealData},
+    marketplace::Marketplace,
+    Contract, ContractExt, NftId, StorageKey,
+};
 
 /// State of NFT.
 /// Displays the current state of an NFT.

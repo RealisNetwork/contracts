@@ -23,7 +23,7 @@ impl Contract {
         self.assert_backend();
         let sender_id = self.resolve_account(env::signer_account_pk());
         self.take_fee(sender_id.clone(), None, true);
-        self.nfts.transfer_nft(sender_id,recipient_id, &nft_id.0);
+        self.nfts.transfer_nft(sender_id, recipient_id, &nft_id.0);
     }
 
     #[allow(unused_variables)]
