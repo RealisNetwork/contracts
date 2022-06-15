@@ -82,7 +82,7 @@ jobs:
           toolchain: stable-x86_64-unknown-linux-gnu
           target: wasm32-unknown-unknown
           components: udeps
-      - run: cargo udeps
+      - run: cargo +nightly udeps
 
   tests:
     runs-on: ubuntu-latest
