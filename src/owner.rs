@@ -1,7 +1,8 @@
-use near_sdk::{env::panic_str, json_types::U128, require, AccountId, Timestamp};
+use near_sdk::{json_types::U128, require, AccountId, Timestamp};
 
 use crate::{
     events::{ChangeBeneficiaryLog, ChangeStateLog, EventLog, EventLogVariant, NftMintLog},
+    lockup::Lockup,
     *,
 };
 
@@ -32,7 +33,7 @@ impl Contract {
                 .unwrap_or_else(|| env::panic_str("Account not found")),
         );
 
-        let nft_id = self.nfts.mint_nft(recipient_id, nft_metadata);
+        let nft_id = self.nfts.mint_nft(&recipient_id, nft_metadata);
         nft_owner_id.nfts.insert(&nft_id);
         self.accounts
             .insert(&recipient_id, &VAccount::V1(nft_owner_id));
