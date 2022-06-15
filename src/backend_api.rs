@@ -53,25 +53,34 @@ impl Contract {
         todo!()
     }
 
-    //TODO check lockups
+    // TODO check lockups
     pub fn backend_claim_lockup(&mut self, expire_on: Timestamp) -> U128 {
         self.assert_running();
         self.assert_backend();
         let target_id = self.resolve_account(env::signer_account_pk());
-        let mut target_account: Account = self.accounts.get(&target_id).unwrap_or_else(|| env::panic_str("No such account id")).into();
+        let mut target_account: Account = self
+            .accounts
+            .get(&target_id)
+            .unwrap_or_else(|| env::panic_str("No such account id"))
+            .into();
         let res = target_account.claim_lockup(expire_on);
-        self.accounts.insert(&env::signer_account_id(), &target_account.into());
+        self.accounts
+            .insert(&env::signer_account_id(), &target_account.into());
         U128(res)
     }
 
-
-    pub fn backend_claim_all_lockup(& mut self) ->U128 {
+    pub fn backend_claim_all_lockup(&mut self) -> U128 {
         self.assert_running();
         self.assert_backend();
         let target_id = self.resolve_account(env::signer_account_pk());
-        let mut target_account: Account = self.accounts.get(&target_id).unwrap_or_else(|| env::panic_str("No such account id")).into();
+        let mut target_account: Account = self
+            .accounts
+            .get(&target_id)
+            .unwrap_or_else(|| env::panic_str("No such account id"))
+            .into();
         let res = target_account.claim_all_lockups();
-        self.accounts.insert(&env::signer_account_id(), &target_account.into());
+        self.accounts
+            .insert(&env::signer_account_id(), &target_account.into());
         U128(res)
     }
 
@@ -232,15 +241,20 @@ mod tests {
 
     #[test]
     #[ignore]
-    fn backend_claim_all_loockups() {//TODO fix me
+    fn backend_claim_all_loockups() {
+        // TODO fix me
         let mut owner = accounts(0);
-        let (mut contract, mut context) = init_test_env(Some(owner.clone()), None, Some(owner.clone()));
+        let (mut contract, mut context) =
+            init_test_env(Some(owner.clone()), None, Some(owner.clone()));
 
         let mut owner_account = Account::new(5);
         owner_account.lockups.insert(&Lockup::new(5, None));
         contract.accounts.insert(&owner, &owner_account.into());
 
-        testing_env!(context.signer_account_id(accounts(0)).block_timestamp(99999999999999).build());
+        testing_env!(context
+            .signer_account_id(accounts(0))
+            .block_timestamp(99999999999999)
+            .build());
 
         contract.backend_claim_all_lockup();
         let res_owner_account: Account = contract.accounts.get(&owner).unwrap().into();
@@ -250,37 +264,42 @@ mod tests {
     #[should_panic = "Not allowed"]
     fn backend_claim_all_loockups_panic() {
         let mut owner = accounts(0);
-        let (mut contract, mut context) = init_test_env(Some(owner.clone()), None, Some(owner.clone()));
+        let (mut contract, mut context) =
+            init_test_env(Some(owner.clone()), None, Some(owner.clone()));
 
         let mut owner_account = Account::new(5);
         owner_account.lockups.insert(&Lockup::new(5, None));
         contract.accounts.insert(&owner, &owner_account.into());
 
         contract.backend_claim_all_lockup();
-
     }
 
     #[test]
     #[ignore]
-    fn backend_claim_loockup(){//TODO fix me
+    fn backend_claim_loockup() {
+        // TODO fix me
         let mut owner = accounts(0);
-        let (mut contract, mut context) = init_test_env(Some(owner.clone()), None, Some(owner.clone()));
+        let (mut contract, mut context) =
+            init_test_env(Some(owner.clone()), None, Some(owner.clone()));
 
         let mut owner_account = Account::new(50);
-        owner_account.lockups.insert(&Lockup{
+        owner_account.lockups.insert(&Lockup {
             amount: 5,
-            expire_on: 0
+            expire_on: 0,
         });
-        owner_account.lockups.insert(&Lockup{
+        owner_account.lockups.insert(&Lockup {
             amount: 5,
-            expire_on: 1
+            expire_on: 1,
         });
-        owner_account.lockups.insert(&Lockup{
+        owner_account.lockups.insert(&Lockup {
             amount: 5,
-            expire_on: 3
+            expire_on: 3,
         });
         contract.accounts.insert(&owner, &owner_account.into());
-        testing_env!(context.signer_account_id(accounts(0)).block_timestamp(2).build());
+        testing_env!(context
+            .signer_account_id(accounts(0))
+            .block_timestamp(2)
+            .build());
         contract.backend_claim_lockup(1);
         let res_owner_account: Account = contract.accounts.get(&owner).unwrap().into();
         assert_eq!(res_owner_account.free, 55);
@@ -288,9 +307,10 @@ mod tests {
 
     #[test]
     #[should_panic = "Contract is paused"]
-    fn backend_claim_loockup_panic(){
+    fn backend_claim_loockup_panic() {
         let mut owner = accounts(0);
-        let (mut contract, mut context) = init_test_env(Some(owner.clone()), None, Some(owner.clone()));
+        let (mut contract, mut context) =
+            init_test_env(Some(owner.clone()), None, Some(owner.clone()));
         contract.state = State::Paused;
 
         contract.backend_claim_lockup(1);
