@@ -36,7 +36,7 @@ impl Contract {
     #[allow(unused_variables)]
     pub fn change_price(&mut self, nft_id: U128, price: U128) {
         self.assert_running();
-        todo!()
+        self.nfts.change_price_nft(&nft_id.0, price.0, env::signer_account_id());
     }
 
     // TODO: delegate nft

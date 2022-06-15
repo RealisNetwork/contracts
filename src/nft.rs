@@ -1,9 +1,14 @@
 //! Designed to interact with the NFT, NFT marketplace.
 use near_sdk::{
+    serde::{Serialize, Deserialize},
     borsh::{self, BorshDeserialize, BorshSerialize},
     collections::{UnorderedMap, Vector},
-    env, require, AccountId, Balance, Timestamp,
+    near_bindgen, env, require, AccountId, Balance, Timestamp,
 };
+use near_sdk::json_types::U128;
+
+use crate::ContractExt;
+use crate::{auction::{Auction, Bid, DealData}, Contract, marketplace::Marketplace, NftId, StorageKey};
 
 use crate::{
     auction::{Auction, Bid, DealData},
@@ -15,7 +20,8 @@ use crate::{
 /// # States
 /// * `AVAILABLE` - NFT unlocked, could be burn or transferred.
 /// * `LOCK` - NFT locked. Allow read access.
-#[derive(BorshSerialize, BorshDeserialize, Debug, Eq, PartialEq, Clone)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
+#[serde(crate = "near_sdk::serde")]
 enum NftState {
     Available,
     Lock,
@@ -26,7 +32,8 @@ enum NftState {
 /// * `owner_id` - NFT owner `AccountID`.
 /// * `metadata` - NFT metadata.
 /// * `state` - state of NFT.
-#[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, Debug, Clone)]
+#[serde(crate = "near_sdk::serde")]
 pub struct Nft {
     // TODO add fields
     pub owner_id: AccountId,
@@ -260,7 +267,9 @@ impl NftManager {
     }
 
     /// Change price of NFT.
-    pub fn change_price_nft(&mut self, nft_id: &NftId, new_price: Balance) {
+    pub fn change_price_nft(&mut self, nft_id: &NftId, new_price: Balance, account_id: AccountId) {
+        let nft: Nft = self.get_nft(nft_id).into();
+        require!(nft.is_owner(&account_id), "Only for NFT owner.");
         self.marketplace_nft_map.change_price_nft(nft_id, new_price);
     }
 
@@ -274,12 +283,14 @@ impl NftManager {
 
     /// Remove NFT if NFT available.
     /// For remove need to unlock NFT if it was locked up.
-    pub fn burn_nft(&mut self, nft_id: &NftId) {
+    pub fn burn_nft(&mut self, nft_id: &NftId, account_id: AccountId) {
         require!(
             !self.marketplace_nft_map.is_on_marketplace(nft_id)
                 && !self.auction_nft_map.is_in_auction(nft_id),
             "Nft locked up"
         );
+        let nft: Nft = self.get_if_available(nft_id).into();
+        require!(nft.is_owner(&account_id), "Only for NFT owner.");
         self.nft_map
             .remove(nft_id)
             .unwrap_or_else(|| env::panic_str("Nft not exist"));
@@ -313,6 +324,17 @@ impl NftManager {
         }
 
         self.nft_id_counter
+    }
+}
+
+#[near_bindgen]
+impl Contract {
+    pub fn get_nft_info(&self, nft_id: U128) -> Nft {
+        self.nfts.get_nft(&nft_id.0).into()
+    }
+
+    pub fn get_nft_price(&self, nft_id: U128) -> U128 {
+        self.internal_get_nft_marketplace_info(nft_id.0).into()
     }
 }
 

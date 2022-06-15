@@ -58,6 +58,10 @@ impl Marketplace {
 }
 
 impl Contract {
+    pub fn internal_get_nft_marketplace_info(&self, nft_id: NftId) -> u128 {
+        self.nfts.get_marketplace_nft_map().get(&nft_id).unwrap_or_else(|| env::panic_str("Not found"))
+    }
+
     pub fn internal_sell_nft(&mut self, nft_id: NftId, price: Balance, account_id: AccountId) {
         self.nfts.sell_nft(&nft_id, &price, account_id)
     }

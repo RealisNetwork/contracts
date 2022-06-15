@@ -4,9 +4,10 @@ use near_sdk::{
     collections::{LazyOption, UnorderedMap},
     env,
     env::panic_str,
-    require, AccountId, Balance, Timestamp,
+    near_bindgen, require, AccountId, Balance, Timestamp,
 };
-
+use near_sdk::json_types::U128;
+use crate::ContractExt;
 use crate::{Account, Contract, NftId, StorageKey};
 
 /// Auction structure implement logic of NFT auction.
@@ -211,8 +212,10 @@ impl Bid {
     }
 }
 
+#[near_bindgen]
 impl Contract {
     // TODO: left it here?
+    #[private]
     pub fn start_auction(
         &mut self,
         nft_id: NftId,
@@ -224,6 +227,7 @@ impl Contract {
             .start_auction(&nft_id, price, deadline, &account_id);
     }
 
+    #[private]
     pub fn make_bid(&mut self, nft_id: NftId, price: Balance, account_id: AccountId) {
         let mut buyer_account: Account = self
             .accounts
@@ -247,6 +251,7 @@ impl Contract {
         self.accounts.insert(&account_id, &buyer_account.into());
     }
 
+    #[private]
     pub fn confirm_deal(&mut self, nft_id: NftId, account_id: AccountId) {
         let deal_data = self.nfts.confirm_deal(&nft_id, account_id);
 

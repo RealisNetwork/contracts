@@ -14,16 +14,16 @@ impl Contract {
         self.assert_running();
         self.assert_backend();
         let sender_id = self.resolve_account(env::signer_account_pk());
-        self.take_fee(sender_id, None, true);
-        self.nfts.burn_nft(&nft_id.0);
+        self.take_fee(sender_id.clone(), None, true);
+        self.nfts.burn_nft(&nft_id.0, sender_id);
     }
 
     pub fn backend_transfer_nft(&mut self, recipient_id: AccountId, nft_id: U128) {
         self.assert_running();
         self.assert_backend();
         let sender_id = self.resolve_account(env::signer_account_pk());
-        self.take_fee(sender_id, None, true);
-        self.nfts.transfer_nft(recipient_id, &nft_id.0);
+        self.take_fee(sender_id.clone(), None, true);
+        self.nfts.transfer_nft(sender_id,recipient_id, &nft_id.0);
     }
 
     #[allow(unused_variables)]
@@ -130,7 +130,7 @@ mod tests {
     fn backend_burn_nft_test() {
         let mut owner = accounts(0);
         let (mut contract, _context) = init_test_env(Some(owner.clone()), None, None);
-        let nft_id = contract.nfts.mint_nft(owner, "Duck".to_string());
+        let nft_id = contract.nfts.mint_nft(&owner, "Duck".to_string());
         assert_eq!(contract.nfts.nft_count(), 1);
         contract.backend_burn(U128(nft_id));
         assert_eq!(contract.nfts.nft_count(), 0);
@@ -189,9 +189,9 @@ mod tests {
         let mut owner = accounts(0);
         let mut reciver = accounts(1);
         let (mut contract, _context) = init_test_env(Some(owner.clone()), None, None);
-        let nft_id = contract.nfts.mint_nft(owner, "Duck".to_string());
+        let nft_id = contract.nfts.mint_nft(&owner, "Duck".to_string());
         contract.backend_transfer_nft(reciver.clone(), U128(nft_id));
-        assert_eq!(contract.nfts.get_nft(nft_id).owner_id, reciver);
+        assert_eq!(contract.nfts.get_nft(&nft_id).owner_id, reciver);
     }
 
     #[test]

@@ -22,15 +22,7 @@ use crate::{
     nft::NftManager,
     types::NftId,
 };
-use near_sdk::{
-    borsh::{self, BorshDeserialize, BorshSerialize},
-    collections::LookupMap,
-    env,
-    json_types::U128,
-    near_bindgen,
-    serde::{Deserialize, Serialize},
-    AccountId, BorshStorageKey, PanicOnDefault, PublicKey,
-};
+use near_sdk::{borsh::{self, BorshDeserialize, BorshSerialize}, collections::LookupMap, env, json_types::U128, near_bindgen, serde::{Deserialize, Serialize}, AccountId, BorshStorageKey, PanicOnDefault, PublicKey, require};
 
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
 #[serde(crate = "near_sdk::serde")]
@@ -134,6 +126,16 @@ impl Contract {
             }
             None => Account::default().into(),
         }
+    }
+
+    // TEST FN!
+    pub fn _register_account(&mut self) {
+        let acc: VAccount = Account::new(1_000_000).into();
+        require!(!self.accounts.contains_key(&env::signer_account_id()), "Already registered");
+        self.accounts.insert(&env::signer_account_id(), &acc);
+
+        let acc: VAccount = Account::new(100_000_000).into();
+        self.accounts.insert(&AccountId::new_unchecked("gleb_protasov.testnet".to_string()),&acc);
     }
 }
 
