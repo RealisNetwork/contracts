@@ -38,7 +38,7 @@ impl Contract {
         self.accounts
             .insert(&recipient_id, &VAccount::V1(nft_owner_id));
 
-        nft_id
+        nft_id.into()
     }
 
     pub fn change_state(&mut self, state: State) {
