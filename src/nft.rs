@@ -5,7 +5,11 @@ use near_sdk::{
     env, require, AccountId, Balance, Timestamp,
 };
 
-use crate::{Account, auction::{Auction, Bid, DealData}, marketplace::Marketplace, NftId, StorageKey};
+use crate::{
+    auction::{Auction, Bid, DealData},
+    marketplace::Marketplace,
+    Account, NftId, StorageKey,
+};
 /// State of NFT.
 /// Displays the current state of an NFT.
 /// # States

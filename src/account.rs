@@ -1,5 +1,15 @@
-use crate::{events::{EventLog, EventLogVariant, LockupLog}, lockup::Lockup, LockupInfo, NftId, Serialize, State, StorageKey};
-use near_sdk::{borsh::{self, BorshDeserialize, BorshSerialize}, collections::UnorderedSet, json_types::U128, Balance, AccountId, env};
+use crate::{
+    events::{EventLog, EventLogVariant, LockupLog},
+    lockup::Lockup,
+    LockupInfo, NftId, Serialize, State, StorageKey,
+};
+use near_sdk::{
+    borsh::{self, BorshDeserialize, BorshSerialize},
+    collections::UnorderedSet,
+    env,
+    json_types::U128,
+    AccountId, Balance,
+};
 
 #[derive(BorshSerialize, BorshDeserialize)]
 pub enum VAccount {
@@ -30,14 +40,10 @@ pub struct Account {
 impl Account {
     pub fn new(account_id: AccountId, balance: Balance) -> Self {
         let mut hash = env::sha256(account_id.as_bytes());
-        let mut lockups_key: Vec<u8> = hash.clone();
-        lockups_key.push(StorageKey::Lockups as u8);
-        let mut nfts_key: Vec<u8> = hash.clone();
-        nfts_key.push(StorageKey::NftId as u8);
         Self {
             free: balance,
-            lockups: UnorderedSet::new(lockups_key),
-            nfts: UnorderedSet::new(nfts_key),
+            lockups: UnorderedSet::new(StorageKey::AccountLockup { hash: hash.clone() }),
+            nfts: UnorderedSet::new(StorageKey::AccountNftId { hash }),
         }
     }
 
@@ -110,7 +116,7 @@ impl From<Account> for VAccount {
 
 impl Default for Account {
     fn default() -> Self {
-        Self::new(AccountId::new_unchecked("".to_string()),0)
+        Self::new(AccountId::new_unchecked("".to_string()), 0)
     }
 }
 

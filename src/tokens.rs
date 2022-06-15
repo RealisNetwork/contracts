@@ -187,13 +187,13 @@ pub mod tests {
         let sender_id = accounts(0);
         contract
             .accounts
-            .insert(&sender_id, &Account::new(accounts(0),250 * ONE_LIS).into()); // Will be 228
+            .insert(&sender_id, &Account::new(accounts(0), 250 * ONE_LIS).into()); // Will be 228
 
         // receiver
         let receiver_id = accounts(1);
         contract
             .accounts
-            .insert(&receiver_id, &Account::new(accounts(1),9 * ONE_LIS).into()); // Will be 29
+            .insert(&receiver_id, &Account::new(accounts(1), 9 * ONE_LIS).into()); // Will be 29
 
         contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 20 * ONE_LIS, false);
 
@@ -254,7 +254,7 @@ pub mod tests {
         let receiver_id = accounts(1);
         contract
             .accounts
-            .insert(&receiver_id, &Account::new(accounts(1),9 * ONE_LIS).into()); // Will be 9
+            .insert(&receiver_id, &Account::new(accounts(1), 9 * ONE_LIS).into()); // Will be 9
 
         contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 251 * ONE_LIS, true);
 
@@ -282,7 +282,7 @@ pub mod tests {
         let receiver_id = accounts(1);
         contract
             .accounts
-            .insert(&receiver_id, &Account::new(accounts(0),9 * ONE_LIS).into()); // Will be 9
+            .insert(&receiver_id, &Account::new(accounts(0), 9 * ONE_LIS).into()); // Will be 9
 
         contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 250 * ONE_LIS, true);
 
@@ -366,7 +366,7 @@ pub mod tests {
         // Sender
         let sender_id = accounts(0);
 
-        let mut account_sender: Account = Account::new(accounts(0),250 * ONE_LIS).into();
+        let mut account_sender: Account = Account::new(accounts(0), 250 * ONE_LIS).into();
 
         account_sender.lockups.insert(&Lockup {
             amount: 36 * ONE_LIS,
@@ -380,7 +380,7 @@ pub mod tests {
 
         contract
             .accounts
-            .insert(&receiver_id, &Account::new(accounts(0),9 * ONE_LIS).into()); // Will be 9
+            .insert(&receiver_id, &Account::new(accounts(0), 9 * ONE_LIS).into()); // Will be 9
 
         testing_env!(context
             .block_timestamp(1655102539992)
@@ -409,7 +409,7 @@ pub mod tests {
         // Sender
         let sender_id = accounts(0);
 
-        let mut account_sender: Account = Account::new(accounts(0),250 * ONE_LIS).into();
+        let mut account_sender: Account = Account::new(accounts(0), 250 * ONE_LIS).into();
 
         account_sender.lockups.insert(&Lockup {
             amount: 10 * ONE_LIS,
@@ -438,7 +438,7 @@ pub mod tests {
 
         contract
             .accounts
-            .insert(&receiver_id, &Account::new(accounts(0),9 * ONE_LIS).into()); // Will be 9
+            .insert(&receiver_id, &Account::new(accounts(0), 9 * ONE_LIS).into()); // Will be 9
 
         println!("TS before: {}", context.context.block_timestamp);
 
@@ -472,7 +472,7 @@ pub mod tests {
         // Sender
         let sender_id = accounts(0);
 
-        let mut account_sender: Account = Account::new(accounts(0),250 * ONE_LIS).into();
+        let mut account_sender: Account = Account::new(accounts(0), 250 * ONE_LIS).into();
 
         account_sender.lockups.insert(&Lockup {
             amount: 10 * ONE_LIS,
@@ -501,7 +501,7 @@ pub mod tests {
 
         contract
             .accounts
-            .insert(&receiver_id, &Account::new(accounts(0),9 * ONE_LIS).into()); // Will be 9
+            .insert(&receiver_id, &Account::new(accounts(0), 9 * ONE_LIS).into()); // Will be 9
 
         contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 251 * ONE_LIS, true);
 

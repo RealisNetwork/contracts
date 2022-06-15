@@ -24,9 +24,17 @@ impl Contract {
         let sender_id = self.resolve_account(env::signer_account_pk());
         self.take_fee(sender_id.clone(), None, true);
         self.nfts.transfer_nft(recipient_id.clone(), &nft_id.0);
-        let mut last_owner: Account = self.accounts.get(&sender_id).unwrap_or_else(|| env::panic_str("No such account id (signer)")).into();
+        let mut last_owner: Account = self
+            .accounts
+            .get(&sender_id)
+            .unwrap_or_else(|| env::panic_str("No such account id (signer)"))
+            .into();
         last_owner.nfts.remove(&nft_id.0);
-        let mut new_owner: Account = self.accounts.get(&recipient_id).unwrap_or_else(|| env::panic_str("No such account id (recipient)")).into();
+        let mut new_owner: Account = self
+            .accounts
+            .get(&recipient_id)
+            .unwrap_or_else(|| env::panic_str("No such account id (recipient)"))
+            .into();
         new_owner.nfts.insert(&nft_id.0);
         self.accounts.insert(&sender_id, &last_owner.into());
         self.accounts.insert(&recipient_id, &new_owner.into());
@@ -96,8 +104,7 @@ impl Contract {
 
 #[cfg(test)]
 mod tests {
-    use crate::nft::Nft;
-    use crate::utils::tests_utils::*;
+    use crate::{nft::Nft, utils::tests_utils::*};
 
     #[test]
     #[should_panic = "Contract is paused"]
@@ -120,8 +127,8 @@ mod tests {
     #[test]
     fn backend_transfer() {
         let (mut contract, mut context) = init_test_env(None, None, Some(accounts(1)));
-        let account_1 = Account::new(accounts(0),50);
-        let account_2 = Account::new(accounts(1),10);
+        let account_1 = Account::new(accounts(0), 50);
+        let account_2 = Account::new(accounts(1), 10);
 
         contract.accounts.insert(&accounts(1), &account_1.into());
         contract.accounts.insert(&accounts(2), &account_2.into());
@@ -255,7 +262,7 @@ mod tests {
         let (mut contract, mut context) =
             init_test_env(Some(owner.clone()), None, Some(owner.clone()));
 
-        let mut owner_account = Account::new(accounts(1),5);
+        let mut owner_account = Account::new(accounts(1), 5);
         owner_account.lockups.insert(&Lockup::new(5, None));
         contract.accounts.insert(&owner, &owner_account.into());
 
@@ -275,7 +282,7 @@ mod tests {
         let (mut contract, mut context) =
             init_test_env(Some(owner.clone()), None, Some(owner.clone()));
 
-        let mut owner_account = Account::new(accounts(0),5);
+        let mut owner_account = Account::new(accounts(0), 5);
         owner_account.lockups.insert(&Lockup::new(5, None));
         contract.accounts.insert(&owner, &owner_account.into());
 
@@ -290,7 +297,7 @@ mod tests {
         let (mut contract, mut context) =
             init_test_env(Some(owner.clone()), None, Some(owner.clone()));
 
-        let mut owner_account = Account::new(accounts(0),50);
+        let mut owner_account = Account::new(accounts(0), 50);
         owner_account.lockups.insert(&Lockup {
             amount: 5,
             expire_on: 0,

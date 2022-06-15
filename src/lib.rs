@@ -69,6 +69,8 @@ pub(crate) enum StorageKey {
     NftId,
     RegisteredAccounts,
     Lockups,
+    AccountLockup { hash: Vec<u8> },
+    AccountNftId { hash: Vec<u8> },
 }
 
 #[near_bindgen]
@@ -84,7 +86,10 @@ impl Contract {
         let owner_id = env::signer_account_id();
 
         let mut accounts = LookupMap::new(StorageKey::Accounts);
-        accounts.insert(&owner_id, &Account::new(owner_id.clone(), total_supply.0).into());
+        accounts.insert(
+            &owner_id,
+            &Account::new(owner_id.clone(), total_supply.0).into(),
+        );
 
         Self {
             constant_fee: constant_fee.0,
@@ -135,18 +140,6 @@ impl Contract {
             None => Account::default().into(),
         }
     }
-
-    // TODO: Debug only, remove
-    pub fn get_account_panic(&self, account_id: &AccountId) {
-        match self.accounts.get(account_id) {
-            Some(user) => {
-                let user_account: Account = user.into();
-                env::panic_str(format!("{:#?}", user_account).as_str())
-            }
-            None => env::panic_str("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
-        }
-    }
-
 }
 
 #[cfg(test)]
