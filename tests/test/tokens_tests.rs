@@ -3,7 +3,7 @@ mod tests {
     use crate::test::integration_test_utils::integration_tests_utils::*;
 
     #[tokio::test]
-    #[ignore]
+    // #[ignore]
     ///check if operation correct, assert the gas costs.
     async fn transfer_tokens() -> anyhow::Result<()> {
         let (contract, worker) = deploy_contract("ac".to_string(), "ac".to_string()).await?;

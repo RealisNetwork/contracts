@@ -12,8 +12,8 @@ pub mod integration_tests_utils {
 
     pub const WASM_PATH: &str = "/Users/glebprotasov/Desktop/Development/WorkSpaceRust/Realis_projects/nearContract/contracts/target/wasm32-unknown-unknown/release/realis_near.wasm";
 
-    /// RUNNING OF SEVERAL TESTS IN THE SAME TIME COULD LEAD TO 'dispatch dropped without returning error'.
-    /// Run all integration tests with command  `cargo test --test mod` .
+    /// Run this tests in a single thread to avoid 'dispatch dropped without returning error'
+    /// So, use for running integration tests command  ` cargo test --test mod -- --nocapture --test-threads 1` .
     /// Func return initialized and ready to use contract.
     ///
     ///
