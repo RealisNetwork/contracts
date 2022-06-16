@@ -27,7 +27,7 @@ pub enum EventLogVariant {
     LockupRefund(LockupRefund),
     LockupCreated(LockupCreated),
     NftMint(NftMint),
-    NftBurnLog(NftBurn),
+    NftBurn(NftBurn),
     ChangeState(ChangeState),
     ChangeBeneficiary(ChangeBeneficiary),
 }
