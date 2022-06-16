@@ -246,7 +246,7 @@ mod tests {
         });
         owner_account.lockups.insert(&Lockup {
             amount: 5,
-            expire_on: 1,
+            expire_on: 0,
         });
         owner_account.lockups.insert(&Lockup {
             amount: 5,
@@ -257,7 +257,7 @@ mod tests {
             .signer_account_id(accounts(0))
             .block_timestamp(2)
             .build());
-        contract.claim_lockup(U128(1));
+        contract.claim_lockup(U128(5));
         let res_owner_account: Account = contract.accounts.get(&owner).unwrap().into();
         assert_eq!(res_owner_account.free, 55);
     }

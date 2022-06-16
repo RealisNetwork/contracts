@@ -173,7 +173,7 @@ mod tests {
             .build());
 
         // Balance of lock from 1970 will be transferred to main balance
-        account.claim_lockup(16457898);
+        account.claim_lockup(8);
 
         assert_eq!(account.free, 13);
     }
