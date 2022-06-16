@@ -3,7 +3,6 @@ mod tests {
     use crate::test::integration_test_utils::integration_tests_utils::*;
 
     #[tokio::test]
-    // #[ignore]
     ///check if operation correct, assert the gas costs.
     async fn transfer_tokens() -> anyhow::Result<()> {
         let (contract, worker) = deploy_contract("ac".to_string(), "ac".to_string()).await?;
@@ -37,4 +36,16 @@ mod tests {
 
         Result::Ok(())
     }
+
+    pub fn transfer_from_not_exist_acc(){
+        //TODO:transfer from not existed acc
+    }
+
+    pub fn transfer_with_negative_sum(){
+        //TODO:transfer_with_negative_sum
+    }
+
+
+
+
 }
