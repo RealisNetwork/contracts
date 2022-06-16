@@ -24,7 +24,6 @@ nearAPI.utils.PublicKey.fromString(pk58).data.hexSlice()
 - signer: contract owner
 - args:
 duration - optional arg, in nanoseconds, default 3 days
->>>>>>> main
 ```json
 {
   "recipient_id": "AccountId",

@@ -65,21 +65,19 @@ impl Account {
         fold
     }
 
-    pub fn claim_lockup(&mut self, expire_on_ts: u64) -> u128 {
-        let collection = self.lockups.to_vec();
-
-        let fold = collection
+    pub fn claim_lockup(&mut self, amount: u128) -> u128 {
+        let lockup = self
+            .lockups
             .iter()
-            .filter(|lock| lock.expire_on == expire_on_ts && lock.is_expired())
-            .map(|lock| {
-                self.lockups.remove(lock);
-                lock
-            })
-            .fold(0, |acc, lock| acc + lock.amount);
+            .find(|lockup| lockup.amount == amount && lockup.is_expired())
+            .unwrap_or_else(|| env::panic_str("No such lockup"));
+        self.free += lockup.amount;
+        self.lockups.remove(&lockup);
 
-        self.free += fold;
-
-        EventLog::from(EventLogVariant::LockupLog(LockupLog { amount: U128(fold) })).emit();
+        EventLog::from(EventLogVariant::LockupLog(LockupLog {
+            amount: U128(lockup.amount),
+        }))
+        .emit();
 
         self.free
     }
