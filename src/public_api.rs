@@ -19,7 +19,7 @@ impl Contract {
         self.assert_running();
         self.nfts
             .transfer_nft(env::signer_account_id(), recipient_id.clone(), &nft_id.0);
-        let sender_id = self.resolve_account(env::signer_account_pk());
+        let sender_id = env::signer_account_id();
         let mut last_owner: Account = self
             .accounts
             .get(&sender_id)
@@ -193,12 +193,13 @@ mod tests {
     #[test]
     fn transfer_nft_test() {
         let owner = accounts(0);
-        let reciver = accounts(1);
+        let recipient = accounts(1);
         let (mut contract, _context) = init_test_env(Some(owner.clone()), None, None);
+        contract.accounts.insert(&recipient, &Account::new(recipient.clone(), 0).into());
         let nft_id = contract.nfts.mint_nft(&owner, "Duck".to_string());
-        contract.transfer_nft(reciver.clone(), U128(nft_id));
+        contract.transfer_nft(recipient.clone(), U128(nft_id));
         let nft: Nft = contract.nfts.get_nft(&nft_id).into();
-        assert_eq!(nft.owner_id, reciver);
+        assert_eq!(nft.owner_id, recipient);
     }
 
     #[test]
@@ -211,9 +212,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn claim_all_lockups() {
-        // TODO fix me
         let owner = accounts(0);
         let (mut contract, mut context) =
             init_test_env(Some(owner.clone()), None, Some(owner.clone()));
@@ -224,7 +223,7 @@ mod tests {
 
         testing_env!(context
             .signer_account_id(accounts(0))
-            .block_timestamp(99999999999999)
+            .block_timestamp(999999999999999999)
             .build());
 
         contract.claim_all_lockup();
@@ -233,9 +232,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn claim_lockup() {
-        // TODO fix me
         let owner = accounts(0);
         let (mut contract, mut context) =
             init_test_env(Some(owner.clone()), None, Some(owner.clone()));
