@@ -16,6 +16,7 @@ mod types;
 mod update;
 mod utils;
 
+
 use crate::{
     account::{Account, AccountInfo, VAccount},
     lockup::LockupInfo,
@@ -141,6 +142,7 @@ impl Contract {
             None => Account::default().into(),
         }
     }
+
 }
 
 #[cfg(test)]
