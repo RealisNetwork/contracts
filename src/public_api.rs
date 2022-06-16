@@ -72,7 +72,7 @@ impl Contract {
     }
 
     // TODO check lockups
-    pub fn claim_lockup(&mut self, amount: u128) -> U128 {
+    pub fn claim_lockup(&mut self, amount: U128) -> U128 {
         self.assert_running();
         let target_id = env::signer_account_id();
         let mut target_account: Account = self

@@ -73,8 +73,8 @@ impl Contract {
         &mut self,
         recipient_id: AccountId,
         amount: U128,
-        duration: Option<Timestamp>,
-    ) -> Timestamp {
+        duration: Option<U64>,
+    ) -> U64 {
         self.assert_owner();
 
         let mut owner_account: Account = self
@@ -93,15 +93,15 @@ impl Contract {
             .get(&recipient_id)
             .unwrap_or_else(|| env::panic_str("No such account"))
             .into();
-        let lockup = Lockup::new(amount.0, duration);
+        let lockup = Lockup::new(amount.0, duration.map(|value| value.0));
         recipient_account.lockups.insert(&lockup);
         self.accounts
             .insert(&recipient_id, &recipient_account.into());
-        lockup.expire_on
+        lockup.expire_on.into()
     }
 
     /// Remove lockup from account and return balance to owner
-    pub fn refund_lockup(&mut self, recipient_id: AccountId, expire_on: Timestamp) -> U128 {
+    pub fn refund_lockup(&mut self, recipient_id: AccountId, expire_on: U64) -> U128 {
         self.assert_owner();
 
         let mut recipient_account: Account = self
@@ -112,7 +112,7 @@ impl Contract {
         let lockup = recipient_account
             .lockups
             .iter()
-            .find(|lockup| lockup.expire_on == expire_on)
+            .find(|lockup| lockup.clone().expire_on == expire_on.0)
             .unwrap_or_else(|| env::panic_str("No such lockup"));
         recipient_account.lockups.remove(&lockup);
         self.accounts
