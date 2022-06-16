@@ -4,7 +4,10 @@ use near_sdk::{
 };
 
 use crate::{
-    events::{ChangeBeneficiaryLog, ChangeStateLog, EventLog, EventLogVariant, NftMintLog},
+    events::{
+        ChangeBeneficiary, ChangeState, EventLog, EventLogVariant, LockupCreated,
+        LockupRefund, NftMint,
+    },
     lockup::Lockup,
     *,
 };
@@ -24,7 +27,7 @@ impl Contract {
     pub fn mint(&mut self, recipient_id: AccountId, nft_metadata: String) -> U128 {
         self.assert_owner();
 
-        EventLog::from(EventLogVariant::NftMint(NftMintLog {
+        EventLog::from(EventLogVariant::NftMint(NftMint {
             owner_id: String::from(recipient_id.clone()),
             meta_data: nft_metadata.clone(),
         }))
@@ -47,7 +50,7 @@ impl Contract {
     pub fn change_state(&mut self, state: State) {
         self.assert_owner();
         require!(self.state != state, "State can't be the same");
-        EventLog::from(EventLogVariant::ChangeState(ChangeStateLog {
+        EventLog::from(EventLogVariant::ChangeState(ChangeState {
             from: self.state.clone(),
             to: state.clone(),
         }))
@@ -62,7 +65,7 @@ impl Contract {
             self.beneficiary_id != new_beneficiary_id,
             "Beneficiary can't be the same"
         );
-        EventLog::from(EventLogVariant::ChangeBeneficiary(ChangeBeneficiaryLog {
+        EventLog::from(EventLogVariant::ChangeBeneficiary(ChangeBeneficiary {
             from: self.beneficiary_id.clone(),
             to: new_beneficiary_id.clone(),
         }))
@@ -100,6 +103,12 @@ impl Contract {
         recipient_account.lockups.insert(&lockup);
         self.accounts
             .insert(&recipient_id, &recipient_account.into());
+        EventLog::from(EventLogVariant::LockupCreated(LockupCreated {
+            amount: U128(lockup.amount),
+            recipient_id,
+            expire_on: U64(lockup.expire_on),
+        }))
+        .emit();
         lockup.expire_on.into()
     }
 
@@ -129,6 +138,12 @@ impl Contract {
         owner_account.free += lockup.amount;
         self.accounts.insert(&self.owner_id, &owner_account.into());
 
+        EventLog::from(EventLogVariant::LockupRefund(LockupRefund {
+            amount: U128(lockup.amount),
+            account_id: recipient_id,
+            timestamp: U64(lockup.expire_on),
+        }))
+        .emit();
         lockup.amount.into()
     }
 }
@@ -148,14 +163,9 @@ mod tests {
 
     #[test]
     fn mint_nft_test() {
-        let (_, _context) = init_test_env(Some(accounts(0)), Some(accounts(0)), Some(accounts(0)));
-        let mut contract = Contract::new(
-            U128(3_000_000_000 * ONE_LIS),
-            U128(5 * ONE_LIS),
-            10,
-            None,
-            None,
-        );
+        let (mut contract, _context) =
+            init_test_env(Some(accounts(0)), Some(accounts(0)), Some(accounts(0)));
+
         contract.owner_id = accounts(0);
 
         contract
@@ -215,5 +225,22 @@ mod tests {
         let contract_new_state = State::Paused;
         contract.change_state(contract_new_state.clone());
         assert_eq!(contract.state, contract_new_state)
+    }
+
+    #[test]
+    fn refund_lockup_test() {
+        let (mut contract, _context) =
+            init_test_env(Some(accounts(0)), Some(accounts(0)), Some(accounts(0)));
+
+        contract.owner_id = accounts(0);
+
+        contract
+            .accounts
+            .insert(&accounts(1), &Account::new(accounts(0), 0).into());
+
+        let res = contract.create_lockup(accounts(1), U128(300000 * ONE_LIS), None);
+
+        let assertion = contract.refund_lockup(accounts(1), res);
+        assert_eq!(assertion, U128(300000 * ONE_LIS));
     }
 }
