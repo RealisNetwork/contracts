@@ -1,7 +1,12 @@
 use std::fmt;
 
-use crate::{Account, NftId, State};
-use near_sdk::{env, json_types::U128, serde::{Deserialize, Serialize}, serde_json, AccountId, Timestamp};
+use crate::{NftId, State};
+use near_sdk::{
+    env,
+    json_types::U128,
+    serde::{Deserialize, Serialize},
+    serde_json, AccountId, Timestamp,
+};
 
 /// Rules of logging events on `Near`.
 /// Should include:
@@ -25,8 +30,6 @@ pub enum EventLogVariant {
     ChangeBeneficiary(ChangeBeneficiaryLog),
     LockupRefundLog(LockupRefundLog),
     LockupCreatedLog(LockupCreatedLog),
-
-
 }
 
 #[derive(Serialize, Deserialize, Debug)]

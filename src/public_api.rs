@@ -80,9 +80,8 @@ impl Contract {
             .get(&target_id)
             .unwrap_or_else(|| env::panic_str("No such account id"))
             .into();
-        let res = target_account.claim_lockup(amount.0,target_id.clone());
-        self.accounts
-            .insert(&target_id, &target_account.into());
+        let res = target_account.claim_lockup(amount.0, target_id.clone());
+        self.accounts.insert(&target_id, &target_account.into());
         U128(res)
     }
 
@@ -95,8 +94,7 @@ impl Contract {
             .unwrap_or_else(|| env::panic_str("No such account id"))
             .into();
         let res = target_account.claim_all_lockups(target_id.clone());
-        self.accounts
-            .insert(&target_id, &target_account.into());
+        self.accounts.insert(&target_id, &target_account.into());
         U128(res)
     }
 

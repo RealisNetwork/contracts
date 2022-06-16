@@ -49,7 +49,11 @@ impl Account {
             .filter(|lock| lock.is_expired())
             .map(|lock| {
                 self.lockups.remove(lock);
-                EventLog::from(EventLogVariant::LockupClaimedLog(LockupClaimedLog { amount: U128(lock.amount.clone()), account_id: account_id.clone() })).emit();
+                EventLog::from(EventLogVariant::LockupClaimedLog(LockupClaimedLog {
+                    amount: U128(lock.amount.clone()),
+                    account_id: account_id.clone(),
+                }))
+                .emit();
                 lock
             })
             .fold(0, |acc, lock| acc + lock.amount);
@@ -69,7 +73,7 @@ impl Account {
 
         EventLog::from(EventLogVariant::LockupClaimedLog(LockupClaimedLog {
             amount: U128(lockup.amount),
-            account_id
+            account_id,
         }))
         .emit();
 
@@ -168,7 +172,6 @@ mod tests {
             amount: 8,
             expire_on: 16457898,
         }); // Lock from 1970
-
 
         testing_env!(context
             .block_timestamp(16457899)

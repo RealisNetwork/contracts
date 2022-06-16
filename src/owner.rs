@@ -4,11 +4,13 @@ use near_sdk::{
 };
 
 use crate::{
-    events::{ChangeBeneficiaryLog, ChangeStateLog, EventLog, EventLogVariant, NftMintLog},
+    events::{
+        ChangeBeneficiaryLog, ChangeStateLog, EventLog, EventLogVariant, LockupCreatedLog,
+        LockupRefundLog, NftMintLog,
+    },
     lockup::Lockup,
     *,
 };
-use crate::events::{LockupCreatedLog, LockupRefundLog};
 
 #[near_bindgen]
 impl Contract {
@@ -105,7 +107,8 @@ impl Contract {
             amount: U128(lockup.amount.clone()),
             recipient_id,
             expire_on: lockup.expire_on.clone(),
-        })).emit();
+        }))
+        .emit();
         lockup.expire_on.into()
     }
 
@@ -121,12 +124,11 @@ impl Contract {
         let lockup = recipient_account
             .lockups
             .iter()
-            .find(|lockup| lockup.clone().expire_on == expire_on.0)
+            .find(|lockup| lockup.expire_on == expire_on.0)
             .unwrap_or_else(|| env::panic_str("No such lockup"));
         recipient_account.lockups.remove(&lockup);
         self.accounts
             .insert(&recipient_id, &recipient_account.into());
-
 
         let mut owner_account: Account = self
             .accounts
@@ -140,7 +142,8 @@ impl Contract {
             amount: U128(lockup.amount.clone()),
             account_id: recipient_id,
             timestamp: lockup.expire_on.clone(),
-        })).emit();
+        }))
+        .emit();
         lockup.amount.into()
     }
 }
@@ -247,7 +250,7 @@ mod tests {
 
         let res = contract.create_lockup(accounts(1), U128(300000 * ONE_LIS), None);
 
-        let assertion = contract.refund_lockup(accounts(1),res);
+        let assertion = contract.refund_lockup(accounts(1), res);
         assert_eq!(assertion, U128(300000 * ONE_LIS));
     }
 }
