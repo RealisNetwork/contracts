@@ -70,6 +70,8 @@ pub(crate) enum StorageKey {
     NftId,
     RegisteredAccounts,
     Lockups,
+    AccountLockup { hash: Vec<u8> },
+    AccountNftId { hash: Vec<u8> },
 }
 
 #[near_bindgen]
@@ -85,7 +87,10 @@ impl Contract {
         let owner_id = env::signer_account_id();
 
         let mut accounts = LookupMap::new(StorageKey::Accounts);
-        accounts.insert(&owner_id, &Account::new(total_supply.0).into());
+        accounts.insert(
+            &owner_id,
+            &Account::new(owner_id.clone(), total_supply.0).into(),
+        );
 
         Self {
             constant_fee: constant_fee.0,
@@ -145,8 +150,8 @@ mod tests {
     #[test]
     fn info_get_balance_test() {
         // Indexes are default
-        let (mut contract, mut context) = init_test_env(None, None, None);
-        let account: Account = Account::new(250 * ONE_LIS);
+        let (mut contract, _context) = init_test_env(None, None, None);
+        let account: Account = Account::new(accounts(0), 250 * ONE_LIS);
         let account_id = accounts(0);
 
         contract.accounts.insert(&account_id, &account.into());

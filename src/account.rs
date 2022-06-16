@@ -6,8 +6,9 @@ use crate::{
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
     collections::UnorderedSet,
+    env,
     json_types::U128,
-    Balance,
+    AccountId, Balance,
 };
 
 #[derive(BorshSerialize, BorshDeserialize)]
@@ -29,7 +30,7 @@ impl From<VAccount> for Account {
     }
 }
 
-#[derive(BorshSerialize, BorshDeserialize)]
+#[derive(BorshSerialize, BorshDeserialize, Debug)]
 pub struct Account {
     pub free: Balance,
     pub lockups: UnorderedSet<Lockup>,
@@ -37,11 +38,12 @@ pub struct Account {
 }
 
 impl Account {
-    pub fn new(balance: Balance) -> Self {
+    pub fn new(account_id: AccountId, balance: Balance) -> Self {
+        let hash = env::sha256(account_id.as_bytes());
         Self {
             free: balance,
-            lockups: UnorderedSet::new(StorageKey::Lockups),
-            nfts: UnorderedSet::new(StorageKey::NftId),
+            lockups: UnorderedSet::new(StorageKey::AccountLockup { hash: hash.clone() }),
+            nfts: UnorderedSet::new(StorageKey::AccountNftId { hash }),
         }
     }
 
@@ -111,7 +113,7 @@ impl From<Account> for VAccount {
 
 impl Default for Account {
     fn default() -> Self {
-        Self::new(0)
+        Self::new(AccountId::new_unchecked("".to_string()), 0)
     }
 }
 
@@ -142,9 +144,9 @@ mod tests {
 
     #[test]
     pub fn check_lockups() {
-        let (contract, mut context) = init_test_env(None, None, None);
+        let (_contract, mut context) = init_test_env(None, None, None);
 
-        let mut account = Account::new(5);
+        let mut account = Account::new(accounts(0), 5);
         // Just locked (will unlock in 3 days (default lifetime))
         account.lockups.insert(&Lockup::new(55, None));
         account.lockups.insert(&Lockup {
@@ -165,9 +167,9 @@ mod tests {
 
     #[test]
     pub fn check_lockup() {
-        let (contract, mut context) = init_test_env(None, None, None);
+        let (_contract, mut context) = init_test_env(None, None, None);
 
-        let mut account = Account::new(5);
+        let mut account = Account::new(accounts(0), 5);
         // Just locked (will unlock in 3 days (default lifetime))
         account.lockups.insert(&Lockup::new(55, None));
         account.lockups.insert(&Lockup {

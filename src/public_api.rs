@@ -18,7 +18,22 @@ impl Contract {
     pub fn transfer_nft(&mut self, recipient_id: AccountId, nft_id: U128) {
         self.assert_running();
         self.nfts
-            .transfer_nft(env::signer_account_id(), recipient_id, &nft_id.0);
+            .transfer_nft(env::signer_account_id(), recipient_id.clone(), &nft_id.0);
+        let sender_id = self.resolve_account(env::signer_account_pk());
+        let mut last_owner: Account = self
+            .accounts
+            .get(&sender_id)
+            .unwrap_or_else(|| env::panic_str("No such account id (signer)"))
+            .into();
+        last_owner.nfts.remove(&nft_id.0);
+        let mut new_owner: Account = self
+            .accounts
+            .get(&recipient_id)
+            .unwrap_or_else(|| env::panic_str("No such account id (recipient)"))
+            .into();
+        new_owner.nfts.insert(&nft_id.0);
+        self.accounts.insert(&sender_id, &last_owner.into());
+        self.accounts.insert(&recipient_id, &new_owner.into());
     }
 
     pub fn sell_nft(&mut self, nft_id: U128, price: U128) {
@@ -91,8 +106,7 @@ impl Contract {
 
 #[cfg(test)]
 mod tests {
-    use crate::nft::Nft;
-    use crate::utils::tests_utils::*;
+    use crate::{nft::Nft, utils::tests_utils::*};
 
     #[test]
     #[should_panic = "Contract is paused"]
@@ -106,8 +120,8 @@ mod tests {
     #[test]
     fn transfer() {
         let (mut contract, mut context) = init_test_env(None, None, Some(accounts(1)));
-        let account_1 = Account::new(50);
-        let account_2 = Account::new(10);
+        let account_1 = Account::new(accounts(0), 50);
+        let account_2 = Account::new(accounts(1), 10);
 
         contract.accounts.insert(&accounts(1), &account_1.into());
         contract.accounts.insert(&accounts(2), &account_2.into());
@@ -133,7 +147,7 @@ mod tests {
 
     #[test]
     fn burn_nft_test() {
-        let mut owner = accounts(0);
+        let owner = accounts(0);
         let (mut contract, _context) = init_test_env(Some(owner.clone()), None, None);
         let nft_id = contract.nfts.mint_nft(&owner, "Duck".to_string());
         assert_eq!(contract.nfts.nft_count(), 1);
@@ -144,7 +158,7 @@ mod tests {
     #[test]
     #[should_panic = "Nft not exist"]
     fn burn_nft_test_not_exists() {
-        let mut owner = accounts(0);
+        let owner = accounts(0);
         let (mut contract, _context) = init_test_env(Some(owner.clone()), None, None);
         contract.burn(U128(1));
     }
@@ -178,8 +192,8 @@ mod tests {
 
     #[test]
     fn transfer_nft_test() {
-        let mut owner = accounts(0);
-        let mut reciver = accounts(1);
+        let owner = accounts(0);
+        let reciver = accounts(1);
         let (mut contract, _context) = init_test_env(Some(owner.clone()), None, None);
         let nft_id = contract.nfts.mint_nft(&owner, "Duck".to_string());
         contract.transfer_nft(reciver.clone(), U128(nft_id));
@@ -200,11 +214,11 @@ mod tests {
     #[ignore]
     fn claim_all_lockups() {
         // TODO fix me
-        let mut owner = accounts(0);
+        let owner = accounts(0);
         let (mut contract, mut context) =
             init_test_env(Some(owner.clone()), None, Some(owner.clone()));
 
-        let mut owner_account = Account::new(5);
+        let mut owner_account = Account::new(accounts(0), 5);
         owner_account.lockups.insert(&Lockup::new(5, None));
         contract.accounts.insert(&owner, &owner_account.into());
 
@@ -222,11 +236,11 @@ mod tests {
     #[ignore]
     fn claim_lockup() {
         // TODO fix me
-        let mut owner = accounts(0);
+        let owner = accounts(0);
         let (mut contract, mut context) =
             init_test_env(Some(owner.clone()), None, Some(owner.clone()));
 
-        let mut owner_account = Account::new(50);
+        let mut owner_account = Account::new(accounts(0), 50);
         owner_account.lockups.insert(&Lockup {
             amount: 5,
             expire_on: 0,
@@ -252,8 +266,8 @@ mod tests {
     #[test]
     #[should_panic = "Contract is paused"]
     fn claim_lockup_panic() {
-        let mut owner = accounts(0);
-        let (mut contract, mut context) =
+        let owner = accounts(0);
+        let (mut contract, _context) =
             init_test_env(Some(owner.clone()), None, Some(owner.clone()));
         contract.state = State::Paused;
 
