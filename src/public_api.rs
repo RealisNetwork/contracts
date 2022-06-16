@@ -5,19 +5,20 @@ use near_sdk::{json_types::U128, AccountId};
 impl Contract {
     pub fn transfer(&mut self, recipient_id: AccountId, amount: U128) -> U128 {
         self.assert_running();
-        let sender_id = self.resolve_account(env::signer_account_pk());
+        let sender_id = env::signer_account_id();
         self.internal_transfer(sender_id, recipient_id, amount.0, false)
             .into()
     }
 
     pub fn burn(&mut self, nft_id: U128) {
         self.assert_running();
-        self.nfts.burn_nft(&nft_id.0);
+        self.nfts.burn_nft(&nft_id.0, env::signer_account_id());
     }
 
     pub fn transfer_nft(&mut self, recipient_id: AccountId, nft_id: U128) {
         self.assert_running();
-        self.nfts.transfer_nft(recipient_id.clone(), &nft_id.0);
+        self.nfts
+            .transfer_nft(env::signer_account_id(), recipient_id.clone(), &nft_id.0);
         let sender_id = self.resolve_account(env::signer_account_pk());
         let mut last_owner: Account = self
             .accounts
@@ -35,29 +36,45 @@ impl Contract {
         self.accounts.insert(&recipient_id, &new_owner.into());
     }
 
-    #[allow(unused_variables)]
     pub fn sell_nft(&mut self, nft_id: U128, price: U128) {
         self.assert_running();
-
-        todo!()
+        self.internal_sell_nft(nft_id.0, price.0, env::signer_account_id());
     }
 
-    #[allow(unused_variables)]
     pub fn buy_nft(&mut self, nft_id: U128) -> U128 {
         self.assert_running();
-        todo!()
+        let result = self.internal_buy_nft(nft_id.0, env::signer_account_id());
+
+        U128::from(result)
     }
 
-    #[allow(unused_variables)]
     pub fn change_price(&mut self, nft_id: U128, price: U128) {
         self.assert_running();
-        todo!()
+        self.nfts
+            .change_price_nft(&nft_id.0, price.0, env::signer_account_id());
+    }
+
+    pub fn auction(&mut self, nft_id: U128, price: U128, deadline: U128) {
+        self.start_auction(
+            nft_id.0,
+            price.0,
+            deadline.0 as u64,
+            env::signer_account_id(),
+        );
+    }
+
+    pub fn bid(&mut self, nft_id: U128, price: U128) {
+        self.make_bid(nft_id.0, price.0, env::signer_account_id());
+    }
+
+    pub fn confirm(&mut self, nft_id: U128) {
+        self.confirm_deal(nft_id.0, env::signer_account_id());
     }
 
     // TODO check lockups
     pub fn claim_lockup(&mut self, expire_on: u64) -> U128 {
         self.assert_running();
-        let target_id = self.resolve_account(env::signer_account_pk());
+        let target_id = env::signer_account_id();
         let mut target_account: Account = self
             .accounts
             .get(&target_id)
@@ -71,7 +88,7 @@ impl Contract {
 
     pub fn claim_all_lockup(&mut self) -> U128 {
         self.assert_running();
-        let target_id = self.resolve_account(env::signer_account_pk());
+        let target_id = env::signer_account_id();
         let mut target_account: Account = self
             .accounts
             .get(&target_id)
@@ -195,7 +212,7 @@ mod tests {
 
     #[test]
     #[ignore]
-    fn claim_all_loockups() {
+    fn claim_all_lockups() {
         // TODO fix me
         let mut owner = accounts(0);
         let (mut contract, mut context) =
@@ -217,7 +234,7 @@ mod tests {
 
     #[test]
     #[ignore]
-    fn claim_loockup() {
+    fn claim_lockup() {
         // TODO fix me
         let mut owner = accounts(0);
         let (mut contract, mut context) =
@@ -248,7 +265,7 @@ mod tests {
 
     #[test]
     #[should_panic = "Contract is paused"]
-    fn claim_loockup_panic() {
+    fn claim_lockup_panic() {
         let mut owner = accounts(0);
         let (mut contract, mut context) =
             init_test_env(Some(owner.clone()), None, Some(owner.clone()));

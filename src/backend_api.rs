@@ -14,8 +14,8 @@ impl Contract {
         self.assert_running();
         self.assert_backend();
         let sender_id = self.resolve_account(env::signer_account_pk());
-        self.take_fee(sender_id, None, true);
-        self.nfts.burn_nft(&nft_id.0);
+        self.take_fee(sender_id.clone(), None, true);
+        self.nfts.burn_nft(&nft_id.0, sender_id);
     }
 
     pub fn backend_transfer_nft(&mut self, recipient_id: AccountId, nft_id: U128) {
@@ -23,7 +23,7 @@ impl Contract {
         self.assert_backend();
         let sender_id = self.resolve_account(env::signer_account_pk());
         self.take_fee(sender_id.clone(), None, true);
-        self.nfts.transfer_nft(recipient_id.clone(), &nft_id.0);
+        self.nfts.transfer_nft(sender_id.clone(), recipient_id.clone(), &nft_id.0);
         let mut last_owner: Account = self
             .accounts
             .get(&sender_id)
@@ -230,12 +230,12 @@ mod tests {
     #[test]
     fn backend_transfer_nft_test() {
         let mut owner = accounts(0);
-        let mut reciver = accounts(1);
+        let mut receiver = accounts(1);
         let (mut contract, _context) = init_test_env(Some(owner.clone()), None, None);
         let nft_id = contract.nfts.mint_nft(&owner, "Duck".to_string());
-        contract.backend_transfer_nft(reciver.clone(), U128(nft_id));
+        contract.backend_transfer_nft(receiver.clone(), U128(nft_id));
         let nft: Nft = contract.nfts.get_nft(&nft_id).into();
-        assert_eq!(nft.owner_id, reciver);
+        assert_eq!(nft.owner_id, receiver);
     }
 
     #[test]
@@ -256,7 +256,7 @@ mod tests {
 
     #[test]
     #[ignore]
-    fn backend_claim_all_loockups() {
+    fn backend_claim_all_lockups() {
         // TODO fix me
         let mut owner = accounts(0);
         let (mut contract, mut context) =
@@ -277,7 +277,7 @@ mod tests {
     }
     #[test]
     #[should_panic = "Not allowed"]
-    fn backend_claim_all_loockups_panic() {
+    fn backend_claim_all_lockups_panic() {
         let mut owner = accounts(0);
         let (mut contract, mut context) =
             init_test_env(Some(owner.clone()), None, Some(owner.clone()));
@@ -291,7 +291,7 @@ mod tests {
 
     #[test]
     #[ignore]
-    fn backend_claim_loockup() {
+    fn backend_claim_lockup() {
         // TODO fix me
         let mut owner = accounts(0);
         let (mut contract, mut context) =
@@ -322,7 +322,7 @@ mod tests {
 
     #[test]
     #[should_panic = "Contract is paused"]
-    fn backend_claim_loockup_panic() {
+    fn backend_claim_lockup_panic() {
         let mut owner = accounts(0);
         let (mut contract, mut context) =
             init_test_env(Some(owner.clone()), None, Some(owner.clone()));
