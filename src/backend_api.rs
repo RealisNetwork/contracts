@@ -147,7 +147,6 @@ mod tests {
         println!("{:#?}", contract.backend_transfer(accounts(2), U128(20 * ONE_LIS)));
 
         let account_2: Account = contract.accounts.get(&accounts(2)).unwrap().into();
-
         let owner_acc: Account = contract.accounts.get(&owner).unwrap().into();
 
         assert_eq!(owner_acc.free, 2999999980 * ONE_LIS);
