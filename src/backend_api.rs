@@ -302,11 +302,11 @@ mod tests {
         let mut owner_account = Account::new(accounts(0), 50);
         owner_account.lockups.insert(&Lockup {
             amount: 5,
-            expire_on: 0,
+            expire_on: 10,
         });
         owner_account.lockups.insert(&Lockup {
             amount: 5,
-            expire_on: 1,
+            expire_on: 2,
         });
         owner_account.lockups.insert(&Lockup {
             amount: 5,
@@ -317,7 +317,7 @@ mod tests {
             .signer_account_id(accounts(0))
             .block_timestamp(2)
             .build());
-        contract.backend_claim_lockup(1);
+        contract.backend_claim_lockup(U128(5));
         let res_owner_account: Account = contract.accounts.get(&owner).unwrap().into();
         assert_eq!(res_owner_account.free, 55);
     }
@@ -330,6 +330,6 @@ mod tests {
             init_test_env(Some(owner.clone()), None, Some(owner.clone()));
         contract.state = State::Paused;
 
-        contract.backend_claim_lockup(1);
+        contract.backend_claim_lockup(U128(1));
     }
 }
