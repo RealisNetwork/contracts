@@ -245,7 +245,7 @@ mod tests {
         });
         owner_account.lockups.insert(&Lockup {
             amount: 5,
-            expire_on: 1,
+            expire_on: 0,
         });
         owner_account.lockups.insert(&Lockup {
             amount: 5,
