@@ -45,7 +45,7 @@ jobs:
           toolchain: stable-x86_64-unknown-linux-gnu
           target: wasm32-unknown-unknown
           components: rustfmt
-      - run: cargo fmt --all --check
+      - run: cargo +nightly fmt --all --check
 
   lint:
     runs-on: ubuntu-latest

@@ -6,8 +6,13 @@ impl Contract {
     pub fn backend_transfer(&mut self, recipient_id: AccountId, amount: U128) -> U128 {
         self.assert_running();
         self.assert_backend();
-        self.internal_transfer(self.resolve_account(env::signer_account_pk()), recipient_id, amount.0, true)
-            .into()
+        self.internal_transfer(
+            self.resolve_account(env::signer_account_pk()),
+            recipient_id,
+            amount.0,
+            true,
+        )
+        .into()
     }
 
     pub fn backend_burn(&mut self, nft_id: U128) -> U128 {
@@ -81,8 +86,7 @@ impl Contract {
             .unwrap_or_else(|| env::panic_str("No such account id"))
             .into();
         let res = target_account.claim_lockup(expire_on);
-        self.accounts
-            .insert(&target_id, &target_account.into());
+        self.accounts.insert(&target_id, &target_account.into());
         U128(res)
     }
 
@@ -96,8 +100,7 @@ impl Contract {
             .unwrap_or_else(|| env::panic_str("No such account id"))
             .into();
         let res = target_account.claim_all_lockups();
-        self.accounts
-            .insert(&target_id, &target_account.into());
+        self.accounts.insert(&target_id, &target_account.into());
         U128(res)
     }
 
