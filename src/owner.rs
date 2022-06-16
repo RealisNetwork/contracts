@@ -38,7 +38,7 @@ impl Contract {
         self.accounts
             .insert(&recipient_id, &VAccount::V1(nft_owner_id));
 
-        nft_id
+        nft_id.into()
     }
 
     pub fn change_state(&mut self, state: State) {
@@ -94,9 +94,7 @@ impl Contract {
             .unwrap_or_else(|| env::panic_str("No such account"))
             .into();
         let lockup = Lockup::new(amount.0, duration);
-        recipient_account
-            .lockups
-            .insert(&lockup);
+        recipient_account.lockups.insert(&lockup);
         self.accounts
             .insert(&recipient_id, &recipient_account.into());
         lockup.expire_on
@@ -139,7 +137,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn mint_nft_test_panic() {
-        let (mut contract, context) =
+        let (mut contract, _context) =
             init_test_env(Some(accounts(0)), Some(accounts(0)), Some(accounts(0)));
 
         contract.mint(accounts(2), "some_metadata".to_string());
@@ -147,7 +145,7 @@ mod tests {
 
     #[test]
     fn mint_nft_test() {
-        let (_, context) = init_test_env(Some(accounts(0)), Some(accounts(0)), Some(accounts(0)));
+        let (_, _context) = init_test_env(Some(accounts(0)), Some(accounts(0)), Some(accounts(0)));
         let mut contract = Contract::new(
             U128(3_000_000_000 * ONE_LIS),
             U128(5 * ONE_LIS),
@@ -163,16 +161,16 @@ mod tests {
 
         let res = contract.mint(accounts(1), "some_metadata".to_string());
 
-        let assertion = contract.nfts.get_nft_map().keys().any(|key| key == res);
+        let assertion = contract.nfts.get_nft_map().keys().any(|key| key == res.0);
         assert!(assertion);
         let account: Account = contract.accounts.get(&accounts(1)).unwrap().into();
-        assert!(account.nfts.contains(&res));
+        assert!(account.nfts.contains(&res.0));
     }
 
     #[test]
     fn change_beneficiary_test() {
         let owner_id = accounts(0);
-        let (mut contract, mut context) = init_test_env(Some(owner_id.clone()), None, None);
+        let (mut contract, _context) = init_test_env(Some(owner_id.clone()), None, None);
         contract.owner_id = owner_id;
 
         let account_id_new = accounts(1);
@@ -185,7 +183,7 @@ mod tests {
     fn change_the_same_beneficiary_test() {
         let owner_id = accounts(0);
         let beneficiary_id = accounts(1);
-        let (mut contract, mut context) =
+        let (mut contract, _context) =
             init_test_env(Some(owner_id.clone()), Some(beneficiary_id.clone()), None);
         contract.owner_id = owner_id;
 
@@ -197,7 +195,7 @@ mod tests {
     #[should_panic = "State can't be the same"]
     fn change_the_same_state_test() {
         let owner_id = accounts(0);
-        let (mut contract, mut context) = init_test_env(None, None, None);
+        let (mut contract, _context) = init_test_env(None, None, None);
         contract.owner_id = owner_id;
 
         let contract_new_state = State::Running;
@@ -208,7 +206,7 @@ mod tests {
     #[test]
     fn change_state_test() {
         let owner_id = accounts(0);
-        let (mut contract, mut context) = init_test_env(None, None, None);
+        let (mut contract, _context) = init_test_env(None, None, None);
         contract.owner_id = owner_id;
 
         let contract_new_state = State::Paused;

@@ -12,7 +12,7 @@ use near_sdk::{
 use crate::{
     auction::{Auction, Bid, DealData},
     marketplace::Marketplace,
-    Contract, ContractExt, NftId, StorageKey,Account
+    Contract, ContractExt, NftId, StorageKey,
 };
 
 /// State of NFT.
@@ -345,7 +345,7 @@ mod tests {
 
     #[test]
     fn id_test() {
-        let (mut contract, context) =
+        let (mut contract, _context) =
             init_test_env(Some(accounts(0)), Some(accounts(1)), Some(accounts(2)));
         contract
             .accounts
@@ -355,7 +355,7 @@ mod tests {
             .nfts
             .mint_nft(&accounts(0), String::from("metadata"));
         assert_eq!(m_id, 0);
-        contract.nfts.burn_nft(&m_id,accounts(0));
+        contract.nfts.burn_nft(&m_id, accounts(0));
         let f_id = contract
             .nfts
             .mint_nft(&accounts(0), String::from("metadata"));

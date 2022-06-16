@@ -133,7 +133,7 @@ pub mod tests {
 
     #[test]
     fn transfer() {
-        let (mut contract, mut context) = init_test_env(None, None, None);
+        let (mut contract, _context) = init_test_env(None, None, None);
 
         // Sender
         let sender_id = accounts(0);
@@ -163,7 +163,7 @@ pub mod tests {
 
     #[test]
     fn transfer_overflow() {
-        let (mut contract, mut context) = init_test_env(None, None, None);
+        let (mut contract, _context) = init_test_env(None, None, None);
 
         // Sender
         let sender_id = accounts(0);
@@ -181,7 +181,7 @@ pub mod tests {
 
     #[test]
     fn transfer_without_fee() {
-        let (mut contract, mut context) = init_test_env(None, None, None);
+        let (mut contract, _context) = init_test_env(None, None, None);
 
         // Sender
         let sender_id = accounts(0);
@@ -211,7 +211,7 @@ pub mod tests {
 
     #[test]
     fn take_fee_without_fee() {
-        let (mut contract, mut context) = init_test_env(None, None, None);
+        let (mut contract, _context) = init_test_env(None, None, None);
 
         // Sender
         let sender_id = accounts(0);
@@ -228,7 +228,7 @@ pub mod tests {
     #[test]
     #[should_panic = "You can't transfer tokens to yourself"]
     fn transfer_tokens_to_itself() {
-        let (mut contract, mut context) = init_test_env(None, None, None);
+        let (mut contract, _context) = init_test_env(None, None, None);
 
         // Sender
         let sender_id = accounts(0);
@@ -242,7 +242,7 @@ pub mod tests {
     #[test]
     #[should_panic = "Not enough balance"]
     fn transfer_not_enough_balance() {
-        let (mut contract, mut context) = init_test_env(None, None, None);
+        let (mut contract, _context) = init_test_env(None, None, None);
 
         // Sender
         let sender_id = accounts(0);
@@ -273,7 +273,7 @@ pub mod tests {
     #[test]
     #[should_panic = "User not found"]
     fn transfer_sender_not_valid() {
-        let (mut contract, mut context) = init_test_env(None, None, None);
+        let (mut contract, _context) = init_test_env(None, None, None);
 
         // Sender
         let sender_id = AccountId::from_str("someone.testnet").unwrap(); // Sender is not registered
@@ -302,7 +302,7 @@ pub mod tests {
     #[test]
     #[should_panic = "You can't transfer 0 tokens"]
     fn transfer_zero() {
-        let (mut contract, mut context) = init_test_env(None, None, None);
+        let (mut contract, _context) = init_test_env(None, None, None);
 
         // Sender
         let sender_id = accounts(0);
@@ -333,7 +333,7 @@ pub mod tests {
 
     #[test]
     fn transfer_to_no_account() {
-        let (mut contract, mut context) = init_test_env(None, None, None);
+        let (mut contract, _context) = init_test_env(None, None, None);
 
         // Sender
         let sender_id = accounts(0);
@@ -467,7 +467,7 @@ pub mod tests {
     #[test]
     #[should_panic]
     fn transfer_with_many_but_not_enough_lockups() {
-        let (mut contract, mut context) = init_test_env(None, None, None);
+        let (mut contract, _context) = init_test_env(None, None, None);
 
         // Sender
         let sender_id = accounts(0);

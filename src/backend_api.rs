@@ -14,17 +14,18 @@ impl Contract {
         self.assert_running();
         self.assert_backend();
         let sender_id = self.resolve_account(env::signer_account_pk());
-        self.take_fee(sender_id.clone(), None, true);
+        let sender_free = self.take_fee(sender_id.clone(), None, true);
         self.nfts.burn_nft(&nft_id.0, sender_id);
         sender_free.into()
     }
 
-    pub fn backend_transfer_nft(&mut self, recipient_id: AccountId, nft_id: U128) {
+    pub fn backend_transfer_nft(&mut self, recipient_id: AccountId, nft_id: U128) -> U128 {
         self.assert_running();
         self.assert_backend();
         let sender_id = self.resolve_account(env::signer_account_pk());
-        self.take_fee(sender_id.clone(), None, true);
-        self.nfts.transfer_nft(sender_id.clone(), recipient_id.clone(), &nft_id.0);
+        let sender_free = self.take_fee(sender_id.clone(), None, true);
+        self.nfts
+            .transfer_nft(sender_id.clone(), recipient_id.clone(), &nft_id.0);
         let mut last_owner: Account = self
             .accounts
             .get(&sender_id)
@@ -39,6 +40,7 @@ impl Contract {
         new_owner.nfts.insert(&nft_id.0);
         self.accounts.insert(&sender_id, &last_owner.into());
         self.accounts.insert(&recipient_id, &new_owner.into());
+        sender_free.into()
     }
 
     #[allow(unused_variables)]
@@ -165,14 +167,13 @@ mod tests {
     #[test]
     #[should_panic = "Nft not exist"]
     fn backend_burn_nft_test_not_exists() {
-        let mut owner = accounts(0);
         let (mut contract, _context) = init_test_env(None, None, None);
         contract.backend_burn(U128(1));
     }
 
     #[test]
     fn backend_burn_nft_test() {
-        let mut owner = accounts(0);
+        let owner = accounts(0);
         let (mut contract, _context) = init_test_env(Some(owner.clone()), None, None);
         let nft_id = contract.nfts.mint_nft(&owner, "Duck".to_string());
         assert_eq!(contract.nfts.nft_count(), 1);
@@ -230,8 +231,8 @@ mod tests {
 
     #[test]
     fn backend_transfer_nft_test() {
-        let mut owner = accounts(0);
-        let mut receiver = accounts(1);
+        let owner = accounts(0);
+        let receiver = accounts(1);
         let (mut contract, _context) = init_test_env(Some(owner.clone()), None, None);
         let nft_id = contract.nfts.mint_nft(&owner, "Duck".to_string());
         contract.backend_transfer_nft(receiver.clone(), U128(nft_id));
@@ -259,7 +260,7 @@ mod tests {
     #[ignore]
     fn backend_claim_all_lockups() {
         // TODO fix me
-        let mut owner = accounts(0);
+        let owner = accounts(0);
         let (mut contract, mut context) =
             init_test_env(Some(owner.clone()), None, Some(owner.clone()));
 
@@ -279,8 +280,8 @@ mod tests {
     #[test]
     #[should_panic = "Not allowed"]
     fn backend_claim_all_lockups_panic() {
-        let mut owner = accounts(0);
-        let (mut contract, mut context) =
+        let owner = accounts(0);
+        let (mut contract, _context) =
             init_test_env(Some(owner.clone()), None, Some(owner.clone()));
 
         let mut owner_account = Account::new(accounts(0), 5);
@@ -294,7 +295,7 @@ mod tests {
     #[ignore]
     fn backend_claim_lockup() {
         // TODO fix me
-        let mut owner = accounts(0);
+        let owner = accounts(0);
         let (mut contract, mut context) =
             init_test_env(Some(owner.clone()), None, Some(owner.clone()));
 
@@ -324,8 +325,8 @@ mod tests {
     #[test]
     #[should_panic = "Contract is paused"]
     fn backend_claim_lockup_panic() {
-        let mut owner = accounts(0);
-        let (mut contract, mut context) =
+        let owner = accounts(0);
+        let (mut contract, _context) =
             init_test_env(Some(owner.clone()), None, Some(owner.clone()));
         contract.state = State::Paused;
 

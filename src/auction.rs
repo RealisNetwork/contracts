@@ -279,7 +279,7 @@ mod tests {
 
         let ac: VAccount = Account::new(accounts(1), 1000).into();
         cn.accounts.insert(&accounts(1), &ac);
-        let id = cn.nfts.mint_nft(&accounts(1), "metadata".to_string());
+        let _id = cn.nfts.mint_nft(&accounts(1), "metadata".to_string());
 
         cn.nfts.mint_nft(&accounts(1), "metadata".to_string());
 
@@ -301,7 +301,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "Auction expired.")]
     fn bid_after_deadline_test() {
-        let (mut contract, context) = get_contract();
+        let (mut contract, _context) = get_contract();
         contract.start_auction(0, 10, env::block_timestamp(), accounts(1));
         std::thread::sleep(Duration::new(0, 100));
         contract.make_bid(0, 20, accounts(3));
@@ -310,7 +310,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "Not enough money.")]
     fn bid_with_out_money_test() {
-        let (mut contract, context) = get_contract();
+        let (mut contract, _context) = get_contract();
         contract.start_auction(0, 10, env::block_timestamp() + 100, accounts(1));
 
         contract.make_bid(0, 20, accounts(2));
@@ -319,7 +319,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "NFT owner can't make a bid.")]
     fn buy_own_nft_test() {
-        let (mut contract, context) = get_contract();
+        let (mut contract, _context) = get_contract();
         contract.start_auction(0, 10, env::block_timestamp() + 100, accounts(1));
 
         contract.make_bid(0, 20, accounts(1));
@@ -328,7 +328,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "Less or equal to the last bid.")]
     fn less_then_price_test() {
-        let (mut contract, context) = get_contract();
+        let (mut contract, _context) = get_contract();
         contract.start_auction(0, 10, env::block_timestamp() + 100, accounts(1));
 
         contract.make_bid(0, 5, accounts(3));
@@ -336,7 +336,7 @@ mod tests {
 
     #[test]
     fn money_blocked_test() {
-        let (mut contract, context) = get_contract();
+        let (mut contract, _context) = get_contract();
         contract.start_auction(0, 10, env::block_timestamp() + 100, accounts(1));
 
         contract.make_bid(0, 20, accounts(3));
@@ -346,7 +346,7 @@ mod tests {
 
     #[test]
     fn money_back_if_highest_bid_test() {
-        let (mut contract, context) = get_contract();
+        let (mut contract, _context) = get_contract();
         contract.start_auction(0, 10, env::block_timestamp() + 100, accounts(1));
 
         contract.make_bid(0, 20, accounts(3));

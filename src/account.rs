@@ -1,7 +1,7 @@
 use crate::{
     events::{EventLog, EventLogVariant, LockupLog},
     lockup::Lockup,
-    LockupInfo, NftId, Serialize, State, StorageKey,
+    LockupInfo, NftId, Serialize, StorageKey,
 };
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
@@ -39,7 +39,7 @@ pub struct Account {
 
 impl Account {
     pub fn new(account_id: AccountId, balance: Balance) -> Self {
-        let mut hash = env::sha256(account_id.as_bytes());
+        let hash = env::sha256(account_id.as_bytes());
         Self {
             free: balance,
             lockups: UnorderedSet::new(StorageKey::AccountLockup { hash: hash.clone() }),
@@ -144,7 +144,7 @@ mod tests {
 
     #[test]
     pub fn check_lockups() {
-        let (contract, mut context) = init_test_env(None, None, None);
+        let (_contract, mut context) = init_test_env(None, None, None);
 
         let mut account = Account::new(accounts(0), 5);
         // Just locked (will unlock in 3 days (default lifetime))
@@ -167,7 +167,7 @@ mod tests {
 
     #[test]
     pub fn check_lockup() {
-        let (contract, mut context) = init_test_env(None, None, None);
+        let (_contract, mut context) = init_test_env(None, None, None);
 
         let mut account = Account::new(accounts(0), 5);
         // Just locked (will unlock in 3 days (default lifetime))

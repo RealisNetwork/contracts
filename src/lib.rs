@@ -150,7 +150,7 @@ mod tests {
     #[test]
     fn info_get_balance_test() {
         // Indexes are default
-        let (mut contract, mut context) = init_test_env(None, None, None);
+        let (mut contract, _context) = init_test_env(None, None, None);
         let account: Account = Account::new(accounts(0), 250 * ONE_LIS);
         let account_id = accounts(0);
 
