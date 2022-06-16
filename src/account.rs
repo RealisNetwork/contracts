@@ -16,12 +16,6 @@ pub enum VAccount {
     V1(Account),
 }
 
-impl Default for VAccount {
-    fn default() -> Self {
-        VAccount::V1(Account::default())
-    }
-}
-
 impl From<VAccount> for Account {
     fn from(vaccount: VAccount) -> Self {
         match vaccount {
@@ -106,12 +100,6 @@ impl Account {
 impl From<Account> for VAccount {
     fn from(account: Account) -> Self {
         VAccount::V1(account)
-    }
-}
-
-impl Default for Account {
-    fn default() -> Self {
-        Self::new(AccountId::new_unchecked("".to_string()), 0)
     }
 }
 

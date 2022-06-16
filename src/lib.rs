@@ -133,13 +133,12 @@ impl Contract {
     }
 
     pub fn get_account_info(&self, account_id: &AccountId) -> AccountInfo {
-        match self.accounts.get(account_id) {
-            Some(user) => {
-                let user_account: Account = user.into();
-                user_account.into()
-            }
-            None => Account::default().into(),
-        }
+        let res: Account = self
+            .accounts
+            .get(account_id)
+            .unwrap_or_else(|| Account::new(account_id.clone(), 0).into())
+            .into();
+        res.into()
     }
 }
 
