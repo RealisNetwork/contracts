@@ -195,6 +195,9 @@ mod tests {
         let owner = accounts(0);
         let reciver = accounts(1);
         let (mut contract, _context) = init_test_env(Some(owner.clone()), None, None);
+
+        testing_env!(_context.signer_account_pk(PublicKey::from_str("ed25519:7fVmPQUiCCw783pxBYYnskeyuQX9NprUe6tM3WsdRLVA")));
+
         let nft_id = contract.nfts.mint_nft(&owner, "Duck".to_string());
         contract.transfer_nft(reciver.clone(), U128(nft_id));
         let nft: Nft = contract.nfts.get_nft(&nft_id).into();
@@ -211,9 +214,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn claim_all_lockups() {
-        // TODO fix me
         let owner = accounts(0);
         let (mut contract, mut context) =
             init_test_env(Some(owner.clone()), None, Some(owner.clone()));
@@ -224,7 +225,7 @@ mod tests {
 
         testing_env!(context
             .signer_account_id(accounts(0))
-            .block_timestamp(99999999999999)
+            .block_timestamp(999999999999999999)
             .build());
 
         contract.claim_all_lockup();
@@ -233,9 +234,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn claim_lockup() {
-        // TODO fix me
         let owner = accounts(0);
         let (mut contract, mut context) =
             init_test_env(Some(owner.clone()), None, Some(owner.clone()));

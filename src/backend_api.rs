@@ -257,7 +257,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn backend_claim_all_lockups() {
         // TODO fix me
         let owner = accounts(0);
@@ -292,7 +291,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn backend_claim_lockup() {
         // TODO fix me
         let owner = accounts(0);
