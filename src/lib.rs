@@ -138,7 +138,7 @@ impl Contract {
                 let user_account: Account = user.into();
                 user_account.into()
             }
-            None => Account::default().into(),
+            None => Account::new(account_id.clone(),0).into(),
         }
     }
 }
