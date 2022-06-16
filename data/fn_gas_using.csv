@@ -1,0 +1,11 @@
+fn_name,gas_used(T),data_related
+mint,~8,1
+transfer_tokens,~7,0
+burn,~9,1   depends of metadata
+transfer_nft,~6,0
+sell_nft,~10,1    depends of metadata
+buy_nft,~13,1
+start_auction,~7,1
+confir_deal,~8,1
+make_bid,~7,1
+,,

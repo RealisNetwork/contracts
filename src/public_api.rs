@@ -12,31 +12,48 @@ impl Contract {
 
     pub fn burn(&mut self, nft_id: U128) {
         self.assert_running();
-        self.nfts.burn_nft(&nft_id.0);
+        self.nfts.burn_nft(&nft_id.0, env::signer_account_id());
     }
 
     pub fn transfer_nft(&mut self, recipient_id: AccountId, nft_id: U128) {
         self.assert_running();
-        self.nfts.transfer_nft(recipient_id, &nft_id.0);
+        self.nfts
+            .transfer_nft(env::signer_account_id(), recipient_id, &nft_id.0);
     }
 
-    #[allow(unused_variables)]
     pub fn sell_nft(&mut self, nft_id: U128, price: U128) {
         self.assert_running();
-
-        todo!()
+        self.internal_sell_nft(nft_id.0, price.0, env::signer_account_id());
     }
 
-    #[allow(unused_variables)]
     pub fn buy_nft(&mut self, nft_id: U128) -> U128 {
         self.assert_running();
-        todo!()
+        let result = self.internal_buy_nft(nft_id.0, env::signer_account_id());
+
+        U128::from(result)
     }
 
-    #[allow(unused_variables)]
     pub fn change_price(&mut self, nft_id: U128, price: U128) {
         self.assert_running();
-        todo!()
+        self.nfts
+            .change_price_nft(&nft_id.0, price.0, env::signer_account_id());
+    }
+
+    pub fn auction(&mut self, nft_id: U128, price: U128, deadline: U128) {
+        self.start_auction(
+            nft_id.0,
+            price.0,
+            deadline.0 as u64,
+            env::signer_account_id(),
+        );
+    }
+
+    pub fn bid(&mut self, nft_id: U128, price: U128) {
+        self.make_bid(nft_id.0, price.0, env::signer_account_id());
+    }
+
+    pub fn confirm(&mut self, nft_id: U128) {
+        self.confirm_deal(nft_id.0, env::signer_account_id());
     }
 
     // TODO check lockups

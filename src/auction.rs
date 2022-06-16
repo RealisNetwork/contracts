@@ -1,4 +1,5 @@
 //! All the logic described here applies to the NFT auction.
+use crate::{Account, Contract, NftId, StorageKey};
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
     collections::{LazyOption, UnorderedMap},
@@ -6,8 +7,6 @@ use near_sdk::{
     env::panic_str,
     require, AccountId, Balance, Timestamp,
 };
-
-use crate::{Account, Contract, NftId, StorageKey};
 
 /// Auction structure implement logic of NFT auction.
 /// Manage bids and auctions deals.
@@ -212,7 +211,6 @@ impl Bid {
 }
 
 impl Contract {
-    // TODO: left it here?
     pub fn start_auction(
         &mut self,
         nft_id: NftId,
