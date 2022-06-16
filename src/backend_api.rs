@@ -135,7 +135,8 @@ mod tests {
     fn backend_transfer() {
         let owner = accounts(0);
         let (mut contract, mut context) = init_test_env(None, None, Some(owner.clone()));
-        let owner_pk = PublicKey::from_str("ed25519:7fVmPQUiCCw783pxBYYnskeyuQX9NprUe6tM3WsdRLVA").unwrap();
+        let owner_pk =
+            PublicKey::from_str("ed25519:7fVmPQUiCCw783pxBYYnskeyuQX9NprUe6tM3WsdRLVA").unwrap();
         let account_2 = Account::new(accounts(2), 10 * ONE_LIS);
 
         contract.accounts.insert(&accounts(2), &account_2.into());
@@ -177,7 +178,8 @@ mod tests {
     #[should_panic = "Nft not exist"]
     fn backend_burn_nft_test_not_exists() {
         let owner = accounts(0);
-        let owner_pk = PublicKey::from_str("ed25519:7fVmPQUiCCw783pxBYYnskeyuQX9NprUe6tM3WsdRLVA").unwrap();
+        let owner_pk =
+            PublicKey::from_str("ed25519:7fVmPQUiCCw783pxBYYnskeyuQX9NprUe6tM3WsdRLVA").unwrap();
         let (mut contract, mut context) = init_test_env(None, None, None);
         contract.registered_accounts.insert(&owner_pk, &owner);
 
@@ -191,7 +193,8 @@ mod tests {
 
     #[test]
     fn backend_burn_nft_test() {
-        let owner_pk = PublicKey::from_str("ed25519:7fVmPQUiCCw783pxBYYnskeyuQX9NprUe6tM3WsdRLVA").unwrap();
+        let owner_pk =
+            PublicKey::from_str("ed25519:7fVmPQUiCCw783pxBYYnskeyuQX9NprUe6tM3WsdRLVA").unwrap();
         let owner = accounts(0);
         let (mut contract, mut context) = init_test_env(Some(owner.clone()), None, None);
         let nft_id = contract.nfts.mint_nft(&owner, "Duck".to_string());
@@ -258,13 +261,16 @@ mod tests {
     #[test]
     fn backend_transfer_nft_test() {
         let owner = accounts(0);
-        let owner_pk = PublicKey::from_str("ed25519:7fVmPQUiCCw783pxBYYnskeyuQX9NprUe6tM3WsdRLVA").unwrap();
+        let owner_pk =
+            PublicKey::from_str("ed25519:7fVmPQUiCCw783pxBYYnskeyuQX9NprUe6tM3WsdRLVA").unwrap();
         let receiver = accounts(1);
 
         let (mut contract, mut context) = init_test_env(Some(owner.clone()), None, None);
         let nft_id = contract.nfts.mint_nft(&owner, "Duck".to_string());
         contract.registered_accounts.insert(&owner_pk, &owner);
-        contract.accounts.insert(&receiver, &Account::new(receiver.clone(),0).into());
+        contract
+            .accounts
+            .insert(&receiver, &Account::new(receiver.clone(), 0).into());
 
         testing_env!(context
             .signer_account_id(owner.clone())
@@ -296,7 +302,8 @@ mod tests {
     #[test]
     fn backend_claim_all_lockups() {
         let owner = accounts(0);
-        let owner_pk = PublicKey::from_str("ed25519:7fVmPQUiCCw783pxBYYnskeyuQX9NprUe6tM3WsdRLVA").unwrap();
+        let owner_pk =
+            PublicKey::from_str("ed25519:7fVmPQUiCCw783pxBYYnskeyuQX9NprUe6tM3WsdRLVA").unwrap();
         let (mut contract, mut context) =
             init_test_env(Some(owner.clone()), None, Some(owner.clone()));
 
@@ -319,8 +326,10 @@ mod tests {
     #[should_panic = "Not allowed"]
     fn backend_claim_all_lockups_panic() {
         let owner = accounts(0);
-        let owner_pk = PublicKey::from_str("ed25519:7fVmPQUiCCw783pxBYYnskeyuQX9NprUe6tM3WsdRLVA").unwrap();
-        let (mut contract, mut context) = init_test_env(Some(owner.clone()), None, Some(accounts(1)));
+        let owner_pk =
+            PublicKey::from_str("ed25519:7fVmPQUiCCw783pxBYYnskeyuQX9NprUe6tM3WsdRLVA").unwrap();
+        let (mut contract, mut context) =
+            init_test_env(Some(owner.clone()), None, Some(accounts(1)));
         contract.registered_accounts.insert(&owner_pk, &owner);
 
         testing_env!(context
@@ -337,7 +346,8 @@ mod tests {
 
     #[test]
     fn backend_claim_lockup() {
-        let owner_pk = PublicKey::from_str("ed25519:7fVmPQUiCCw783pxBYYnskeyuQX9NprUe6tM3WsdRLVA").unwrap();
+        let owner_pk =
+            PublicKey::from_str("ed25519:7fVmPQUiCCw783pxBYYnskeyuQX9NprUe6tM3WsdRLVA").unwrap();
         let owner = accounts(0);
         let (mut contract, mut context) =
             init_test_env(Some(owner.clone()), None, Some(owner.clone()));
