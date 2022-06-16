@@ -12,28 +12,13 @@ impl Contract {
 
     pub fn burn(&mut self, nft_id: U128) {
         self.assert_running();
-        self.nfts.burn_nft(&nft_id.0, env::signer_account_id());
+        let target_account_id = env::signer_account_id();
+        self.internal_burn_nft(target_account_id, nft_id);
     }
 
     pub fn transfer_nft(&mut self, recipient_id: AccountId, nft_id: U128) {
         self.assert_running();
-        self.nfts
-            .transfer_nft(env::signer_account_id(), recipient_id.clone(), &nft_id.0);
-        let sender_id = env::signer_account_id();
-        let mut last_owner: Account = self
-            .accounts
-            .get(&sender_id)
-            .unwrap_or_else(|| env::panic_str("No such account id (signer)"))
-            .into();
-        last_owner.nfts.remove(&nft_id.0);
-        let mut new_owner: Account = self
-            .accounts
-            .get(&recipient_id)
-            .unwrap_or_else(|| env::panic_str("No such account id (recipient)"))
-            .into();
-        new_owner.nfts.insert(&nft_id.0);
-        self.accounts.insert(&sender_id, &last_owner.into());
-        self.accounts.insert(&recipient_id, &new_owner.into());
+        self.internal_transfer_nft(env::signer_account_id(), recipient_id, nft_id);
     }
 
     pub fn sell_nft(&mut self, nft_id: U128, price: U128) {
@@ -149,10 +134,14 @@ mod tests {
     fn burn_nft_test() {
         let owner = accounts(0);
         let (mut contract, _context) = init_test_env(Some(owner.clone()), None, None);
-        let nft_id = contract.nfts.mint_nft(&owner, "Duck".to_string());
+        let nft_id = contract.mint(owner.clone(), "Duck".to_string());
+        let owner_account: Account = contract.accounts.get(&owner).unwrap().into();
         assert_eq!(contract.nfts.nft_count(), 1);
-        contract.burn(U128(nft_id));
+        assert_eq!(owner_account.nfts.len(), 1);
+        contract.burn(U128(nft_id.0));
+        let owner_account: Account = contract.accounts.get(&owner).unwrap().into();
         assert_eq!(contract.nfts.nft_count(), 0);
+        assert_eq!(owner_account.nfts.len(), 0);
     }
 
     #[test]

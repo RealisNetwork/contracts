@@ -15,7 +15,7 @@ impl Contract {
         self.assert_backend();
         let sender_id = self.resolve_account(env::signer_account_pk());
         let sender_free = self.take_fee(sender_id.clone(), None, true);
-        self.nfts.burn_nft(&nft_id.0, sender_id);
+        self.internal_burn_nft(sender_id, nft_id);
         sender_free.into()
     }
 
@@ -24,22 +24,7 @@ impl Contract {
         self.assert_backend();
         let sender_id = self.resolve_account(env::signer_account_pk());
         let sender_free = self.take_fee(sender_id.clone(), None, true);
-        self.nfts
-            .transfer_nft(sender_id.clone(), recipient_id.clone(), &nft_id.0);
-        let mut last_owner: Account = self
-            .accounts
-            .get(&sender_id)
-            .unwrap_or_else(|| env::panic_str("No such account id (signer)"))
-            .into();
-        last_owner.nfts.remove(&nft_id.0);
-        let mut new_owner: Account = self
-            .accounts
-            .get(&recipient_id)
-            .unwrap_or_else(|| env::panic_str("No such account id (recipient)"))
-            .into();
-        new_owner.nfts.insert(&nft_id.0);
-        self.accounts.insert(&sender_id, &last_owner.into());
-        self.accounts.insert(&recipient_id, &new_owner.into());
+        self.internal_transfer_nft(sender_id, recipient_id, nft_id);
         sender_free.into()
     }
 
@@ -191,7 +176,8 @@ mod tests {
         let owner_pk = PublicKey::from_str("ed25519:7fVmPQUiCCw783pxBYYnskeyuQX9NprUe6tM3WsdRLVA").unwrap();
         let owner = accounts(0);
         let (mut contract, mut context) = init_test_env(Some(owner.clone()), None, None);
-        let nft_id = contract.nfts.mint_nft(&owner, "Duck".to_string());
+        let nft_id = contract.mint(owner.clone(), "Duck".to_string());
+        let owner_account: Account = contract.accounts.get(&owner).unwrap().into();
         contract.registered_accounts.insert(&owner_pk, &owner);
 
         testing_env!(context
@@ -200,8 +186,11 @@ mod tests {
             .build());
 
         assert_eq!(contract.nfts.nft_count(), 1);
-        contract.backend_burn(U128(nft_id));
+        assert_eq!(owner_account.nfts.len(), 1);
+        contract.burn(U128(nft_id.0));
+        let owner_account: Account = contract.accounts.get(&owner).unwrap().into();
         assert_eq!(contract.nfts.nft_count(), 0);
+        assert_eq!(owner_account.nfts.len(), 0);
     }
 
     #[test]
