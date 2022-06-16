@@ -42,7 +42,7 @@ jobs:
         name: "Rust Toolchain Setup"
         with:
           profile: minimal
-          toolchain: stable-x86_64-unknown-linux-gnu
+          toolchain: nightly-x86_64-unknown-linux-gnu
           target: wasm32-unknown-unknown
           components: rustfmt
       - run: cargo +nightly fmt --all --check
