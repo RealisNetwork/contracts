@@ -297,7 +297,7 @@ impl NftManager {
             .unwrap_or_else(|| env::panic_str("Nft not exist"));
         EventLog::from(EventLogVariant::NftBurnLog(NftBurnLog {
             account_id,
-            nft_id: nft_id.clone(),
+            nft_id: U128(*nft_id),
         }))
         .emit();
     }

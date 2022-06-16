@@ -50,7 +50,7 @@ impl Account {
             .map(|lock| {
                 self.lockups.remove(lock);
                 EventLog::from(EventLogVariant::LockupClaimedLog(LockupClaimedLog {
-                    amount: U128(lock.amount.clone()),
+                    amount: U128(lock.amount),
                     account_id: account_id.clone(),
                 }))
                 .emit();
@@ -173,10 +173,7 @@ mod tests {
             expire_on: 16457898,
         }); // Lock from 1970
 
-        testing_env!(context
-            .block_timestamp(16457899)
-            .predecessor_account_id(account_id.clone())
-            .build());
+        testing_env!(context.block_timestamp(16457899).build());
 
         // Balance of lock from 1970 will be transferred to main balance
         account.claim_lockup(8, account_id);

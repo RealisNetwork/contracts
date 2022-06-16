@@ -80,9 +80,9 @@ impl Contract {
             .get(&target_id)
             .unwrap_or_else(|| env::panic_str("No such account id"))
             .into();
-        let res = target_account.claim_lockup(amount.0, target_id.clone());
+        let total_claimed = target_account.claim_lockup(amount.0, target_id.clone());
         self.accounts.insert(&target_id, &target_account.into());
-        U128(res)
+        U128(total_claimed)
     }
 
     pub fn claim_all_lockup(&mut self) -> U128 {
@@ -93,9 +93,9 @@ impl Contract {
             .get(&target_id)
             .unwrap_or_else(|| env::panic_str("No such account id"))
             .into();
-        let res = target_account.claim_all_lockups(target_id.clone());
+        let total_claimed = target_account.claim_all_lockups(target_id.clone());
         self.accounts.insert(&target_id, &target_account.into());
-        U128(res)
+        U128(total_claimed)
     }
 
     // TODO: delegate nft

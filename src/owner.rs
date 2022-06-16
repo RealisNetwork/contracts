@@ -104,9 +104,9 @@ impl Contract {
         self.accounts
             .insert(&recipient_id, &recipient_account.into());
         EventLog::from(EventLogVariant::LockupCreatedLog(LockupCreatedLog {
-            amount: U128(lockup.amount.clone()),
+            amount: U128(lockup.amount),
             recipient_id,
-            expire_on: lockup.expire_on.clone(),
+            expire_on: U64(lockup.expire_on),
         }))
         .emit();
         lockup.expire_on.into()
@@ -139,9 +139,9 @@ impl Contract {
         self.accounts.insert(&self.owner_id, &owner_account.into());
 
         EventLog::from(EventLogVariant::LockupRefundLog(LockupRefundLog {
-            amount: U128(lockup.amount.clone()),
+            amount: U128(lockup.amount),
             account_id: recipient_id,
-            timestamp: lockup.expire_on.clone(),
+            timestamp: U64(lockup.expire_on),
         }))
         .emit();
         lockup.amount.into()
@@ -163,14 +163,9 @@ mod tests {
 
     #[test]
     fn mint_nft_test() {
-        let (_, _context) = init_test_env(Some(accounts(0)), Some(accounts(0)), Some(accounts(0)));
-        let mut contract = Contract::new(
-            U128(3_000_000_000 * ONE_LIS),
-            U128(5 * ONE_LIS),
-            10,
-            None,
-            None,
-        );
+        let (mut contract, _context) =
+            init_test_env(Some(accounts(0)), Some(accounts(0)), Some(accounts(0)));
+
         contract.owner_id = accounts(0);
 
         contract
@@ -234,14 +229,9 @@ mod tests {
 
     #[test]
     fn refund_lockup_test() {
-        let (_, _context) = init_test_env(Some(accounts(0)), Some(accounts(0)), Some(accounts(0)));
-        let mut contract = Contract::new(
-            U128(3_000_000_000 * ONE_LIS),
-            U128(5 * ONE_LIS),
-            10,
-            None,
-            None,
-        );
+        let (mut contract, _context) =
+            init_test_env(Some(accounts(0)), Some(accounts(0)), Some(accounts(0)));
+
         contract.owner_id = accounts(0);
 
         contract

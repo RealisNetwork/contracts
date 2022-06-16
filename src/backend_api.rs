@@ -85,10 +85,10 @@ impl Contract {
             .get(&target_id)
             .unwrap_or_else(|| env::panic_str("No such account id"))
             .into();
-        let res = target_account.claim_lockup(amount.0, target_id.clone());
+        let total_claimed = target_account.claim_lockup(amount.0, target_id);
         self.accounts
             .insert(&env::signer_account_id(), &target_account.into());
-        U128(res)
+        U128(total_claimed)
     }
 
     pub fn backend_claim_all_lockup(&mut self) -> U128 {
