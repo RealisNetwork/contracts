@@ -5,8 +5,8 @@ use near_sdk::{
 
 use crate::{
     events::{
-        ChangeBeneficiaryLog, ChangeStateLog, EventLog, EventLogVariant, LockupCreatedLog,
-        LockupRefundLog, NftMintLog,
+        ChangeBeneficiary, ChangeState, EventLog, EventLogVariant, LockupCreated,
+        LockupRefund, NftMint,
     },
     lockup::Lockup,
     *,
@@ -27,7 +27,7 @@ impl Contract {
     pub fn mint(&mut self, recipient_id: AccountId, nft_metadata: String) -> U128 {
         self.assert_owner();
 
-        EventLog::from(EventLogVariant::NftMint(NftMintLog {
+        EventLog::from(EventLogVariant::NftMint(NftMint {
             owner_id: String::from(recipient_id.clone()),
             meta_data: nft_metadata.clone(),
         }))
@@ -50,7 +50,7 @@ impl Contract {
     pub fn change_state(&mut self, state: State) {
         self.assert_owner();
         require!(self.state != state, "State can't be the same");
-        EventLog::from(EventLogVariant::ChangeState(ChangeStateLog {
+        EventLog::from(EventLogVariant::ChangeState(ChangeState {
             from: self.state.clone(),
             to: state.clone(),
         }))
@@ -65,7 +65,7 @@ impl Contract {
             self.beneficiary_id != new_beneficiary_id,
             "Beneficiary can't be the same"
         );
-        EventLog::from(EventLogVariant::ChangeBeneficiary(ChangeBeneficiaryLog {
+        EventLog::from(EventLogVariant::ChangeBeneficiary(ChangeBeneficiary {
             from: self.beneficiary_id.clone(),
             to: new_beneficiary_id.clone(),
         }))
@@ -103,7 +103,7 @@ impl Contract {
         recipient_account.lockups.insert(&lockup);
         self.accounts
             .insert(&recipient_id, &recipient_account.into());
-        EventLog::from(EventLogVariant::LockupCreatedLog(LockupCreatedLog {
+        EventLog::from(EventLogVariant::LockupCreated(LockupCreated {
             amount: U128(lockup.amount),
             recipient_id,
             expire_on: U64(lockup.expire_on),
@@ -138,7 +138,7 @@ impl Contract {
         owner_account.free += lockup.amount;
         self.accounts.insert(&self.owner_id, &owner_account.into());
 
-        EventLog::from(EventLogVariant::LockupRefundLog(LockupRefundLog {
+        EventLog::from(EventLogVariant::LockupRefund(LockupRefund {
             amount: U128(lockup.amount),
             account_id: recipient_id,
             timestamp: U64(lockup.expire_on),

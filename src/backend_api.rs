@@ -75,7 +75,6 @@ impl Contract {
         todo!()
     }
 
-    // TODO check lockups
     pub fn backend_claim_lockup(&mut self, amount: U128) -> U128 {
         self.assert_running();
         self.assert_backend();
@@ -85,9 +84,9 @@ impl Contract {
             .get(&target_id)
             .unwrap_or_else(|| env::panic_str("No such account id"))
             .into();
-        let total_claimed = target_account.claim_lockup(amount.0, target_id);
+        let total_claimed = target_account.claim_lockup(amount.0, target_id.clone());
         self.accounts
-            .insert(&env::signer_account_id(), &target_account.into());
+            .insert(&target_id, &target_account.into());
         U128(total_claimed)
     }
 
@@ -101,9 +100,9 @@ impl Contract {
             .get(&target_id)
             .unwrap_or_else(|| env::panic_str("No such account id"))
             .into();
-        let res = target_account.claim_all_lockups(target_id.clone());
+        let total_claimed = target_account.claim_all_lockups(target_id.clone());
         self.accounts.insert(&target_id, &target_account.into());
-        U128(res)
+        U128(total_claimed)
     }
 
     // TODO: delegate nft

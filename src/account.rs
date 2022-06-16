@@ -1,5 +1,5 @@
 use crate::{
-    events::{EventLog, EventLogVariant, LockupClaimedLog},
+    events::{EventLog, EventLogVariant, LockupClaimed},
     lockup::Lockup,
     LockupInfo, NftId, Serialize, StorageKey,
 };
@@ -49,7 +49,7 @@ impl Account {
             .filter(|lock| lock.is_expired())
             .map(|lock| {
                 self.lockups.remove(lock);
-                EventLog::from(EventLogVariant::LockupClaimedLog(LockupClaimedLog {
+                EventLog::from(EventLogVariant::LockupClaimed(LockupClaimed {
                     amount: U128(lock.amount),
                     account_id: account_id.clone(),
                 }))
@@ -71,7 +71,7 @@ impl Account {
         self.free += lockup.amount;
         self.lockups.remove(&lockup);
 
-        EventLog::from(EventLogVariant::LockupClaimedLog(LockupClaimedLog {
+        EventLog::from(EventLogVariant::LockupClaimed(LockupClaimed {
             amount: U128(lockup.amount),
             account_id,
         }))
@@ -148,7 +148,6 @@ mod tests {
         // Balance of lock from 1970 will be transferred to main balance
         testing_env!(context
             .block_timestamp(999)
-            .predecessor_account_id(account_id.clone())
             .build());
 
         account.claim_all_lockups(account_id);
