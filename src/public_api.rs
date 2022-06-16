@@ -184,7 +184,9 @@ mod tests {
         let owner = accounts(0);
         let recipient = accounts(1);
         let (mut contract, _context) = init_test_env(Some(owner.clone()), None, None);
-        contract.accounts.insert(&recipient, &Account::new(recipient.clone(), 0).into());
+        contract
+            .accounts
+            .insert(&recipient, &Account::new(recipient.clone(), 0).into());
         let nft_id = contract.nfts.mint_nft(&owner, "Duck".to_string());
         contract.transfer_nft(recipient.clone(), U128(nft_id));
         let nft: Nft = contract.nfts.get_nft(&nft_id).into();

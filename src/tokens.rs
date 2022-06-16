@@ -39,8 +39,11 @@ impl Contract {
         // Charge fee and amount
         let sender_balance_left = self.take_fee(sender, Some(amount), is_fee_required);
         // Try to get recipient
-        let mut recipient_account: Account =
-            self.accounts.get(&recipient_id).unwrap_or_else(|| Account::new(recipient_id.clone(), 0).into()).into();
+        let mut recipient_account: Account = self
+            .accounts
+            .get(&recipient_id)
+            .unwrap_or_else(|| Account::new(recipient_id.clone(), 0).into())
+            .into();
 
         // Increase recipient balance
         recipient_account.free += amount;
