@@ -157,7 +157,7 @@ mod tests {
 
         contract
             .accounts
-            .insert(&accounts(1), &Account::default().into());
+            .insert(&accounts(1), &Account::new(accounts(0), 0).into());
 
         let res = contract.mint(accounts(1), "some_metadata".to_string());
 
