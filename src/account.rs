@@ -51,7 +51,7 @@ impl Account {
                 self.lockups.remove(lock);
                 EventLog::from(EventLogVariant::LockupClaimed(LockupClaimed {
                     amount: U128(lock.amount),
-                    account_id: account_id.clone(),
+                    account_id: &account_id,
                 }))
                 .emit();
                 lock
@@ -73,7 +73,7 @@ impl Account {
 
         EventLog::from(EventLogVariant::LockupClaimed(LockupClaimed {
             amount: U128(lockup.amount),
-            account_id,
+            account_id: &account_id,
         }))
         .emit();
 

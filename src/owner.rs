@@ -5,8 +5,8 @@ use near_sdk::{
 
 use crate::{
     events::{
-        ChangeBeneficiary, ChangeState, EventLog, EventLogVariant, LockupCreated,
-        LockupRefund, NftMint,
+        ChangeBeneficiary, ChangeState, EventLog, EventLogVariant, LockupCreated, LockupRefund,
+        NftMint,
     },
     lockup::Lockup,
     *,
@@ -28,8 +28,8 @@ impl Contract {
         self.assert_owner();
 
         EventLog::from(EventLogVariant::NftMint(NftMint {
-            owner_id: String::from(recipient_id.clone()),
-            meta_data: nft_metadata.clone(),
+            owner_id: &recipient_id.clone().into(),
+            meta_data: &nft_metadata,
         }))
         .emit();
 
@@ -66,8 +66,8 @@ impl Contract {
             "Beneficiary can't be the same"
         );
         EventLog::from(EventLogVariant::ChangeBeneficiary(ChangeBeneficiary {
-            from: self.beneficiary_id.clone(),
-            to: new_beneficiary_id.clone(),
+            from: &self.beneficiary_id,
+            to: &new_beneficiary_id,
         }))
         .emit();
 
@@ -105,7 +105,7 @@ impl Contract {
             .insert(&recipient_id, &recipient_account.into());
         EventLog::from(EventLogVariant::LockupCreated(LockupCreated {
             amount: U128(lockup.amount),
-            recipient_id,
+            recipient_id: &recipient_id,
             expire_on: U64(lockup.expire_on),
         }))
         .emit();
@@ -140,7 +140,7 @@ impl Contract {
 
         EventLog::from(EventLogVariant::LockupRefund(LockupRefund {
             amount: U128(lockup.amount),
-            account_id: recipient_id,
+            account_id: &recipient_id,
             timestamp: U64(lockup.expire_on),
         }))
         .emit();
