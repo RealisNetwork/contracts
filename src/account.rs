@@ -81,7 +81,7 @@ impl Account {
 
         EventLog::from(EventLogVariant::LockupLog(LockupLog { amount: U128(fold) })).emit();
 
-        fold
+        self.free
     }
 
     pub fn get_lockups(&self, from_index: Option<usize>, limit: Option<usize>) -> Vec<LockupInfo> {

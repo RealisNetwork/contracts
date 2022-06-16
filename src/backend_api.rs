@@ -1,5 +1,5 @@
 use crate::*;
-use near_sdk::{json_types::U128, near_bindgen, AccountId, Timestamp};
+use near_sdk::{json_types::U128, near_bindgen, AccountId};
 
 #[near_bindgen]
 impl Contract {
@@ -71,7 +71,7 @@ impl Contract {
     }
 
     // TODO check lockups
-    pub fn backend_claim_lockup(&mut self, expire_on: Timestamp) -> U128 {
+    pub fn backend_claim_lockup(&mut self, amount: U128) -> U128 {
         self.assert_running();
         self.assert_backend();
         let target_id = self.resolve_account(env::signer_account_pk());
@@ -80,7 +80,7 @@ impl Contract {
             .get(&target_id)
             .unwrap_or_else(|| env::panic_str("No such account id"))
             .into();
-        let res = target_account.claim_lockup(expire_on);
+        let res = target_account.claim_lockup(amount.0);
         self.accounts
             .insert(&env::signer_account_id(), &target_account.into());
         U128(res)
