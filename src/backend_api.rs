@@ -1,4 +1,3 @@
-use std::fmt::format;
 use crate::*;
 use near_sdk::{json_types::U128, near_bindgen, AccountId, Timestamp};
 
@@ -95,7 +94,7 @@ impl Contract {
         let mut target_account: Account = self
             .accounts
             .get(&target_id)
-            .unwrap_or_else(|| env::panic_str(format!("No such account id {}", target_id).as_str()))
+            .unwrap_or_else(|| env::panic_str("No such account id"))
             .into();
         let res = target_account.claim_all_lockups();
         self.accounts
@@ -144,7 +143,7 @@ mod tests {
             .signer_account_pk(owner_pk)
             .build());
 
-        println!("{:#?}", contract.backend_transfer(accounts(2), U128(20 * ONE_LIS)));
+        contract.backend_transfer(accounts(2), U128(20 * ONE_LIS));
 
         let account_2: Account = contract.accounts.get(&accounts(2)).unwrap().into();
         let owner_acc: Account = contract.accounts.get(&owner).unwrap().into();
