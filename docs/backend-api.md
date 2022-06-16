@@ -28,10 +28,10 @@ duration - optional arg, in nanoseconds, default 3 days
 {
   "recipient_id": "AccountId",
   "amount": "12345",
-  "duration": 12345
+  "duration": "12345"
 }
 ```
-- return: expire_on - timestamp, in nanoseconds
+- return: expire_on - timestamp(string number), in nanoseconds
 
 ### GooglePlay refund
 - type: call
@@ -42,7 +42,7 @@ expire_on - lockup expire time in nanoseconds
 ```json
 {
   "recipient_id": "AccountId",
-  "expire_on": 12345
+  "expire_on": "12345"
 }
 ```
 - return: string number, amount that was refunded
