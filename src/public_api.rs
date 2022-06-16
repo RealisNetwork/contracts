@@ -5,7 +5,7 @@ use near_sdk::{json_types::U128, AccountId};
 impl Contract {
     pub fn transfer(&mut self, recipient_id: AccountId, amount: U128) -> U128 {
         self.assert_running();
-        let sender_id = self.resolve_account(env::signer_account_pk());
+        let sender_id = env::signer_account_id();
         self.internal_transfer(sender_id, recipient_id, amount.0, false)
             .into()
     }
@@ -59,7 +59,7 @@ impl Contract {
     // TODO check lockups
     pub fn claim_lockup(&mut self, expire_on: u64) -> U128 {
         self.assert_running();
-        let target_id = self.resolve_account(env::signer_account_pk());
+        let target_id = env::signer_account_id();
         let mut target_account: Account = self
             .accounts
             .get(&target_id)
@@ -73,7 +73,7 @@ impl Contract {
 
     pub fn claim_all_lockup(&mut self) -> U128 {
         self.assert_running();
-        let target_id = self.resolve_account(env::signer_account_pk());
+        let target_id = env::signer_account_id();
         let mut target_account: Account = self
             .accounts
             .get(&target_id)
@@ -198,7 +198,7 @@ mod tests {
 
     #[test]
     #[ignore]
-    fn claim_all_loockups() {
+    fn claim_all_lockups() {
         // TODO fix me
         let mut owner = accounts(0);
         let (mut contract, mut context) =
@@ -220,7 +220,7 @@ mod tests {
 
     #[test]
     #[ignore]
-    fn claim_loockup() {
+    fn claim_lockup() {
         // TODO fix me
         let mut owner = accounts(0);
         let (mut contract, mut context) =
@@ -251,7 +251,7 @@ mod tests {
 
     #[test]
     #[should_panic = "Contract is paused"]
-    fn claim_loockup_panic() {
+    fn claim_lockup_panic() {
         let mut owner = accounts(0);
         let (mut contract, mut context) =
             init_test_env(Some(owner.clone()), None, Some(owner.clone()));
