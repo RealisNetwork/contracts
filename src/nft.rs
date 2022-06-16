@@ -14,6 +14,7 @@ use crate::{
     marketplace::Marketplace,
     Contract, ContractExt, NftId, StorageKey,
 };
+use crate::events::{EventLog, EventLogVariant, NftBurnLog};
 
 /// State of NFT.
 /// Displays the current state of an NFT.
@@ -294,6 +295,10 @@ impl NftManager {
         self.nft_map
             .remove(nft_id)
             .unwrap_or_else(|| env::panic_str("Nft not exist"));
+        EventLog::from(EventLogVariant::NftBurnLog(NftBurnLog {
+            account_id,
+            nft_id: nft_id.clone(),
+        })).emit();
     }
 
     /// Mint new `NFT` with generated id.

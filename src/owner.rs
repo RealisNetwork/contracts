@@ -8,6 +8,7 @@ use crate::{
     lockup::Lockup,
     *,
 };
+use crate::events::{LockupCreatedLog, LockupRefundLog};
 
 #[near_bindgen]
 impl Contract {
@@ -100,6 +101,11 @@ impl Contract {
         recipient_account.lockups.insert(&lockup);
         self.accounts
             .insert(&recipient_id, &recipient_account.into());
+        EventLog::from(EventLogVariant::LockupCreatedLog(LockupCreatedLog {
+            amount: U128(lockup.amount.clone()),
+            recipient_id,
+            expire_on: lockup.expire_on.clone(),
+        })).emit();
         lockup.expire_on.into()
     }
 
@@ -121,6 +127,7 @@ impl Contract {
         self.accounts
             .insert(&recipient_id, &recipient_account.into());
 
+
         let mut owner_account: Account = self
             .accounts
             .get(&self.owner_id)
@@ -129,6 +136,11 @@ impl Contract {
         owner_account.free += lockup.amount;
         self.accounts.insert(&self.owner_id, &owner_account.into());
 
+        EventLog::from(EventLogVariant::LockupRefundLog(LockupRefundLog {
+            amount: U128(lockup.amount.clone()),
+            account_id: recipient_id,
+            timestamp: lockup.expire_on.clone(),
+        })).emit();
         lockup.amount.into()
     }
 }
@@ -215,5 +227,27 @@ mod tests {
         let contract_new_state = State::Paused;
         contract.change_state(contract_new_state.clone());
         assert_eq!(contract.state, contract_new_state)
+    }
+
+    #[test]
+    fn refund_lockup_test() {
+        let (_, _context) = init_test_env(Some(accounts(0)), Some(accounts(0)), Some(accounts(0)));
+        let mut contract = Contract::new(
+            U128(3_000_000_000 * ONE_LIS),
+            U128(5 * ONE_LIS),
+            10,
+            None,
+            None,
+        );
+        contract.owner_id = accounts(0);
+
+        contract
+            .accounts
+            .insert(&accounts(1), &Account::new(accounts(0), 0).into());
+
+        let res = contract.create_lockup(accounts(1), U128(300000 * ONE_LIS), None);
+
+        let assertion = contract.refund_lockup(accounts(1),res);
+        assert_eq!(assertion, U128(300000 * ONE_LIS));
     }
 }

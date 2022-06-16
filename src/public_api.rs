@@ -80,9 +80,9 @@ impl Contract {
             .get(&target_id)
             .unwrap_or_else(|| env::panic_str("No such account id"))
             .into();
-        let res = target_account.claim_lockup(amount.0);
+        let res = target_account.claim_lockup(amount.0,target_id.clone());
         self.accounts
-            .insert(&env::signer_account_id(), &target_account.into());
+            .insert(&target_id, &target_account.into());
         U128(res)
     }
 
@@ -94,9 +94,9 @@ impl Contract {
             .get(&target_id)
             .unwrap_or_else(|| env::panic_str("No such account id"))
             .into();
-        let res = target_account.claim_all_lockups();
+        let res = target_account.claim_all_lockups(target_id.clone());
         self.accounts
-            .insert(&env::signer_account_id(), &target_account.into());
+            .insert(&target_id, &target_account.into());
         U128(res)
     }
 
@@ -221,6 +221,7 @@ mod tests {
 
         let mut owner_account = Account::new(accounts(0), 5);
         owner_account.lockups.insert(&Lockup::new(5, None));
+        owner_account.lockups.insert(&Lockup::new(6, None));
         contract.accounts.insert(&owner, &owner_account.into());
 
         testing_env!(context
@@ -230,7 +231,7 @@ mod tests {
 
         contract.claim_all_lockup();
         let res_owner_account: Account = contract.accounts.get(&owner).unwrap().into();
-        assert_eq!(res_owner_account.free, 10);
+        assert_eq!(res_owner_account.free, 16);
     }
 
     #[test]
@@ -257,7 +258,7 @@ mod tests {
             .signer_account_id(accounts(0))
             .block_timestamp(2)
             .build());
-        contract.claim_lockup(U128(1));
+        contract.claim_lockup(U128(5));
         let res_owner_account: Account = contract.accounts.get(&owner).unwrap().into();
         assert_eq!(res_owner_account.free, 55);
     }

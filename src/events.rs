@@ -1,12 +1,7 @@
 use std::fmt;
 
-use crate::State;
-use near_sdk::{
-    env,
-    json_types::U128,
-    serde::{Deserialize, Serialize},
-    serde_json, AccountId,
-};
+use crate::{Account, NftId, State};
+use near_sdk::{env, json_types::U128, serde::{Deserialize, Serialize}, serde_json, AccountId, Timestamp};
 
 /// Rules of logging events on `Near`.
 /// Should include:
@@ -24,9 +19,14 @@ pub const NFT_STANDARD_NAME: &str = "nep171";
 #[non_exhaustive]
 pub enum EventLogVariant {
     NftMint(NftMintLog),
-    LockupLog(LockupLog),
+    NftBurnLog(NftBurnLog),
+    LockupClaimedLog(LockupClaimedLog),
     ChangeState(ChangeStateLog),
     ChangeBeneficiary(ChangeBeneficiaryLog),
+    LockupRefundLog(LockupRefundLog),
+    LockupCreatedLog(LockupCreatedLog),
+
+
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -73,8 +73,9 @@ pub struct NftMintLog {
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(crate = "near_sdk::serde")]
-pub struct LockupLog {
+pub struct LockupClaimedLog {
     pub amount: U128,
+    pub account_id: AccountId,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -89,4 +90,27 @@ pub struct ChangeStateLog {
 pub struct ChangeBeneficiaryLog {
     pub from: AccountId,
     pub to: AccountId,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
+pub struct LockupRefundLog {
+    pub amount: U128,
+    pub account_id: AccountId,
+    pub timestamp: Timestamp,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
+pub struct LockupCreatedLog {
+    pub amount: U128,
+    pub recipient_id: AccountId,
+    pub expire_on: Timestamp,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
+pub struct NftBurnLog {
+    pub account_id: AccountId,
+    pub nft_id: NftId,
 }
