@@ -193,15 +193,13 @@ mod tests {
     #[test]
     fn transfer_nft_test() {
         let owner = accounts(0);
-        let reciver = accounts(1);
+        let recipient = accounts(1);
         let (mut contract, _context) = init_test_env(Some(owner.clone()), None, None);
-
-        testing_env!(_context.signer_account_pk(PublicKey::from_str("ed25519:7fVmPQUiCCw783pxBYYnskeyuQX9NprUe6tM3WsdRLVA")));
-
+        contract.accounts.insert(&recipient, &Account::new(recipient.clone(), 0).into());
         let nft_id = contract.nfts.mint_nft(&owner, "Duck".to_string());
-        contract.transfer_nft(reciver.clone(), U128(nft_id));
+        contract.transfer_nft(recipient.clone(), U128(nft_id));
         let nft: Nft = contract.nfts.get_nft(&nft_id).into();
-        assert_eq!(nft.owner_id, reciver);
+        assert_eq!(nft.owner_id, recipient);
     }
 
     #[test]
