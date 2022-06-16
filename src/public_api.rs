@@ -13,12 +13,12 @@ impl Contract {
     pub fn burn(&mut self, nft_id: U128) {
         self.assert_running();
         let target_account_id = env::signer_account_id();
-        self.internal_burn_nft(target_account_id, nft_id);
+        self.internal_burn_nft(target_account_id, nft_id.0);
     }
 
     pub fn transfer_nft(&mut self, recipient_id: AccountId, nft_id: U128) {
         self.assert_running();
-        self.internal_transfer_nft(env::signer_account_id(), recipient_id, nft_id);
+        self.internal_transfer_nft(env::signer_account_id(), recipient_id, nft_id.0);
     }
 
     pub fn sell_nft(&mut self, nft_id: U128, price: U128) {

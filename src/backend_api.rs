@@ -15,7 +15,7 @@ impl Contract {
         self.assert_backend();
         let sender_id = self.resolve_account(env::signer_account_pk());
         let sender_free = self.take_fee(sender_id.clone(), None, true);
-        self.internal_burn_nft(sender_id, nft_id);
+        self.internal_burn_nft(sender_id, nft_id.0);
         sender_free.into()
     }
 
@@ -24,7 +24,7 @@ impl Contract {
         self.assert_backend();
         let sender_id = self.resolve_account(env::signer_account_pk());
         let sender_free = self.take_fee(sender_id.clone(), None, true);
-        self.internal_transfer_nft(sender_id, recipient_id, nft_id);
+        self.internal_transfer_nft(sender_id, recipient_id, nft_id.0);
         sender_free.into()
     }
 
