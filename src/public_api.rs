@@ -80,7 +80,7 @@ impl Contract {
             .get(&target_id)
             .unwrap_or_else(|| env::panic_str("No such account id"))
             .into();
-        let res = target_account.claim_lockup(amount);
+        let res = target_account.claim_lockup(amount.0);
         self.accounts
             .insert(&env::signer_account_id(), &target_account.into());
         U128(res)
@@ -258,7 +258,7 @@ mod tests {
             .signer_account_id(accounts(0))
             .block_timestamp(2)
             .build());
-        contract.claim_lockup(1);
+        contract.claim_lockup(U128(1));
         let res_owner_account: Account = contract.accounts.get(&owner).unwrap().into();
         assert_eq!(res_owner_account.free, 55);
     }
@@ -271,6 +271,6 @@ mod tests {
             init_test_env(Some(owner.clone()), None, Some(owner.clone()));
         contract.state = State::Paused;
 
-        contract.claim_lockup(1);
+        contract.claim_lockup(U128(1));
     }
 }

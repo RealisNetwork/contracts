@@ -1,4 +1,7 @@
-use near_sdk::{json_types::U128, require, AccountId, Timestamp};
+use near_sdk::{
+    json_types::{U128, U64},
+    require, AccountId,
+};
 
 use crate::{
     events::{ChangeBeneficiaryLog, ChangeStateLog, EventLog, EventLogVariant, NftMintLog},
@@ -90,8 +93,8 @@ impl Contract {
 
         let mut recipient_account: Account = self
             .accounts
-            .get(&recipient_id)
-            .unwrap_or_else(|| env::panic_str("No such account"))
+            .get(&recipient_id.clone())
+            .unwrap_or_else(|| Account::new(recipient_id.clone(), 0).into())
             .into();
         let lockup = Lockup::new(amount.0, duration.map(|value| value.0));
         recipient_account.lockups.insert(&lockup);
