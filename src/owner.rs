@@ -18,7 +18,7 @@ impl Contract {
     ///  * `recipient_id`- `AccountId` of future nft owner.
     ///  * `nft_metadata`-specific for new nft metadata.
 
-    pub fn mint(&mut self, recipient_id: AccountId, nft_metadata: String) -> u128 {
+    pub fn mint(&mut self, recipient_id: AccountId, nft_metadata: String) -> U128 {
         self.assert_owner();
 
         EventLog::from(EventLogVariant::NftMint(NftMintLog {
@@ -38,7 +38,7 @@ impl Contract {
         self.accounts
             .insert(&recipient_id, &VAccount::V1(nft_owner_id));
 
-        nft_id
+        nft_id.into()
     }
 
     pub fn change_state(&mut self, state: State) {
@@ -74,7 +74,7 @@ impl Contract {
         recipient_id: AccountId,
         amount: U128,
         duration: Option<Timestamp>,
-    ) {
+    ) -> Timestamp {
         self.assert_owner();
 
         let mut owner_account: Account = self
@@ -93,15 +93,17 @@ impl Contract {
             .get(&recipient_id)
             .unwrap_or_else(|| env::panic_str("No such account"))
             .into();
+        let lockup = Lockup::new(amount.0, duration);
         recipient_account
             .lockups
-            .insert(&Lockup::new(amount.0, duration));
+            .insert(&lockup);
         self.accounts
             .insert(&recipient_id, &recipient_account.into());
+        lockup.expire_on
     }
 
     /// Remove lockup from account and return balance to owner
-    pub fn refund_lockup(&mut self, recipient_id: AccountId, duration: Timestamp) -> U128 {
+    pub fn refund_lockup(&mut self, recipient_id: AccountId, expire_on: Timestamp) -> U128 {
         self.assert_owner();
 
         let mut recipient_account: Account = self
@@ -112,7 +114,7 @@ impl Contract {
         let lockup = recipient_account
             .lockups
             .iter()
-            .find(|lockup| lockup.expire_on == duration)
+            .find(|lockup| lockup.expire_on == expire_on)
             .unwrap_or_else(|| env::panic_str("No such lockup"));
         recipient_account.lockups.remove(&lockup);
         self.accounts
