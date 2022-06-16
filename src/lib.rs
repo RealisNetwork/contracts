@@ -43,8 +43,9 @@ pub enum State {
 #[derive(BorshSerialize, BorshDeserialize, PanicOnDefault)]
 pub struct Contract {
     pub constant_fee: u128,
-    pub percent_fee: u8, /* Commission in percents over transferring amount. for example, 10
-                          * (like 10%) */
+    pub percent_fee: u8,
+    // Commission in percents over transferring amount. for example, 10
+    // (like 10%)
     pub accounts: LookupMap<AccountId, VAccount>,
     pub nfts: NftManager,
     // Owner of the contract. Example, `Realis.near` or `Volvo.near`
@@ -140,7 +141,6 @@ impl Contract {
 #[cfg(test)]
 mod tests {
     use crate::utils::tests_utils::*;
-    use std::str::FromStr;
 
     #[test]
     fn info_get_balance_test() {

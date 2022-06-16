@@ -1,12 +1,14 @@
 use crate::*;
-use near_sdk::{env, require, AccountId, PublicKey};
+use near_sdk::{env, require};
 
-/// Converts `PublicKey` to `AccountId`
-pub fn convert_pk_to_account_id(pk: PublicKey) -> AccountId {
-    hex::encode(&pk.as_bytes()[1..])
-        .try_into()
-        .unwrap_or_else(|_| env::panic_str("Fail to convert PublicKey to AccountId"))
-}
+pub const NANOSECOND: u64 = 1;
+pub const MILLISECOND: u64 = 1_000_000 * NANOSECOND;
+pub const SECOND: u64 = 1000 * MILLISECOND;
+pub const MINUTE: u64 = 60 * SECOND;
+pub const HOUR: u64 = 60 * MINUTE;
+pub const DAY: u64 = 24 * HOUR;
+
+pub const DEFAULT_LOCK_LIFE_TIME: u64 = 3 * DAY;
 
 impl Contract {
     pub fn assert_owner(&self) {

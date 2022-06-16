@@ -1,7 +1,15 @@
-use crate::{utils::convert_pk_to_account_id, *};
+use crate::*;
 use near_sdk::{
-    ext_contract, near_bindgen, require, Balance, Gas, Promise, PromiseOrValue, PublicKey,
+    env, ext_contract, near_bindgen, require, AccountId, Balance, Gas, Promise, PromiseOrValue,
+    PublicKey,
 };
+
+/// Converts `PublicKey` to `AccountId`
+pub fn convert_pk_to_account_id(pk: PublicKey) -> AccountId {
+    hex::encode(&pk.as_bytes()[1..])
+        .try_into()
+        .unwrap_or_else(|_| env::panic_str("Fail to convert PublicKey to AccountId"))
+}
 
 impl Contract {
     pub fn resolve_account(&self, public_key: PublicKey) -> AccountId {
