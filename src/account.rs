@@ -8,7 +8,7 @@ use near_sdk::{
     collections::UnorderedSet,
     env,
     json_types::U128,
-    AccountId, Balance,
+    AccountId, Balance, Timestamp,
 };
 
 #[derive(BorshSerialize, BorshDeserialize)]
