@@ -115,7 +115,7 @@ impl Contract {
         let lockup = recipient_account
             .lockups
             .iter()
-            .find(|lockup| lockup.clone().expire_on == expire_on.0)
+            .find(|lockup| lockup.expire_on == expire_on.0)
             .unwrap_or_else(|| env::panic_str("No such lockup"));
         recipient_account.lockups.remove(&lockup);
         self.accounts
