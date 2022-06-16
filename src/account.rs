@@ -146,9 +146,7 @@ mod tests {
         }); // Lock from 1970
 
         // Balance of lock from 1970 will be transferred to main balance
-        testing_env!(context
-            .block_timestamp(999)
-            .build());
+        testing_env!(context.block_timestamp(999).build());
 
         account.claim_all_lockups(account_id);
 

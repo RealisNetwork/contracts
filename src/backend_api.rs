@@ -85,8 +85,7 @@ impl Contract {
             .unwrap_or_else(|| env::panic_str("No such account id"))
             .into();
         let total_claimed = target_account.claim_lockup(amount.0, target_id.clone());
-        self.accounts
-            .insert(&target_id, &target_account.into());
+        self.accounts.insert(&target_id, &target_account.into());
         U128(total_claimed)
     }
 

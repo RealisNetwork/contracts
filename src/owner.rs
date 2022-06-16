@@ -5,8 +5,8 @@ use near_sdk::{
 
 use crate::{
     events::{
-        ChangeBeneficiary, ChangeState, EventLog, EventLogVariant, LockupCreated,
-        LockupRefund, NftMint,
+        ChangeBeneficiary, ChangeState, EventLog, EventLogVariant, LockupCreated, LockupRefund,
+        NftMint,
     },
     lockup::Lockup,
     *,

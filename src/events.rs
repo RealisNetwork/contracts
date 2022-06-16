@@ -22,7 +22,7 @@ pub const NFT_STANDARD_NAME: &str = "nep171";
 #[serde(rename_all = "snake_case")]
 #[serde(crate = "near_sdk::serde")]
 #[non_exhaustive]
-pub enum EventLogVariant{
+pub enum EventLogVariant {
     LockupClaimed(LockupClaimed),
     LockupRefund(LockupRefund),
     LockupCreated(LockupCreated),
@@ -99,7 +99,7 @@ pub struct NftMint {
 
 #[derive(Serialize, Debug)]
 #[serde(crate = "near_sdk::serde")]
-pub struct NftBurn{
+pub struct NftBurn {
     pub account_id: AccountId,
     pub nft_id: U128,
 }
