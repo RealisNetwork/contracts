@@ -19,7 +19,7 @@ impl Contract {
         self.assert_running();
         self.nfts
             .transfer_nft(env::signer_account_id(), recipient_id.clone(), &nft_id.0);
-        let sender_id = self.resolve_account(env::signer_account_pk());
+        let sender_id = env::signer_account_id();
         let mut last_owner: Account = self
             .accounts
             .get(&sender_id)
