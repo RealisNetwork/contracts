@@ -2,19 +2,19 @@ use near_sdk::{json_types::U128, serde::Serialize, AccountId};
 pub use workspaces::{network::Testnet, Account, Contract, Worker};
 
 pub fn get_alice() -> Account {
-    todo!()
+    Account::from_file("./tests/res/realis_alice.testnet.json")
 }
 
 pub fn get_bob() -> Account {
-    todo!()
+    Account::from_file("./tests/res/realis_bob.testnet.json")
 }
 
 pub fn get_charlie() -> Account {
-    todo!()
+    Account::from_file("./tests/res/realis_charlie.testnet.json")
 }
 
 pub fn get_dave() -> Account {
-    todo!()
+    Account::from_file("./tests/res/realis_dave.testnet.json")
 }
 
 #[derive(Serialize)]

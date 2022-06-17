@@ -2,5 +2,6 @@
   "account_id":"realis_alice.testnet",
   "public_key":"ed25519:2kAKetETii5uJT9UUrEYqtAUYWTBzJWBrZoUaESiQLLR",
   "private_key":"ed25519:qMqvjcn53TN4FhQepzn449y9FkC2UnhEqmFaCBdYDJsuFDe6a3zHJ4Bf83LbQ5t8RhyyKsWvrfG64QJ5RtiDFFf",
+  "secret_key":"ed25519:qMqvjcn53TN4FhQepzn449y9FkC2UnhEqmFaCBdYDJsuFDe6a3zHJ4Bf83LbQ5t8RhyyKsWvrfG64QJ5RtiDFFf",
   "seed_phrase": "clever surround track gadget physical program exit orange busy canal flight advance"
 }

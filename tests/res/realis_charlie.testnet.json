@@ -2,5 +2,6 @@
   "account_id":"realis_charlie.testnet",
   "public_key":"ed25519:EgsqvoVKFLMNrbyVL6ABb4DVDRBcVPsXFk6sDqhC4nj1",
   "private_key":"ed25519:2jcfrFmTXX8EfaVA2RU8g4yVbLxtC2tpbxSgDDKqRhhKvUVGimNMPbs3NRF77D8Y8GTEVdTJkzwyrVEksEqSHGCP",
+  "secret_key":"ed25519:2jcfrFmTXX8EfaVA2RU8g4yVbLxtC2tpbxSgDDKqRhhKvUVGimNMPbs3NRF77D8Y8GTEVdTJkzwyrVEksEqSHGCP",
   "seed_phrase": "blade misery ask vessel interest boost wife piano caution crowd cargo media"
 }
