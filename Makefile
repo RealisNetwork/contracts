@@ -36,6 +36,10 @@ delete-account:
 build:
 	cargo build --target wasm32-unknown-unknown --release
 
+.PHONY: fmt
+fmt:
+	cargo +nightly fmt --all
+
 .PHONY: udeps
 udeps:
 	SKIP_WASM_BUILD=1 cargo +nightly udeps

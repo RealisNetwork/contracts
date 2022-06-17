@@ -39,8 +39,11 @@ impl Contract {
         // Charge fee and amount
         let sender_balance_left = self.take_fee(sender, Some(amount), is_fee_required);
         // Try to get recipient
-        let mut recipient_account: Account =
-            self.accounts.get(&recipient_id).unwrap_or_default().into();
+        let mut recipient_account: Account = self
+            .accounts
+            .get(&recipient_id)
+            .unwrap_or_else(|| Account::new(recipient_id.clone(), 0).into())
+            .into();
 
         // Increase recipient balance
         recipient_account.free += amount;
@@ -115,7 +118,7 @@ impl Contract {
         let mut beneficiary_account: Account = self
             .accounts
             .get(&self.beneficiary_id)
-            .unwrap_or_default()
+            .unwrap_or_else(|| Account::new(self.beneficiary_id.clone(), 0).into())
             .into();
         // Increase beneficiary balance
         beneficiary_account.free += fee;
@@ -133,7 +136,7 @@ pub mod tests {
 
     #[test]
     fn transfer() {
-        let (mut contract, _context) = init_test_env(None, None, None);
+        let (mut contract, _context) = init_test_env(Some(accounts(2)), None, None);
 
         // Sender
         let sender_id = accounts(0);
@@ -181,7 +184,7 @@ pub mod tests {
 
     #[test]
     fn transfer_without_fee() {
-        let (mut contract, _context) = init_test_env(None, None, None);
+        let (mut contract, _context) = init_test_env(Some(accounts(2)), None, None);
 
         // Sender
         let sender_id = accounts(0);
@@ -211,7 +214,7 @@ pub mod tests {
 
     #[test]
     fn take_fee_without_fee() {
-        let (mut contract, _context) = init_test_env(None, None, None);
+        let (mut contract, _context) = init_test_env(Some(accounts(2)), None, None);
 
         // Sender
         let sender_id = accounts(0);
@@ -333,7 +336,7 @@ pub mod tests {
 
     #[test]
     fn transfer_to_no_account() {
-        let (mut contract, _context) = init_test_env(None, None, None);
+        let (mut contract, _context) = init_test_env(Some(accounts(2)), None, None);
 
         // Sender
         let sender_id = accounts(0);
@@ -361,7 +364,7 @@ pub mod tests {
 
     #[test]
     fn transfer_whith_lockups() {
-        let (mut contract, mut context) = init_test_env(None, None, None);
+        let (mut contract, mut context) = init_test_env(Some(accounts(2)), None, None);
 
         // Sender
         let sender_id = accounts(0);
@@ -404,7 +407,7 @@ pub mod tests {
 
     #[test]
     fn transfer_with_many_lockups() {
-        let (mut contract, mut context) = init_test_env(None, None, None);
+        let (mut contract, mut context) = init_test_env(Some(accounts(2)), None, None);
 
         // Sender
         let sender_id = accounts(0);
