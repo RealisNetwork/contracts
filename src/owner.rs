@@ -28,7 +28,7 @@ impl Contract {
         self.assert_owner();
 
         EventLog::from(EventLogVariant::NftMint(NftMint {
-            owner_id: &recipient_id.clone().into(),
+            owner_id: &recipient_id,
             meta_data: &nft_metadata,
         }))
         .emit();
