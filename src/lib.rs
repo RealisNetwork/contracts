@@ -1,5 +1,22 @@
 extern crate core;
 
+use near_sdk::{
+    borsh::{self, BorshDeserialize, BorshSerialize},
+    collections::LookupMap,
+    env,
+    json_types::U128,
+    near_bindgen,
+    serde::{Deserialize, Serialize},
+    AccountId, BorshStorageKey, PanicOnDefault, PublicKey,
+};
+
+use crate::{
+    account::{Account, AccountInfo, VAccount},
+    lockup::LockupInfo,
+    nft::NftManager,
+    types::NftId,
+};
+
 mod account;
 mod account_manager;
 mod auction;
@@ -15,22 +32,6 @@ mod tokens;
 mod types;
 mod update;
 mod utils;
-
-use crate::{
-    account::{Account, AccountInfo, VAccount},
-    lockup::LockupInfo,
-    nft::NftManager,
-    types::NftId,
-};
-use near_sdk::{
-    borsh::{self, BorshDeserialize, BorshSerialize},
-    collections::LookupMap,
-    env,
-    json_types::U128,
-    near_bindgen,
-    serde::{Deserialize, Serialize},
-    AccountId, BorshStorageKey, PanicOnDefault, PublicKey,
-};
 
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
 #[serde(crate = "near_sdk::serde")]
@@ -102,6 +103,23 @@ impl Contract {
             state: State::Running,
             accounts,
             registered_accounts: LookupMap::new(StorageKey::RegisteredAccounts),
+        }
+    }
+
+    #[private]
+    #[init(ignore_state)]
+    pub fn migrate() -> Self {
+        let old_contract: Contract = env::state_read().expect("failed");
+        Self {
+            constant_fee: old_contract.constant_fee,
+            percent_fee: old_contract.percent_fee,
+            accounts: old_contract.accounts,
+            nfts: old_contract.nfts,
+            owner_id: old_contract.owner_id,
+            backend_id: old_contract.backend_id,
+            beneficiary_id: old_contract.beneficiary_id,
+            state: old_contract.state,
+            registered_accounts: old_contract.registered_accounts,
         }
     }
 
