@@ -16,7 +16,6 @@ mod types;
 mod update;
 mod utils;
 
-
 use crate::{
     account::{Account, AccountInfo, VAccount},
     lockup::LockupInfo,
@@ -141,10 +140,7 @@ impl Contract {
             .into();
         res.into()
     }
-
-    }
-
-
+}
 
 #[cfg(test)]
 mod tests {

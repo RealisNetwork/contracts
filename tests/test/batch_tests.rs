@@ -26,21 +26,15 @@ mod tests {
     ///
     /// ```
 
-
-
-
     #[tokio::test]
     ///mint nft,start auction then try to sale the same nft.
-    async fn auction()-> anyhow::Result<()>{
+    async fn auction() -> anyhow::Result<()> {
         Result::Ok(())
     }
 
     #[tokio::test]
     ///mint nft,start auction then make a bid and check your balance.
-    async fn change_balance()-> anyhow::Result<()>{
+    async fn change_balance() -> anyhow::Result<()> {
         Result::Ok(())
     }
-
-
-
 }
