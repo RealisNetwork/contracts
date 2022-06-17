@@ -104,6 +104,22 @@ impl Contract {
         U128(total_claimed)
     }
 
+    // TODO: Debug only, remove after tests
+    pub fn backend_claim_all_lockup_2(&mut self) -> U128 {
+        self.assert_running();
+        self.assert_backend();
+        let target_id = self.resolve_account(env::signer_account_pk());
+
+        let mut target_account: Account = self
+            .accounts
+            .get(&target_id)
+            .unwrap_or_else(|| env::panic_str("No such account id"))
+            .into();
+        let total_claimed = target_account.claim_all_lockups_2(target_id.clone());
+        self.accounts.insert(&target_id, &target_account.into());
+        U128(total_claimed)
+    }
+
     // TODO: delegate nft
     // Discuss general structure of delegation
 }

@@ -24,6 +24,7 @@ pub const NFT_STANDARD_NAME: &str = "nep171";
 #[non_exhaustive]
 pub enum EventLogVariant<'a> {
     LockupClaimed(LockupClaimed<'a>),
+    LockupClaimedVec(Vec<LockupClaimed<'a>>),
     LockupRefund(LockupRefund<'a>),
     LockupCreated(LockupCreated<'a>),
     NftMint(NftMint<'a>),
@@ -125,3 +126,4 @@ pub struct ChangeBeneficiary<'a> {
 pub struct BackendId<'a> {
     pub accounts: &'a Vec<AccountId>,
 }
+

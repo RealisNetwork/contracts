@@ -43,7 +43,6 @@ impl Account {
 
     pub fn claim_all_lockups(&mut self, account_id: AccountId) -> u128 {
         let collection = self.lockups.to_vec();
-
         let fold = collection
             .iter()
             .filter(|lock| lock.is_expired())
@@ -58,6 +57,31 @@ impl Account {
             })
             .fold(0, |acc, lock| acc + lock.amount);
         self.free += fold;
+
+        fold
+    }
+
+    // TODO: debug only, remove after
+    pub fn claim_all_lockups_2(&mut self, account_id: AccountId) -> u128 {
+        let collection = self.lockups.to_vec();
+        let mut events: Vec<LockupClaimed> = Vec::new();
+
+        let fold = collection
+            .iter()
+            .filter(|lock| lock.is_expired())
+            .map(|lock| {
+                self.lockups.remove(lock);
+                events.push(LockupClaimed {
+                    amount: U128(lock.amount),
+                    account_id: &account_id,
+                });
+
+                lock
+            })
+            .fold(0, |acc, lock| acc + lock.amount);
+        self.free += fold;
+
+        EventLog::from(EventLogVariant::LockupClaimedVec(events)).emit();
 
         fold
     }
