@@ -4,8 +4,8 @@ ROOT_ACCOUNT = gleb_protasov.testnet
 .PHONY: deploy
 deploy:
 	cargo build --target wasm32-unknown-unknown --release
-#	near delete $(CONTRACT_NAME).$(ROOT_ACCOUNT) $(ROOT_ACCOUNT)
-#	near create-account $(CONTRACT_NAME).$(ROOT_ACCOUNT) --masterAccount $(ROOT_ACCOUNT)
+	near delete $(CONTRACT_NAME).$(ROOT_ACCOUNT) $(ROOT_ACCOUNT)
+	near create-account $(CONTRACT_NAME).$(ROOT_ACCOUNT) --masterAccount $(ROOT_ACCOUNT)
 	near deploy --accountId $(CONTRACT_NAME).$(ROOT_ACCOUNT) \
 				--wasmFile /Users/glebprotasov/Desktop/Development/WorkSpaceRust/Realis_projects/nearContract/contracts/target/wasm32-unknown-unknown/release/realis_near.wasm \
 				--initFunction new \
