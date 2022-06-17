@@ -37,15 +37,19 @@ mod tests {
         Result::Ok(())
     }
 
-    pub fn transfer_from_not_exist_acc(){
+    fn transfer_from_not_exist_acc() {
         //TODO:transfer from not existed acc
     }
 
-    pub fn transfer_with_negative_sum(){
+    fn transfer_to_not_exist_acc() {
+        //TODO:transfer from not existed acc
+    }
+
+    fn transfer_with_negative_sum() {
         //TODO:transfer_with_negative_sum
     }
 
-
-
-
+    fn transfer_without_tokens() {
+        //TODO:transfer_with_negative_sum
+    }
 }
