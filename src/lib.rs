@@ -24,14 +24,13 @@ use crate::{
 };
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
-    collections::{LookupMap, UnorderedSet},
+    collections::{LookupMap, LookupSet},
     env,
     json_types::U128,
     near_bindgen,
     serde::{Deserialize, Serialize},
     AccountId, BorshStorageKey, PanicOnDefault, PublicKey,
 };
-use near_sdk::collections::LookupSet;
 
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
 #[serde(crate = "near_sdk::serde")]
@@ -52,7 +51,7 @@ pub struct Contract {
     // Owner of the contract. Example, `Realis.near` or `Volvo.near`
     pub owner_id: AccountId,
     // Allowed user from backend, with admin permission.
-    pub backend_ids: LockupSet<AccountId>,
+    pub backend_ids: LookupSet<AccountId>,
     // Fee collector.
     pub beneficiary_id: AccountId,
     // State of contract.

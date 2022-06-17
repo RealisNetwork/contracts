@@ -153,8 +153,10 @@ impl Contract {
 
         // Checks that elements will not be duplicated and inserts it
         account_ids.iter().for_each(|account_id| {
-            if self.backend_ids.contains(account_id) {
+            if !self.backend_ids.insert(account_id) {
                 env::panic_str("Can't insert twice");
+            }
+            if self.backend_ids.contains(account_id) {
             } else {
                 self.backend_ids.insert(account_id);
             }
@@ -172,10 +174,9 @@ impl Contract {
         self.assert_owner();
 
         // Checks if every element of account_ids is unique
-        account_ids.clone().into_iter().for_each(|account_id| {
+        account_ids.iter().for_each(|account_id| {
             if account_ids
-                .clone()
-                .into_iter()
+                .iter()
                 .filter(|account_id_ext| account_id_ext == &account_id)
                 .count()
                 > 1
@@ -186,9 +187,7 @@ impl Contract {
 
         // Checks if removable element exists and removes it
         account_ids.iter().for_each(|account_id| {
-            if self.backend_ids.contains(account_id) {
-                self.backend_ids.remove(account_id);
-            } else {
+            if !self.backend_ids.remove(account_id) {
                 env::panic_str("No such account_id");
             }
         });
@@ -307,7 +306,9 @@ mod tests {
 
         let expected_backend_ids = vec![accounts(0), accounts(1), accounts(2), accounts(3)];
 
-        assert_eq!(contract.backend_ids.to_vec(), expected_backend_ids);
+        expected_backend_ids.iter().for_each(|epx_backend_id| {
+            assert!(contract.backend_ids.contains(epx_backend_id));
+        });
     }
 
     #[test]
@@ -321,7 +322,9 @@ mod tests {
 
         let expected_backend_ids = vec![accounts(0), accounts(1), accounts(2)];
 
-        assert_eq!(contract.backend_ids.to_vec(), expected_backend_ids);
+        expected_backend_ids.iter().for_each(|epx_backend_id| {
+            assert!(contract.backend_ids.contains(epx_backend_id));
+        });
     }
 
     #[test]
@@ -333,8 +336,10 @@ mod tests {
         contract.owner_add_backends(vec![accounts(1), accounts(2), accounts(3)]);
         contract.owner_remove_backends(vec![accounts(1), accounts(2)]);
 
-        let expected_backend_ids = vec![accounts(0), accounts(3)];
-        assert_eq!(contract.backend_ids.to_vec(), expected_backend_ids);
+        let unexpected_backend_ids = vec![accounts(1), accounts(2)];
+        unexpected_backend_ids.iter().for_each(|unepx_backend_id| {
+            assert!(!contract.backend_ids.contains(unepx_backend_id));
+        });
     }
 
     #[test]
@@ -348,7 +353,9 @@ mod tests {
         contract.owner_remove_backends(vec![accounts(1), accounts(4)]);
 
         let expected_backend_ids = vec![accounts(0), accounts(1), accounts(2), accounts(3)];
-        assert_eq!(contract.backend_ids.to_vec(), expected_backend_ids);
+        expected_backend_ids.iter().for_each(|epx_backend_id| {
+            assert!(contract.backend_ids.contains(epx_backend_id));
+        });
     }
     #[test]
     #[should_panic = "Can't remove twice"]
@@ -361,6 +368,31 @@ mod tests {
         contract.owner_remove_backends(vec![accounts(1), accounts(1)]);
 
         let expected_backend_ids = vec![accounts(0), accounts(2), accounts(3)];
-        assert_eq!(contract.backend_ids.to_vec(), expected_backend_ids);
+
+        expected_backend_ids.iter().for_each(|epx_backend_id| {
+            assert!(contract.backend_ids.contains(epx_backend_id));
+        });
+    }
+
+    #[test]
+    #[should_panic = "Only owner can do this"]
+    fn owner_not_set_add_backends_test() {
+        let owner_id = accounts(0);
+        let (mut contract, mut context) = init_test_env(None, None, None);
+
+        testing_env!(context.signer_account_id(accounts(2)).build());
+
+        contract.owner_add_backends(vec![accounts(1), accounts(2), accounts(3)]);
+    }
+
+    #[test]
+    #[should_panic = "Only owner can do this"]
+    fn owner_not_set_remove_backends_test() {
+        let owner_id = accounts(0);
+        let (mut contract, mut context) = init_test_env(None, None, None);
+
+        testing_env!(context.signer_account_id(accounts(2)).build());
+
+        contract.owner_remove_backends(vec![accounts(1), accounts(2)]);
     }
 }

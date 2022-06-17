@@ -20,10 +20,7 @@ impl Contract {
 
     pub fn assert_backend(&self) {
         require!(
-            self.backend_ids
-                .iter()
-                .find(|backend_id| backend_id == &env::signer_account_id())
-                .is_some(),
+            self.backend_ids.contains(&env::signer_account_id()),
             "Not allowed"
         );
     }
