@@ -156,10 +156,6 @@ impl Contract {
             if !self.backend_ids.insert(account_id) {
                 env::panic_str("Can't insert twice");
             }
-            if self.backend_ids.contains(account_id) {
-            } else {
-                self.backend_ids.insert(account_id);
-            }
         });
 
         // Throws an event
