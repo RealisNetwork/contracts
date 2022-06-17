@@ -38,9 +38,28 @@ impl TestingEnvBuilder {
         todo!()
     }
 
-    pub fn set_constant_fee(&mut self, amount: u128) -> Self {
-        todo!()
+    pub fn set_total_supply(mut self, amount: u128) -> Self {
+        self.total_supply = amount.into();
+        self
     }
 
-    // TODO: other setters
+    pub fn set_constant_fee(mut self, amount: u128) -> Self {
+        self.constant_fee = amount.into();
+        self
+    }
+
+    pub fn set_percent_fee(mut self, amount: u8) -> Self {
+        self.percent_fee = amount;
+        self
+    }
+
+    pub fn set_beneficiary(mut self, account_id: AccountId) -> Self {
+        self.beneficiary_id = account_id;
+        self
+    }
+
+    pub fn set_backend(mut self, account_id: AccountId) -> Self {
+        self.backend_id = account_id;
+        self
+    }
 }
