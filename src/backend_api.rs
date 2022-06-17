@@ -88,7 +88,7 @@ impl Contract {
         self.accounts.insert(&target_id, &target_account.into());
         U128(total_claimed)
     }
-    
+
     pub fn backend_claim_all_lockup(&mut self) -> U128 {
         self.assert_running();
         self.assert_backend();

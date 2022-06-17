@@ -125,4 +125,3 @@ pub struct ChangeBeneficiary<'a> {
 pub struct BackendId<'a> {
     pub accounts: &'a Vec<AccountId>,
 }
-

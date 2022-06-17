@@ -74,10 +74,10 @@ impl Account {
         self.free += lockup.amount;
         self.lockups.remove(&lockup);
 
-        EventLog::from(EventLogVariant::LockupClaimed(LockupClaimed {
+        EventLog::from(EventLogVariant::LockupClaimed(vec![LockupClaimed {
             amount: U128(lockup.amount),
             account_id: &account_id,
-        }))
+        }]))
         .emit();
 
         self.free
