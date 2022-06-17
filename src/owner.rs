@@ -5,8 +5,8 @@ use near_sdk::{
 
 use crate::{
     events::{
-        ChangeBeneficiary, ChangeState, EventLog, EventLogVariant, LockupCreated, LockupRefund,
-        NftMint,
+        BackendId, ChangeBeneficiary, ChangeState, EventLog, EventLogVariant, LockupCreated,
+        LockupRefund, NftMint,
     },
     lockup::Lockup,
     *,
@@ -28,7 +28,7 @@ impl Contract {
         self.assert_owner();
 
         EventLog::from(EventLogVariant::NftMint(NftMint {
-            owner_id: &recipient_id.clone().into(),
+            owner_id: &recipient_id.clone(),
             meta_data: &nft_metadata,
         }))
         .emit();
@@ -147,20 +147,57 @@ impl Contract {
         lockup.amount.into()
     }
 
+    /// Inserts each backend account id in backend accounts of contract
     pub fn owner_add_backends(&mut self, account_ids: Vec<AccountId>) {
         self.assert_owner();
-        self.backend_ids.extend(account_ids.into_iter());
+
+        // Checks that elements will not be duplicated and inserts it
+        account_ids.iter().for_each(|account_id| {
+            if self.backend_ids.contains(account_id) {
+                env::panic_str("Can't insert twice");
+            } else {
+                self.backend_ids.insert(account_id);
+            }
+        });
+
+        // Throws an event
+        EventLog::from(EventLogVariant::AddBackendId(BackendId {
+            accounts: &account_ids,
+        }))
+        .emit();
     }
 
+    /// Removes each account id from backend account of contract
     pub fn owner_remove_backends(&mut self, account_ids: Vec<AccountId>) {
         self.assert_owner();
+
+        // Checks if every element of account_ids is unique
+        account_ids.clone().into_iter().for_each(|account_id| {
+            if account_ids
+                .clone()
+                .into_iter()
+                .filter(|account_id_ext| account_id_ext == &account_id)
+                .count()
+                > 1
+            {
+                env::panic_str("Can't remove twice");
+            }
+        });
+
+        // Checks if removable element exists and removes it
         account_ids.iter().for_each(|account_id| {
-            if self.backend_ids.contains(&account_id) {
-                self.backend_ids.remove(&account_id);
+            if self.backend_ids.contains(account_id) {
+                self.backend_ids.remove(account_id);
             } else {
                 env::panic_str("No such account_id");
             }
         });
+
+        // Throws an event
+        EventLog::from(EventLogVariant::RemoveBackendId(BackendId {
+            accounts: &account_ids,
+        }))
+        .emit();
     }
 }
 
@@ -274,6 +311,7 @@ mod tests {
     }
 
     #[test]
+    #[should_panic = "Can't insert twice"]
     fn owner_add_the_same_backends_test() {
         let owner_id = accounts(0);
         let (mut contract, _context) = init_test_env(None, None, None);
@@ -312,5 +350,17 @@ mod tests {
         let expected_backend_ids = vec![accounts(0), accounts(1), accounts(2), accounts(3)];
         assert_eq!(contract.backend_ids.to_vec(), expected_backend_ids);
     }
+    #[test]
+    #[should_panic = "Can't remove twice"]
+    fn owner_remove_backends_the_same_test() {
+        let owner_id = accounts(0);
+        let (mut contract, _context) = init_test_env(None, None, None);
+        contract.owner_id = owner_id;
 
+        contract.owner_add_backends(vec![accounts(1), accounts(2), accounts(3)]);
+        contract.owner_remove_backends(vec![accounts(1), accounts(1)]);
+
+        let expected_backend_ids = vec![accounts(0), accounts(2), accounts(3)];
+        assert_eq!(contract.backend_ids.to_vec(), expected_backend_ids);
+    }
 }

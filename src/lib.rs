@@ -24,14 +24,13 @@ use crate::{
 };
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
-    collections::LookupMap,
+    collections::{LookupMap, UnorderedSet},
     env,
     json_types::U128,
     near_bindgen,
     serde::{Deserialize, Serialize},
     AccountId, BorshStorageKey, PanicOnDefault, PublicKey,
 };
-use near_sdk::collections::UnorderedSet;
 
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
 #[serde(crate = "near_sdk::serde")]

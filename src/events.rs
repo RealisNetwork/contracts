@@ -30,6 +30,8 @@ pub enum EventLogVariant<'a> {
     NftBurn(NftBurn<'a>),
     ChangeState(ChangeState),
     ChangeBeneficiary(ChangeBeneficiary<'a>),
+    AddBackendId(BackendId<'a>),
+    RemoveBackendId(BackendId<'a>),
 }
 
 #[derive(Serialize, Debug)]
@@ -116,4 +118,10 @@ pub struct ChangeState {
 pub struct ChangeBeneficiary<'a> {
     pub from: &'a AccountId,
     pub to: &'a AccountId,
+}
+
+#[derive(Serialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
+pub struct BackendId<'a> {
+    pub accounts: &'a Vec<AccountId>,
 }
