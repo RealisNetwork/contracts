@@ -93,8 +93,8 @@ pub struct LockupCreated<'a> {
 #[derive(Serialize, Debug)]
 #[serde(crate = "near_sdk::serde")]
 pub struct NftMint<'a> {
-    pub owner_id: &'a String,
-    pub meta_data: &'a String,
+    pub owner_id: &'a AccountId,
+    pub meta_data: &'a str,
 }
 
 #[derive(Serialize, Debug)]
