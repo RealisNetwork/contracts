@@ -71,7 +71,6 @@ impl Contract {
         self.confirm_deal(nft_id.0, env::signer_account_id());
     }
 
-    // TODO check lockups
     pub fn claim_lockup(&mut self, amount: U128) -> U128 {
         self.assert_running();
         let target_id = env::signer_account_id();
@@ -94,20 +93,6 @@ impl Contract {
             .unwrap_or_else(|| env::panic_str("No such account id"))
             .into();
         let total_claimed = target_account.claim_all_lockups(target_id.clone());
-        self.accounts.insert(&target_id, &target_account.into());
-        U128(total_claimed)
-    }
-
-    // TODO: DEBUG ONLY
-    pub fn claim_all_lockup_2(&mut self) -> U128 {
-        self.assert_running();
-        let target_id = env::signer_account_id();
-        let mut target_account: Account = self
-            .accounts
-            .get(&target_id)
-            .unwrap_or_else(|| env::panic_str("No such account id"))
-            .into();
-        let total_claimed = target_account.claim_all_lockups_2(target_id.clone());
         self.accounts.insert(&target_id, &target_account.into());
         U128(total_claimed)
     }

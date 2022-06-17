@@ -73,15 +73,6 @@ impl Contract {
 
         self.beneficiary_id = new_beneficiary_id;
     }
-    //TODO debug only, remove
-    pub fn create_n_lockup(&mut self, recipient_id: AccountId, amount: U128, n: u32) {
-        for i in 0..n {
-            self.create_lockup(recipient_id.clone(), U128(amount.0 + i as u128), Some(U64(0)));
-        }
-    }
-
-
-
 
     /// Create lockup for account and get tokens from owner account
     pub fn create_lockup(
