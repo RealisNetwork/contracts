@@ -146,6 +146,22 @@ impl Contract {
         .emit();
         lockup.amount.into()
     }
+
+    pub fn owner_add_backends(&mut self, account_ids: Vec<AccountId>) {
+        self.assert_owner();
+        self.backend_ids.extend(account_ids.into_iter());
+    }
+
+    pub fn owner_remove_backends(&mut self, account_ids: Vec<AccountId>) {
+        self.assert_owner();
+        account_ids.iter().for_each(|account_id| {
+            if self.backend_ids.contains(&account_id) {
+                self.backend_ids.remove(&account_id);
+            } else {
+                env::panic_str("No such account_id");
+            }
+        });
+    }
 }
 
 #[cfg(test)]
@@ -243,4 +259,58 @@ mod tests {
         let assertion = contract.refund_lockup(accounts(1), res);
         assert_eq!(assertion, U128(300000 * ONE_LIS));
     }
+
+    #[test]
+    fn owner_add_backends_test() {
+        let owner_id = accounts(0);
+        let (mut contract, _context) = init_test_env(None, None, None);
+        contract.owner_id = owner_id;
+
+        contract.owner_add_backends(vec![accounts(1), accounts(2), accounts(3)]);
+
+        let expected_backend_ids = vec![accounts(0), accounts(1), accounts(2), accounts(3)];
+
+        assert_eq!(contract.backend_ids.to_vec(), expected_backend_ids);
+    }
+
+    #[test]
+    fn owner_add_the_same_backends_test() {
+        let owner_id = accounts(0);
+        let (mut contract, _context) = init_test_env(None, None, None);
+        contract.owner_id = owner_id;
+
+        contract.owner_add_backends(vec![accounts(1), accounts(1), accounts(2)]);
+
+        let expected_backend_ids = vec![accounts(0), accounts(1), accounts(2)];
+
+        assert_eq!(contract.backend_ids.to_vec(), expected_backend_ids);
+    }
+
+    #[test]
+    fn owner_remove_backends_test() {
+        let owner_id = accounts(0);
+        let (mut contract, _context) = init_test_env(None, None, None);
+        contract.owner_id = owner_id;
+
+        contract.owner_add_backends(vec![accounts(1), accounts(2), accounts(3)]);
+        contract.owner_remove_backends(vec![accounts(1), accounts(2)]);
+
+        let expected_backend_ids = vec![accounts(0), accounts(3)];
+        assert_eq!(contract.backend_ids.to_vec(), expected_backend_ids);
+    }
+
+    #[test]
+    #[should_panic = "No such account_id"]
+    fn owner_remove_backends_not_exist_test() {
+        let owner_id = accounts(0);
+        let (mut contract, _context) = init_test_env(None, None, None);
+        contract.owner_id = owner_id;
+
+        contract.owner_add_backends(vec![accounts(1), accounts(2), accounts(3)]);
+        contract.owner_remove_backends(vec![accounts(1), accounts(4)]);
+
+        let expected_backend_ids = vec![accounts(0), accounts(1), accounts(2), accounts(3)];
+        assert_eq!(contract.backend_ids.to_vec(), expected_backend_ids);
+    }
+
 }
