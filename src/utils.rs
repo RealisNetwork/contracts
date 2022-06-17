@@ -1,5 +1,5 @@
 use crate::*;
-use near_sdk::{env, require};
+use near_sdk::{env, require, Balance};
 
 pub const NANOSECOND: u64 = 1;
 pub const MILLISECOND: u64 = 1_000_000 * NANOSECOND;
@@ -9,6 +9,9 @@ pub const HOUR: u64 = 60 * MINUTE;
 pub const DAY: u64 = 24 * HOUR;
 
 pub const DEFAULT_LOCK_LIFE_TIME: u64 = 3 * DAY;
+
+pub const DECIMALS: u8 = 12;
+pub const ONE_LIS: Balance = 10_u128.pow(DECIMALS as _);
 
 impl Contract {
     pub fn assert_owner(&self) {
@@ -32,7 +35,7 @@ impl Contract {
 
 #[cfg(test)]
 pub mod tests_utils {
-    pub use crate::{lockup::Lockup, *};
+    pub use crate::{lockup::Lockup, utils::ONE_LIS, *};
     pub use near_sdk::{
         collections::LookupMap,
         json_types::U128,
@@ -40,9 +43,6 @@ pub mod tests_utils {
         testing_env, AccountId, Balance, Gas,
     };
     pub use std::str::FromStr;
-
-    pub const DECIMALS: u8 = 12;
-    pub const ONE_LIS: Balance = 10_u128.pow(DECIMALS as _);
 
     /// If you need to change context config outside of
     /// this function,you need to use testing_env! macro after
@@ -62,9 +62,9 @@ pub mod tests_utils {
             .signer_account_id(owner_id.clone().unwrap_or_else(|| accounts(0)))
             .build());
         let contract = Contract::new(
-            U128(3_000_000_000 * ONE_LIS),
-            U128(5 * ONE_LIS),
-            10,
+            None,
+            Some(U128(5 * ONE_LIS)),
+            None,
             beneficiary_id,
             backend_id,
         );
