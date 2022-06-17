@@ -31,6 +31,7 @@ use near_sdk::{
     serde::{Deserialize, Serialize},
     AccountId, BorshStorageKey, PanicOnDefault, PublicKey,
 };
+use near_sdk::collections::LookupSet;
 
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
 #[serde(crate = "near_sdk::serde")]
@@ -51,7 +52,7 @@ pub struct Contract {
     // Owner of the contract. Example, `Realis.near` or `Volvo.near`
     pub owner_id: AccountId,
     // Allowed user from backend, with admin permission.
-    pub backend_ids: UnorderedSet<AccountId>,
+    pub backend_ids: LockupSet<AccountId>,
     // Fee collector.
     pub beneficiary_id: AccountId,
     // State of contract.
@@ -93,7 +94,7 @@ impl Contract {
             &Account::new(owner_id.clone(), total_supply.0).into(),
         );
 
-        let mut backend_ids = UnorderedSet::new(StorageKey::BackendIds);
+        let mut backend_ids = LookupSet::new(StorageKey::BackendIds);
         backend_ids.insert(&backend_id.unwrap_or_else(|| owner_id.clone()));
 
         Self {
