@@ -40,7 +40,7 @@ pre_commit:
 	cargo clippy -- -D warnings
 
 # MANUAL TESTING
-OWNER_ACC?=dev-1655281896313-38697444886102
+OWNER_ACC?=dev-1655368469513-67895817176815
 ACC1?=ruslantahiiev.testnet
 ACC2?=gleb_protasov.testnet
 
@@ -53,7 +53,7 @@ dev-deploy:
 .PHONY: dev-call-new
 dev-call-new:
 	near call $(OWNER_ACC) \
-		new '{"total_supply": "3000000", "constant_fee": "1", "percent_fee": '2', "beneficiary_id": "ruslantahiiev.testnet", "backend_id": "ruslantahiiev.testnet"}' \
+		new '{"total_supply": "3000000", "constant_fee": "1", "percent_fee": '2', "beneficiary_id": "testnetacc.testnet", "backend_id": "testnetacc.testnet"}' \
 		--accountId $(OWNER_ACC)
 
 .PHONY: dev-call-mint

@@ -1,5 +1,5 @@
 use crate::{
-    events::{EventLog, EventLogVariant, LockupLog},
+    events::{EventLog, EventLogVariant, LockupClaimed},
     lockup::Lockup,
     LockupInfo, NftId, Serialize, StorageKey,
 };
@@ -41,7 +41,7 @@ impl Account {
         }
     }
 
-    pub fn claim_all_lockups(&mut self) -> u128 {
+    pub fn claim_all_lockups(&mut self, account_id: AccountId) -> u128 {
         let collection = self.lockups.to_vec();
 
         let fold = collection
@@ -49,33 +49,35 @@ impl Account {
             .filter(|lock| lock.is_expired())
             .map(|lock| {
                 self.lockups.remove(lock);
+                EventLog::from(EventLogVariant::LockupClaimed(LockupClaimed {
+                    amount: U128(lock.amount),
+                    account_id: &account_id,
+                }))
+                .emit();
                 lock
             })
             .fold(0, |acc, lock| acc + lock.amount);
         self.free += fold;
-
-        EventLog::from(EventLogVariant::LockupLog(LockupLog { amount: U128(fold) })).emit();
 
         fold
     }
 
-    pub fn claim_lockup(&mut self, expire_on_ts: u64) -> u128 {
-        let collection = self.lockups.to_vec();
-
-        let fold = collection
+    pub fn claim_lockup(&mut self, amount: u128, account_id: AccountId) -> u128 {
+        let lockup = self
+            .lockups
             .iter()
-            .filter(|lock| lock.expire_on == expire_on_ts && lock.is_expired())
-            .map(|lock| {
-                self.lockups.remove(lock);
-                lock
-            })
-            .fold(0, |acc, lock| acc + lock.amount);
+            .find(|lockup| lockup.amount == amount && lockup.is_expired())
+            .unwrap_or_else(|| env::panic_str("No such lockup"));
+        self.free += lockup.amount;
+        self.lockups.remove(&lockup);
 
-        self.free += fold;
+        EventLog::from(EventLogVariant::LockupClaimed(LockupClaimed {
+            amount: U128(lockup.amount),
+            account_id: &account_id,
+        }))
+        .emit();
 
-        EventLog::from(EventLogVariant::LockupLog(LockupLog { amount: U128(fold) })).emit();
-
-        fold
+        self.free
     }
 
     pub fn get_lockups(&self, from_index: Option<usize>, limit: Option<usize>) -> Vec<LockupInfo> {
@@ -134,7 +136,8 @@ mod tests {
     pub fn check_lockups() {
         let (_contract, mut context) = init_test_env(None, None, None);
 
-        let mut account = Account::new(accounts(0), 5);
+        let account_id = accounts(0);
+        let mut account = Account::new(account_id.clone(), 5);
         // Just locked (will unlock in 3 days (default lifetime))
         account.lockups.insert(&Lockup::new(55, None));
         account.lockups.insert(&Lockup {
@@ -143,12 +146,9 @@ mod tests {
         }); // Lock from 1970
 
         // Balance of lock from 1970 will be transferred to main balance
-        testing_env!(context
-            .block_timestamp(999)
-            .predecessor_account_id(accounts(0))
-            .build());
+        testing_env!(context.block_timestamp(999).build());
 
-        account.claim_all_lockups();
+        account.claim_all_lockups(account_id);
 
         assert_eq!(account.free, 10);
     }
@@ -157,7 +157,8 @@ mod tests {
     pub fn check_lockup() {
         let (_contract, mut context) = init_test_env(None, None, None);
 
-        let mut account = Account::new(accounts(0), 5);
+        let account_id = accounts(0);
+        let mut account = Account::new(account_id.clone(), 5);
         // Just locked (will unlock in 3 days (default lifetime))
         account.lockups.insert(&Lockup::new(55, None));
         account.lockups.insert(&Lockup {
@@ -169,13 +170,10 @@ mod tests {
             expire_on: 16457898,
         }); // Lock from 1970
 
-        testing_env!(context
-            .block_timestamp(16457899)
-            .predecessor_account_id(accounts(0))
-            .build());
+        testing_env!(context.block_timestamp(16457899).build());
 
         // Balance of lock from 1970 will be transferred to main balance
-        account.claim_lockup(16457898);
+        account.claim_lockup(8, account_id);
 
         assert_eq!(account.free, 13);
     }
