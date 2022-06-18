@@ -155,7 +155,6 @@ async fn refund_lockup() {
 #[tokio::test]
 #[ignore]
 async fn refund_not_own_lockup() {
-    /// We need this test?
     // Setup contract: Alice - owner, total_supply - 3_000_000_000 LIS
 
 }
