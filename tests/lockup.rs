@@ -156,7 +156,6 @@ async fn refund_lockup() {
 #[ignore]
 async fn refund_not_own_lockup() {
     // Setup contract: Alice - owner, total_supply - 3_000_000_000 LIS
-
 }
 
 #[tokio::test]
@@ -182,7 +181,8 @@ async fn claim_all_lockups() {
     // Bob claim all lockups
     // Assert Bob balance = 100 LIS.
 
-    // Alice create 10 lockups for Bob with duration 1 min, amount for 5 = 10 LIS, the others = 20 LIS
+    // Alice create 10 lockups for Bob with duration 1 min,
+    // amount for 5 = 10 LIS, the others = 20 LIS
     // Assert Bob has lockups
     // Assert amount
     // Assert duration
