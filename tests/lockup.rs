@@ -155,7 +155,9 @@ async fn refund_lockup() {
 #[tokio::test]
 #[ignore]
 async fn refund_not_own_lockup() {
+    /// We need this test?
     // Setup contract: Alice - owner, total_supply - 3_000_000_000 LIS
+
 }
 
 #[tokio::test]
@@ -166,4 +168,93 @@ async fn refund_non_existed_lockup() {
     // Bob refund lockup
 }
 
-// TODO claim_all
+#[tokio::test]
+#[ignore]
+async fn claim_all_lockups() {
+    // Setup contract: Alice - owner, total_supply - 3_000_000_000 LIS
+
+    // Alice create 10 lockups for Bob with duration 1 min, amount - 10 LIS
+    // Assert Bob has lockup
+    // Assert amount
+    // Assert duration
+    // Assert Alice balance
+
+    // Wait while lockups time is expired
+    // Bob claim all lockups
+    // Assert Bob balance = 100 LIS.
+
+    // Alice create 10 lockups for Bob with duration 1 min, amount for 5 = 10 LIS, the others = 20 LIS
+    // Assert Bob has lockups
+    // Assert amount
+    // Assert duration
+    // Assert Alice balance
+
+    // Wait while lockups time is expired
+    // Bob claim all lockups with amount = 20 LIS
+    // Assert Bob balance = 200 LIS
+
+    // Assert Alice balance = 2_999_999_600 LIS
+}
+
+#[tokio::test]
+#[ignore]
+async fn claim_all_lockups_without_lockups() {
+    // Setup contract: Alice - owner, total_supply - 3_000_000_000 LIS
+
+    // Assert Bob hasn't lockup
+    // Bob claim all lockups without error
+    // Assert Bob balance = 0 LIS.
+}
+
+#[tokio::test]
+#[ignore]
+async fn claim_all_lockups_with_one_lockup() {
+    // Setup contract: Alice - owner, total_supply - 3_000_000_000 LIS
+
+    // Alice create lockup for Bob with duration 10 seconds, amount = 10 LIS
+
+    // Assert Bob has lockup
+    // Assert amount
+    // Assert duration
+    // Assert Alice balance = 2_999_999_990 LIS
+
+    // Bob claim all lockups
+    // Assert Bob hasn't lockups
+    // Assert Bob balance = 10 LIS
+}
+
+#[tokio::test]
+#[ignore]
+async fn claim_all_lockups_with_non_expired_time() {
+    // Setup contract: Alice - owner, total_supply - 3_000_000_000 LIS
+
+    // Alice create lockups for Bob with duration default, amount = 10 LIS
+
+    // Assert Bob has lockup
+    // Assert amount
+    // Assert duration
+    // Assert Alice balance = 2_999_999_900 LIS
+
+    // Bob claim all lockups
+    // Assert Bob has lockups
+    // Assert Bob balance = 0 LIS
+}
+
+#[tokio::test]
+#[ignore]
+async fn claim_all_lockups_with_partially_expired_time() {
+    // Setup contract: Alice - owner, total_supply - 3_000_000_000 LIS
+
+    // Alice create lockups for Bob:
+    // 5 with duration 10 seconds, amount = 10 LIS
+    // 5 with duration default, amount = 10 LIS
+
+    // Assert Bob has lockup
+    // Assert amount
+    // Assert duration
+    // Assert Alice balance = 2_999_999_900 LIS
+
+    // Bob claim all lockups
+    // Assert Bob has 5 lockups
+    // Assert Bob balance = 50 LIS
+}
