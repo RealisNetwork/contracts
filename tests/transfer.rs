@@ -125,6 +125,7 @@ async fn transfer_get_balance_from_expired_lockup() {
     // Alice create lockup for Bob with duration = 1 SECOND, amount - 100 LIS
     // Assert Bob has lockup
 
+    // Wait while lockup is expired
     // Bob transfer to Dave 150 LIS
     // Assert Bob has 50 LIS
     // Assert Bob has not lockups
@@ -140,10 +141,11 @@ async fn transfer_get_balance_from_two_expired_lockups() {
     // Alice create lockup for Bob with duration = 1 SECOND, amount - 50 LIS
     // Assert Bob has 2 lockups
 
+    // Wait while lockups is expired
     // Bob transfer to Dave 150 LIS
     // Assert Bob has 0 LIS
     // Assert Bob has not lockups
-    // Assert Dave has 100 LIS
+    // Assert Dave has 150 LIS
 }
 
 #[tokio::test]
@@ -158,9 +160,11 @@ async fn transfer_get_balance_from_set_of_lockups() {
     // Alice create lockup for Bob with duration = 1 DAY, amount - 100 LIS
     // Assert Bob has 5 lockups
 
+    // Wait while lockups is expired
     // Bob transfer to Dave 50 LIS
     // Assert Bob has 5 LIS
     // Assert Bob has 2 lockups
+    // Assert Bob has 5 LIS
     // Assert Dave has 50 LIS
 
     // Alice create lockup for Bob with duration = 1 SECOND, amount - 25 LIS
