@@ -56,7 +56,6 @@ impl Contract {
         self.confirm_deal(nft_id.0, env::signer_account_id());
     }
 
-    // TODO check lockups
     pub fn claim_lockup(&mut self, amount: U128) -> U128 {
         self.assert_running();
         let target_id = env::signer_account_id();

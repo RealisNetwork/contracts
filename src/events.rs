@@ -23,7 +23,7 @@ pub const NFT_STANDARD_NAME: &str = "nep171";
 #[serde(crate = "near_sdk::serde")]
 #[non_exhaustive]
 pub enum EventLogVariant<'a> {
-    LockupClaimed(LockupClaimed<'a>),
+    LockupClaimed(Vec<LockupClaimed<'a>>),
     LockupRefund(LockupRefund<'a>),
     LockupCreated(LockupCreated<'a>),
     NftMint(NftMint<'a>),
