@@ -21,6 +21,7 @@ use crate::{
     lockup::LockupInfo,
     nft::NftManager,
     types::NftId,
+    utils::ONE_LIS,
 };
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
@@ -29,7 +30,7 @@ use near_sdk::{
     json_types::U128,
     near_bindgen,
     serde::{Deserialize, Serialize},
-    AccountId, BorshStorageKey, PanicOnDefault, PublicKey,
+    AccountId, BorshStorageKey, PublicKey,
 };
 
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
@@ -40,7 +41,7 @@ pub enum State {
 }
 
 #[near_bindgen]
-#[derive(BorshSerialize, BorshDeserialize, PanicOnDefault)]
+#[derive(BorshSerialize, BorshDeserialize)]
 pub struct Contract {
     pub constant_fee: u128,
     pub percent_fee: u8,
@@ -79,9 +80,9 @@ pub(crate) enum StorageKey {
 impl Contract {
     #[init]
     pub fn new(
-        total_supply: U128,
-        constant_fee: U128,
-        percent_fee: u8,
+        total_supply: Option<U128>,
+        constant_fee: Option<U128>,
+        percent_fee: Option<u8>,
         beneficiary_id: Option<AccountId>,
         backend_id: Option<AccountId>,
     ) -> Self {
@@ -90,15 +91,19 @@ impl Contract {
         let mut accounts = LookupMap::new(StorageKey::Accounts);
         accounts.insert(
             &owner_id,
-            &Account::new(owner_id.clone(), total_supply.0).into(),
+            &Account::new(
+                owner_id.clone(),
+                total_supply.unwrap_or(U128(3_000_000_000 * ONE_LIS)).0,
+            )
+            .into(),
         );
 
         let mut backend_ids = LookupSet::new(StorageKey::BackendIds);
         backend_ids.insert(&backend_id.unwrap_or_else(|| owner_id.clone()));
 
         Self {
-            constant_fee: constant_fee.0,
-            percent_fee,
+            constant_fee: constant_fee.unwrap_or(U128(ONE_LIS)).0,
+            percent_fee: percent_fee.unwrap_or(10),
             nfts: NftManager::default(),
             owner_id: owner_id.clone(),
             backend_ids,
@@ -143,6 +148,12 @@ impl Contract {
             .unwrap_or_else(|| Account::new(account_id.clone(), 0).into())
             .into();
         res.into()
+    }
+}
+
+impl Default for Contract {
+    fn default() -> Self {
+        Self::new(None, None, None, None, None)
     }
 }
 
