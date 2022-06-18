@@ -18,12 +18,12 @@ async fn transfer_from_not_exist_account() {
         }))
         .expect("Invalid input args")
         .transact()
-        .await
-        .unwrap_err();
+        .await;
 
     // Assert error
     assert!(
         call_result
+            .unwrap_err()
             .to_string()
             .contains("Smart contract panicked: User not found"),
         "Transfer should fail"
