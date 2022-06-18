@@ -75,7 +75,7 @@ async fn transfer() {
     // Assert Charlie has 113 LIS
 
     // Charlie transfer to Dave 1 LIS
-    // Assert Charlie have 112 LIS
+    // Assert Charlie has 112 LIS
     // Assert Dave has 1 LIS
     todo!()
 }
@@ -83,7 +83,7 @@ async fn transfer() {
 #[tokio::test]
 #[ignore]
 async fn transfer_with_expired_lockup() {
-    // Setup contract: ALice - owner, total_supply - 3_000_000_000 LIS
+    // Setup contract: Alice - owner, total_supply - 3_000_000_000 LIS
 
     // Alice transfer to Bob 100 LIS
     // Assert Bob has 100 LIS
@@ -100,7 +100,7 @@ async fn transfer_with_expired_lockup() {
 #[tokio::test]
 #[ignore]
 async fn transfer_with_not_expired_lockup() {
-    // Setup contract: ALice - owner, total_supply - 3_000_000_000 LIS
+    // Setup contract: Alice - owner, total_supply - 3_000_000_000 LIS
 
     // Alice transfer to Bob 100 LIS
     // Assert Bob has 100 LIS
@@ -117,7 +117,7 @@ async fn transfer_with_not_expired_lockup() {
 #[tokio::test]
 #[ignore]
 async fn transfer_get_balance_from_expired_lockup() {
-    // Setup contract: ALice - owner, total_supply - 3_000_000_000 LIS
+    // Setup contract: Alice - owner, total_supply - 3_000_000_000 LIS
 
     // Alice transfer to Bob 100 LIS
     // Assert Bob has 100 LIS
@@ -135,7 +135,7 @@ async fn transfer_get_balance_from_expired_lockup() {
 #[tokio::test]
 #[ignore]
 async fn transfer_get_balance_from_two_expired_lockups() {
-    // Setup contract: ALice - owner, total_supply - 3_000_000_000 LIS
+    // Setup contract: Alice - owner, total_supply - 3_000_000_000 LIS
 
     // Alice create lockup for Bob with duration = 1 SECOND, amount - 100 LIS
     // Alice create lockup for Bob with duration = 1 SECOND, amount - 50 LIS
@@ -151,7 +151,7 @@ async fn transfer_get_balance_from_two_expired_lockups() {
 #[tokio::test]
 #[ignore]
 async fn transfer_get_balance_from_set_of_lockups() {
-    // Setup contract: ALice - owner, total_supply - 3_000_000_000 LIS
+    // Setup contract: Alice - owner, total_supply - 3_000_000_000 LIS
 
     // Alice create lockup for Bob with duration = 1 SECOND, amount - 10 LIS
     // Alice create lockup for Bob with duration = 1 SECOND, amount - 20 LIS
@@ -180,7 +180,7 @@ async fn transfer_get_balance_from_set_of_lockups() {
 #[tokio::test]
 #[ignore]
 async fn transfer_get_balance_from_not_expired_lockup() {
-    // Setup contract: ALice - owner, total_supply - 3_000_000_000 LIS
+    // Setup contract: Alice - owner, total_supply - 3_000_000_000 LIS
 
     // Alice transfer to Bob 100 LIS
     // Assert Bob has 100 LIS
