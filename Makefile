@@ -7,7 +7,7 @@ deploy:
 	near delete $(CONTRACT_NAME).$(ROOT_ACCOUNT) $(ROOT_ACCOUNT)
 	near create-account $(CONTRACT_NAME).$(ROOT_ACCOUNT) --masterAccount $(ROOT_ACCOUNT)
 	near deploy --accountId $(CONTRACT_NAME).$(ROOT_ACCOUNT) \
-				--wasmFile /Users/glebprotasov/Desktop/Development/WorkSpaceRust/Realis_projects/nearContract/contracts/target/wasm32-unknown-unknown/release/realis_near.wasm \
+				--wasmFile ./target/wasm32-unknown-unknown/release/lis_token.wasm \ 
 				--initFunction new \
 				--initArgs '{"total_supply": "3000000","constant_fee":"10", "percent_fee": '5', "beneficiary_pk": "FG6aRApk5Ym9nDwzdWFg22ti5GWeW8mBqCKL7M3LZH62"}'
 
