@@ -1,12 +1,33 @@
+mod utils;
+
+use crate::utils::*;
+use near_sdk::{json_types::U128, serde_json};
+
 #[tokio::test]
-#[ignore]
 async fn transfer_from_not_exist_account() {
     // Setup contract
+    let (contract, worker) = TestingEnvBuilder::default().build().await;
 
     // Transfer from non exist account
+    let bob = get_bob();
+    let call_result = bob
+        .call(&worker, contract.id(), "transfer")
+        .args_json(serde_json::json!({
+            "recipient_id": get_alice().id(),
+            "amount": U128(ONE_LIS)
+        }))
+        .expect("Invalid input args")
+        .transact()
+        .await
+        .unwrap_err();
 
     // Assert error
-    todo!()
+    assert!(
+        call_result
+            .to_string()
+            .contains("Smart contract panicked: User not found"),
+        "Transfer should fail"
+    );
 }
 
 #[tokio::test]
