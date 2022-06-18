@@ -6,19 +6,43 @@ pub const WASM_FILE: &str = "./target/wasm32-unknown-unknown/release/realis_near
 pub const ONE_LIS: u128 = 1_000_000_000_000;
 
 pub fn get_alice() -> Account {
-    Account::from_file("./tests/res/realis_alice.testnet.json")
+    Account::from_file("./tests/res/alice.realis.testnet.json")
 }
 
 pub fn get_bob() -> Account {
-    Account::from_file("./tests/res/realis_bob.testnet.json")
+    Account::from_file("./tests/res/bob.realis.testnet.json")
 }
 
 pub fn get_charlie() -> Account {
-    Account::from_file("./tests/res/realis_charlie.testnet.json")
+    Account::from_file("./tests/res/charlie.realis.testnet.json")
 }
 
 pub fn get_dave() -> Account {
-    Account::from_file("./tests/res/realis_dave.testnet.json")
+    Account::from_file("./tests/res/dave.realis.testnet.json")
+}
+
+pub struct BackendAccount;
+
+impl BackendAccount {
+    pub fn get_root() -> Account {
+        Account::from_file("./tests/res/backend.realis.testnet.json")
+    }
+
+    pub fn get_user1() -> Account {
+        Account::from_file("./tests/res/backend_access_keys/user1_backend.realis.testnet.json")
+    }
+
+    pub fn get_user2() -> Account {
+        Account::from_file("./tests/res/backend_access_keys/user1_backend.realis.testnet.json")
+    }
+
+    pub fn get_user3() -> Account {
+        Account::from_file("./tests/res/backend_access_keys/user1_backend.realis.testnet.json")
+    }
+
+    pub fn get_user4() -> Account {
+        Account::from_file("./tests/res/backend_access_keys/user1_backend.realis.testnet.json")
+    }
 }
 
 #[derive(Serialize)]
