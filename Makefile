@@ -15,7 +15,7 @@ deploy:
 migrate:
 	cargo build --target wasm32-unknown-unknown --release
 	near deploy	--accountId $(CONTRACT_NAME).$(ROOT_ACCOUNT) \
-				--wasmFile /Users/glebprotasov/Desktop/Development/WorkSpaceRust/Realis_projects/nearContract/contracts/target/wasm32-unknown-unknown/release/realis_near.wasm \
+				--wasmFile ./target/wasm32-unknown-unknown/release/lis_token.wasm \
 				--initFunction migrate \
 				--initArgs '{}'
 
