@@ -112,11 +112,6 @@ impl TestingEnvBuilder {
         self
     }
 
-    pub fn set_owner(mut self, account_id: AccountId) -> Self {
-        self.owner_id = account_id;
-        self
-    }
-
     pub fn set_beneficiary(mut self, account_id: AccountId) -> Self {
         self.beneficiary_id = account_id;
         self

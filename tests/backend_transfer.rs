@@ -7,7 +7,7 @@ use near_sdk::{json_types::U128, serde_json};
 async fn backend_transfer_from_not_exist_account() {
     // Setup contract: Backend.root - owner/backend
     let (contract, worker) = TestingEnvBuilder::default()
-        .set_owner(BackendAccount::get_root().id().clone())
+        .set_signer(BackendAccount::get_root())
         .set_backend(BackendAccount::get_root().id().clone())
         .build()
         .await;
