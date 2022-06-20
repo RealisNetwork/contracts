@@ -55,7 +55,6 @@ pub struct TestingEnvBuilder {
     total_supply: U128,
     constant_fee: U128,
     percent_fee: u8,
-    owner_id: AccountId,
     beneficiary_id: AccountId,
     backend_id: AccountId,
     #[serde(skip_serializing)]
@@ -70,7 +69,6 @@ impl Default for TestingEnvBuilder {
             total_supply: (3_000_000_000 * ONE_LIS).into(),
             constant_fee: ONE_LIS.into(),
             percent_fee: 10,
-            owner_id: alice.id().clone(),
             beneficiary_id: alice.id().clone(),
             backend_id: alice.id().clone(),
             signer: alice,
