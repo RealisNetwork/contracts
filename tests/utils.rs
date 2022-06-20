@@ -43,6 +43,10 @@ impl BackendAccount {
     pub fn get_user4() -> Account {
         Account::from_file("./tests/res/backend_access_keys/user4_backend.realis.testnet.json")
     }
+
+    pub fn get_account_id(account: &Account) -> AccountId {
+        todo!()
+    }
 }
 
 #[derive(Serialize)]
@@ -54,6 +58,8 @@ pub struct TestingEnvBuilder {
     owner_id: AccountId,
     beneficiary_id: AccountId,
     backend_id: AccountId,
+    #[serde(skip_serializing)]
+    signer: Account,
 }
 
 impl Default for TestingEnvBuilder {
@@ -67,12 +73,13 @@ impl Default for TestingEnvBuilder {
             owner_id: alice.id().clone(),
             beneficiary_id: alice.id().clone(),
             backend_id: alice.id().clone(),
+            signer: alice,
         }
     }
 }
 
 impl TestingEnvBuilder {
-    pub async fn build(self) -> (Contract, Worker<Testnet>) {
+    pub async fn build(self,) -> (Contract, Worker<Testnet>) {
         let worker = workspaces::testnet()
             .await
             .expect("Fail connect to testnet");
@@ -81,8 +88,8 @@ impl TestingEnvBuilder {
             .dev_deploy(&wasm)
             .await
             .expect("Fail to deploy contract");
-        contract
-            .call(&worker, "new")
+        self.signer
+            .call(&worker, contract.id(),"new")
             .args_json(&serde_json::to_value(&self).expect("Fail to serialize input"))
             .expect("Invalid input args")
             .transact()
@@ -119,6 +126,11 @@ impl TestingEnvBuilder {
 
     pub fn set_backend(mut self, account_id: AccountId) -> Self {
         self.backend_id = account_id;
+        self
+    }
+
+    pub fn set_signer(mut self, signer: Account) -> Self {
+        self.signer = signer;
         self
     }
 }
