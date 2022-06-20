@@ -1,19 +1,19 @@
 extern crate core;
 
 pub mod account;
-mod account_manager;
-mod auction;
-mod backend_api;
-mod events;
+pub mod account_manager;
+pub mod auction;
+pub mod backend_api;
+pub mod events;
 pub mod lockup;
-mod marketplace;
-mod metadata;
-mod nft;
-mod owner;
-mod public_api;
-mod tokens;
-mod types;
-mod update;
+pub mod marketplace;
+pub mod metadata;
+pub mod nft;
+pub mod owner;
+pub mod public_api;
+pub mod tokens;
+pub mod types;
+pub mod update;
 pub mod utils;
 
 use crate::{
