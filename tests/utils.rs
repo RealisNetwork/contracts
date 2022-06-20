@@ -43,6 +43,10 @@ impl BackendAccount {
     pub fn get_user4() -> Account {
         Account::from_file("./tests/res/backend_access_keys/user4_backend.realis.testnet.json")
     }
+
+    pub fn get_account_id(account: &Account) -> AccountId {
+        todo!()
+    }
 }
 
 #[derive(Serialize)]
