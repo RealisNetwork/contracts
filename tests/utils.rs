@@ -79,7 +79,7 @@ impl Default for TestingEnvBuilder {
 }
 
 impl TestingEnvBuilder {
-    pub async fn build(self,) -> (Contract, Worker<Testnet>) {
+    pub async fn build(self) -> (Contract, Worker<Testnet>) {
         let worker = workspaces::testnet()
             .await
             .expect("Fail connect to testnet");
@@ -89,7 +89,7 @@ impl TestingEnvBuilder {
             .await
             .expect("Fail to deploy contract");
         self.signer
-            .call(&worker, contract.id(),"new")
+            .call(&worker, contract.id(), "new")
             .args_json(&serde_json::to_value(&self).expect("Fail to serialize input"))
             .expect("Invalid input args")
             .transact()
