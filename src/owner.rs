@@ -373,7 +373,6 @@ mod tests {
     #[test]
     #[should_panic = "Only owner can do this"]
     fn owner_not_set_add_backends_test() {
-        let owner_id = accounts(0);
         let (mut contract, mut context) = init_test_env(None, None, None);
 
         testing_env!(context.signer_account_id(accounts(2)).build());
@@ -384,7 +383,6 @@ mod tests {
     #[test]
     #[should_panic = "Only owner can do this"]
     fn owner_not_set_remove_backends_test() {
-        let owner_id = accounts(0);
         let (mut contract, mut context) = init_test_env(None, None, None);
 
         testing_env!(context.signer_account_id(accounts(2)).build());

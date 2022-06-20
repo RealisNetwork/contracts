@@ -1,5 +1,23 @@
 extern crate core;
 
+use near_sdk::{
+    borsh::{self, BorshDeserialize, BorshSerialize},
+    collections::{LookupMap, LookupSet},
+    env,
+    json_types::U128,
+    near_bindgen,
+    serde::{Deserialize, Serialize},
+    AccountId, BorshStorageKey, PublicKey,
+};
+
+use crate::{
+    account::{Account, AccountInfo, VAccount},
+    lockup::LockupInfo,
+    nft::NftManager,
+    types::NftId,
+    utils::ONE_LIS,
+};
+
 mod account;
 mod account_manager;
 mod auction;
@@ -15,23 +33,6 @@ mod tokens;
 mod types;
 mod update;
 mod utils;
-
-use crate::{
-    account::{Account, AccountInfo, VAccount},
-    lockup::LockupInfo,
-    nft::NftManager,
-    types::NftId,
-    utils::ONE_LIS,
-};
-use near_sdk::{
-    borsh::{self, BorshDeserialize, BorshSerialize},
-    collections::{LookupMap, LookupSet},
-    env,
-    json_types::U128,
-    near_bindgen,
-    serde::{Deserialize, Serialize},
-    AccountId, BorshStorageKey, PublicKey,
-};
 
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
 #[serde(crate = "near_sdk::serde")]
