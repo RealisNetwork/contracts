@@ -8,9 +8,20 @@ impl Contract {
     /// returns sender balance left
     /// # Examples
     /// ```
+    /// use near_sdk::json_types::U128;
+    /// use realis_near::Contract;
+    /// use near_sdk::test_utils::accounts;
+    /// use realis_near::account::Account;
+    ///
     /// let sender_id = accounts(0);
+    /// let sender_account = Account::new(sender_id.clone(), 30);
     /// let receiver_id = accounts(1);
-    /// contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 20 * ONE_LIS, false);
+    /// let mut contract = Contract::new(U128(3000000000), U128(50), 10, None, None);
+    /// contract.accounts.insert(&sender_id, &sender_account.into());
+    /// let sender_balance_left = contract.internal_transfer(sender_id, receiver_id, 20 , false);
+    /// let reciever_account: Account = contract.accounts.get(&accounts(1)).unwrap().into();
+    /// assert_eq!(reciever_account.free, 20);
+    /// assert_eq!(sender_balance_left, 10);
     /// ```
     /// # Arguments
     ///  * `sender` - `AccountId` of transferring user
@@ -56,7 +67,17 @@ impl Contract {
     /// `fn take_fee` used to take users money and fee, returns sender balance left
     /// # Examples
     /// ```
-    ///  let sender_balance_left = self.take_fee(sender, Some(amount), false);
+    /// use near_sdk::json_types::U128;
+    /// use near_sdk::test_utils::accounts;
+    /// use realis_near::account::Account;
+    /// use realis_near::Contract;
+    /// let sender_id = accounts(0);
+    ///
+    /// let sender_account = Account::new(sender_id.clone(), 30);
+    /// let mut contract = Contract::new(U128(3000000000), U128(50), 10, None, None);
+    /// contract.accounts.insert(&sender_id, &sender_account.into());
+    /// let sender_balance_left = contract.take_fee(sender_id, Some(15), false);
+    /// assert_eq!(sender_balance_left, 15);
     /// ```
     /// # Arguments
     ///  * `sender` - `AccountId` of transferring user
