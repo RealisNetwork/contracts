@@ -2,12 +2,12 @@ extern crate core;
 
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
-    collections::LookupMap,
+    collections::{LookupMap, LookupSet},
     env,
     json_types::U128,
     near_bindgen,
     serde::{Deserialize, Serialize},
-    AccountId, BorshStorageKey, PanicOnDefault, PublicKey,
+    AccountId, BorshStorageKey, PublicKey,
 };
 
 use crate::{
@@ -15,6 +15,7 @@ use crate::{
     lockup::LockupInfo,
     nft::NftManager,
     types::NftId,
+    utils::ONE_LIS,
 };
 
 mod account;
@@ -113,7 +114,6 @@ impl Contract {
             registered_accounts: LookupMap::new(StorageKey::RegisteredAccounts),
         }
     }
-
 
     pub fn lockups_info(
         &self,
