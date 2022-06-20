@@ -40,15 +40,15 @@ async fn backend_transfer_more_than_account_balance() {
     // Setup contract: Backend.root - owner/backend, Alice - beneficiary,
     // total_supply - 3_000_000_000 LIS
 
-    // Backend.root backend_transfer to Bob 1_000 LIS
+    // Backend.root backend_transfer to Backend.user2 1_000 LIS
     // Assert Backend.root has 2_999_998_900 LIS
     // Assert Beneficiary has 100 LIS
-    // Assert Bob has 1_000 LIS
+    // Assert Backend.user2 has 1_000 LIS
 
-    // Bob backend_transfer to Charlie 1_001 LIS
+    // Backend.user2 backend_transfer to Backend.user3 1_001 LIS
     // Assert error
 
-    // Backend.root backend_transfer to Charlie 3_000_000_000 LIS
+    // Backend.root backend_transfer to Backend.user3 3_000_000_000 LIS
     // Assert error
     todo!()
 }
@@ -59,7 +59,7 @@ async fn backend_transfer_zero_amount() {
     // Setup contract: Backend.root - owner/backend, Alice - beneficiary,
     // total_supply - 3_000_000_000 LIS
 
-    // Backend.root backend_transfer to Bob 0 LIS
+    // Backend.root backend_transfer to Backend.user2 0 LIS
     // Assert error
     todo!()
 }
@@ -70,25 +70,25 @@ async fn backend_transfer() {
     // Setup contract: Backend.root - owner/backend, Alice - beneficiary,
     // total_supply - 3_000_000_000 LIS
 
-    // Backend.root backend_transfer to Bob 1_000 LIS
+    // Backend.root backend_transfer to Backend.user2 1_000 LIS
     // Assert Backend.root has 2_999_998_900 LIS
     // Assert Beneficiary has 100 LIS
-    // Assert Bob has 1_000 LIS
+    // Assert Backend.user2 has 1_000 LIS
 
-    // Backend.root backend_transfer to Charlie 10 LIS
+    // Backend.root backend_transfer to Backend.user3 10 LIS
     // Assert Backend.root has 2_999_998_880 LIS
     // Assert Beneficiary has 101 LIS
-    // Assert Charlie has 10 LIS
+    // Assert Backend.user3 has 10 LIS
 
-    // Bob backend_transfer to Charlie 100 LIS
-    // Assert Bob has 890 LIS
+    // Backend.user2 backend_transfer to Backend.user3 100 LIS
+    // Assert Backend.user2 has 890 LIS
     // Assert Beneficiary has 111 LIS
-    // Assert Charlie has 110 LIS
+    // Assert Backend.user3 has 110 LIS
 
-    // Charlie backend_transfer to Dave 1 LIS
-    // Assert Charlie has 108.9 LIS
+    // Backend.user3 backend_transfer to Backend.user4 1 LIS
+    // Assert Backend.user3 has 108.9 LIS
     // Assert ALice has 111.1 LIS
-    // Assert Dave has 1 LIS
+    // Assert Backend.user4 has 1 LIS
     todo!()
 }
 
@@ -98,16 +98,16 @@ async fn backend_transfer_with_expired_lockup() {
     // Setup contract: Backend.root - owner/backend, Alice - beneficiary,
     // total_supply - 3_000_000_000 LIS
 
-    // Backend.root backend_transfer to Bob 100 LIS
-    // Assert Bob has 100 LIS
+    // Backend.root backend_transfer to Backend.user2 100 LIS
+    // Assert Backend.user2 has 100 LIS
 
-    // Backend.root create lockup for Bob with duration = 1 SECOND, amount - 100 LIS
-    // Assert Bob has lockup
+    // Backend.root create lockup for Backend.user2 with duration = 1 SECOND, amount - 100 LIS
+    // Assert Backend.user2 has lockup
 
-    // Bob backend_transfer to Dave 100 LIS
-    // Assert Bob has 0 LIS
-    // Assert Bob has lockup
-    // Assert Dave has 100 LIS
+    // Backend.user2 backend_transfer to Backend.user4 100 LIS
+    // Assert Backend.user2 has 0 LIS
+    // Assert Backend.user2 has lockup
+    // Assert Backend.user4 has 100 LIS
 }
 
 #[tokio::test]
@@ -116,16 +116,16 @@ async fn backend_transfer_with_not_expired_lockup() {
     // Setup contract: Backend.root - owner/backend, Alice - beneficiary,
     // total_supply - 3_000_000_000 LIS
 
-    // Backend.root backend_transfer to Bob 100 LIS
-    // Assert Bob has 100 LIS
+    // Backend.root backend_transfer to Backend.user2 100 LIS
+    // Assert Backend.user2 has 100 LIS
 
-    // Backend.root create lockup for Bob with duration = 1 DAY, amount - 100 LIS
-    // Assert Bob has lockup
+    // Backend.root create lockup for Backend.user2 with duration = 1 DAY, amount - 100 LIS
+    // Assert Backend.user2 has lockup
 
-    // Bob backend_transfer to Dave 100 LIS
-    // Assert Bob has 0 LIS
-    // Assert Bob has lockup
-    // Assert Dave has 100 LIS
+    // Backend.user2 backend_transfer to Backend.user4 100 LIS
+    // Assert Backend.user2 has 0 LIS
+    // Assert Backend.user2 has lockup
+    // Assert Backend.user4 has 100 LIS
 }
 
 #[tokio::test]
@@ -134,17 +134,17 @@ async fn backend_transfer_get_balance_from_expired_lockup() {
     // Setup contract: Backend.root - owner/backend, Alice - beneficiary,
     // total_supply - 3_000_000_000 LIS
 
-    // Backend.root backend_transfer to Bob 100 LIS
-    // Assert Bob has 100 LIS
+    // Backend.root backend_transfer to Backend.user2 100 LIS
+    // Assert Backend.user2 has 100 LIS
 
-    // Backend.root create lockup for Bob with duration = 1 SECOND, amount - 100 LIS
-    // Assert Bob has lockup
+    // Backend.root create lockup for Backend.user2 with duration = 1 SECOND, amount - 100 LIS
+    // Assert Backend.user2 has lockup
 
-    // Bob backend_transfer to Dave 150 LIS
-    // Assert Bob has 35 LIS
-    // Assert Bob has not lockups
+    // Backend.user2 backend_transfer to Backend.user4 150 LIS
+    // Assert Backend.user2 has 35 LIS
+    // Assert Backend.user2 has not lockups
     // Assert Beneficiary has 15 LIS
-    // Assert Dave has 100 LIS
+    // Assert Backend.user4 has 100 LIS
 }
 
 #[tokio::test]
@@ -153,15 +153,15 @@ async fn backend_transfer_get_balance_from_two_expired_lockups() {
     // Setup contract: Backend.root - owner/backend, Alice - beneficiary,
     // total_supply - 3_000_000_000 LIS
 
-    // Backend.root create lockup for Bob with duration = 1 SECOND, amount - 100 LIS
-    // Backend.root create lockup for Bob with duration = 1 SECOND, amount - 50 LIS
-    // Assert Bob has 2 lockups
+    // Backend.root create lockup for Backend.user2 with duration = 1 SECOND, amount - 100 LIS
+    // Backend.root create lockup for Backend.user2 with duration = 1 SECOND, amount - 50 LIS
+    // Assert Backend.user2 has 2 lockups
 
-    // Bob backend_transfer to Dave 120 LIS
-    // Assert Bob has 18 LIS
-    // Assert Bob has not lockups
+    // Backend.user2 backend_transfer to Backend.user4 120 LIS
+    // Assert Backend.user2 has 18 LIS
+    // Assert Backend.user2 has not lockups
     // Assert Beneficiary has 12 LIS
-    // Assert Dave has 100 LIS
+    // Assert Backend.user4 has 100 LIS
 }
 
 #[tokio::test]
@@ -170,27 +170,27 @@ async fn backend_transfer_get_balance_from_set_of_lockups() {
     // Setup contract: Backend.root - owner/backend, Alice - beneficiary,
     // total_supply - 3_000_000_000 LIS
 
-    // Backend.root create lockup for Bob with duration = 1 SECOND, amount - 10 LIS
-    // Backend.root create lockup for Bob with duration = 1 SECOND, amount - 20 LIS
-    // Backend.root create lockup for Bob with duration = 1 SECOND, amount - 25 LIS
-    // Backend.root create lockup for Bob with duration = 1 DAY, amount - 50 LIS
-    // Backend.root create lockup for Bob with duration = 1 DAY, amount - 100 LIS
-    // Assert Bob has 5 lockups
+    // Backend.root create lockup for Backend.user2 with duration = 1 SECOND, amount - 10 LIS
+    // Backend.root create lockup for Backend.user2 with duration = 1 SECOND, amount - 20 LIS
+    // Backend.root create lockup for Backend.user2 with duration = 1 SECOND, amount - 25 LIS
+    // Backend.root create lockup for Backend.user2 with duration = 1 DAY, amount - 50 LIS
+    // Backend.root create lockup for Backend.user2 with duration = 1 DAY, amount - 100 LIS
+    // Assert Backend.user2 has 5 lockups
 
-    // Bob backend_transfer to Dave 50 LIS
-    // Assert Bob has 0 LIS
-    // Assert Bob has 2 lockups
+    // Backend.user2 backend_transfer to Backend.user4 50 LIS
+    // Assert Backend.user2 has 0 LIS
+    // Assert Backend.user2 has 2 lockups
     // Assert Beneficiary has 5 LIS
-    // Assert Dave has 50 LIS
+    // Assert Backend.user4 has 50 LIS
 
-    // Backend.root create lockup for Bob with duration = 1 SECOND, amount - 25 LIS
-    // Assert bob has 3 lockups
+    // Backend.root create lockup for Backend.user2 with duration = 1 SECOND, amount - 25 LIS
+    // Assert Backend.user2 has 3 lockups
 
-    // Bob backend_transfer to Dave 50 LIS
+    // Backend.user2 backend_transfer to Backend.user4 50 LIS
     // Assert error
-    // Assert Bob has 0 LIS
-    // Assert Bob has 3 lockups
-    // Assert Dave has 50 LIS
+    // Assert Backend.user2 has 0 LIS
+    // Assert Backend.user2 has 3 lockups
+    // Assert Backend.user4 has 50 LIS
 }
 
 #[tokio::test]
@@ -199,17 +199,17 @@ async fn backend_transfer_get_balance_from_not_expired_lockup() {
     // Setup contract: Backend.root - owner/backend, Alice - beneficiary,
     // total_supply - 3_000_000_000 LIS
 
-    // Backend.root backend_transfer to Bob 100 LIS
-    // Assert Bob has 100 LIS
+    // Backend.root backend_transfer to Backend.user2 100 LIS
+    // Assert Backend.user2 has 100 LIS
 
-    // Backend.root create lockup for Bob with duration = 1 DAY, amount - 100 LIS
-    // Assert Bob has lockup
+    // Backend.root create lockup for Backend.user2 with duration = 1 DAY, amount - 100 LIS
+    // Assert Backend.user2 has lockup
 
-    // Bob backend_transfer to Dave 150 LIS
+    // Backend.user2 backend_transfer to Backend.user4 150 LIS
     // Assert error
-    // Assert Bob has 100 LIS
-    // Assert Bob has lockup
-    // Assert Dave has 0 LIS
+    // Assert Backend.user2 has 100 LIS
+    // Assert Backend.user2 has lockup
+    // Assert Backend.user4 has 0 LIS
 }
 
 #[tokio::test]
@@ -218,15 +218,15 @@ async fn backend_transfer_lockup_cover_fee() {
     // Setup contract: Backend.root - owner/backend, Alice - beneficiary,
     // total_supply - 3_000_000_000 LIS
 
-    // Backend.root backend_transfer to Bob 100 LIS
-    // Assert Bob has 100 LIS
+    // Backend.root backend_transfer to Backend.user2 100 LIS
+    // Assert Backend.user2 has 100 LIS
 
-    // Backend.root create lockup for Bob with duration = 1 SECOND, amount - 100 LIS
-    // Assert Bob has lockup
+    // Backend.root create lockup for Backend.user2 with duration = 1 SECOND, amount - 100 LIS
+    // Assert Backend.user2 has lockup
 
-    // Bob backend_transfer to Dave 100 LIS
-    // Assert Bob has 90 LIS
-    // Assert Bob has not lockup
+    // Backend.user2 backend_transfer to Backend.user4 100 LIS
+    // Assert Backend.user2 has 90 LIS
+    // Assert Backend.user2 has not lockup
     // Assert Beneficiary has 10 LIS
-    // Assert Dave has 10 LIS
+    // Assert Backend.user4 has 10 LIS
 }
