@@ -145,12 +145,9 @@ pub async fn balance_info(
 
     view_result
         .unwrap()
-        .json::<Value>()
+        .json::<U128>()
         .unwrap()
-        .as_str()
-        .unwrap()
-        .parse::<u128>()
-        .unwrap()
+        .0
 }
 
 pub async fn make_transfer(

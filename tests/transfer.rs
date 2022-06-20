@@ -473,7 +473,7 @@ async fn transfer_get_balance_from_two_expired_lockups() {
     // Bob transfer to Dave 150 LIS
     make_transfer(&bob, &dave.id(), U128(150 * ONE_LIS), &contract, &worker).await;
 
-    // Assert Bob has 0 LIS
+    // Assert Bob has 1 LIS
     assert_eq!(
         balance_info(&bob, &contract, &worker).await,
         1u128 * ONE_LIS
@@ -591,7 +591,10 @@ async fn transfer_get_balance_from_set_of_lockups() {
     );
 
     // Assert Dave has 50 LIS
-    make_transfer(&bob, &dave.id(), U128(50 * ONE_LIS), &contract, &worker).await;
+    assert_eq!(
+        balance_info(&dave, &contract, &worker).await,
+        50u128 * ONE_LIS
+    );
 
     // Alice create lockup for Bob with duration = 1 SECOND, amount - 25 LIS
     make_lockup(
