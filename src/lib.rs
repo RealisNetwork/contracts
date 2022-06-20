@@ -1,11 +1,11 @@
 extern crate core;
 
-mod account;
+pub mod account;
 mod account_manager;
 mod auction;
 mod backend_api;
 mod events;
-mod lockup;
+pub mod lockup;
 mod marketplace;
 mod metadata;
 mod nft;
@@ -14,7 +14,7 @@ mod public_api;
 mod tokens;
 mod types;
 mod update;
-mod utils;
+pub mod utils;
 
 use crate::{
     account::{Account, AccountInfo, VAccount},

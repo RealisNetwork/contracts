@@ -16,7 +16,8 @@ impl Lockup {
     /// `fn get_current_timestamp` returns blocks timestamp in u64.
     ///  # Examples
     /// ```
-    /// get_current_timestamp();
+    /// use realis_near::lockup::Lockup;
+    /// Lockup::get_current_timestamp();
     /// ```
     /// Function for getting timestamp of a block in millis
     pub fn get_current_timestamp() -> u64 {
@@ -26,7 +27,10 @@ impl Lockup {
     /// `fn new` creates new lockup instance.
     ///  # Examples
     /// ```
-    /// let mut account = Account::new(5);
+    /// use near_sdk::test_utils::accounts;
+    /// use realis_near::account::Account;
+    /// use realis_near::lockup::Lockup;
+    /// let mut account = Account::new(accounts(0), 5);
     /// account.lockups.insert(&Lockup::new(55, None));
     /// ```
     /// # Arguments
@@ -47,18 +51,23 @@ impl Lockup {
     /// `fn is_expired` check if lockup time is expired.
     ///  # Examples
     /// ```
-    /// let collection = self.lockups.to_vec();
+    /// use near_sdk::test_utils::accounts;
+    /// use realis_near::account::Account;
+    /// use realis_near::lockup::Lockup;
+    ///
+    /// let mut account = Account::new(accounts(0), 5);
+    /// account.lockups.insert(&Lockup::new(55, None));
+    /// let collection = account.lockups.to_vec();
     ///
     ///    let fold = collection
     ///          .iter()
     ///          .filter(|lock| lock.is_expired())
     ///          .map(|lock| {
-    ///              self.lockups.remove(lock);
+    ///              account.lockups.remove(lock);
     ///             lock
     ///      })
     ///     .fold(0, |acc, lock| acc + lock.amount);
-    ///     self.free += fold;
-    ///     fold
+    ///     account.free += fold;
     /// ```
     pub fn is_expired(&self) -> bool {
         Self::get_current_timestamp() >= self.expire_on

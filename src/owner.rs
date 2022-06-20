@@ -12,7 +12,12 @@ impl Contract {
     /// `fn mint` could be used only by the contract owner.
     ///  # Examples
     /// ```
-    /// assert_owner();
+    /// use near_sdk::json_types::U128;
+    /// use near_sdk::test_utils::accounts;
+    /// use realis_near::Contract;
+    ///
+    /// let mut contract = Contract::new(U128(3000000000), U128(50), 10, None, None);
+    /// let nft_id = contract.nfts.mint_nft(&accounts(0), "".to_string());
     /// ```
     /// # Arguments
     ///  * `recipient_id`- `AccountId` of future nft owner.
