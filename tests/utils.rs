@@ -33,15 +33,15 @@ impl BackendAccount {
     }
 
     pub fn get_user2() -> Account {
-        Account::from_file("./tests/res/backend_access_keys/user1_backend.realis.testnet.json")
+        Account::from_file("./tests/res/backend_access_keys/user2_backend.realis.testnet.json")
     }
 
     pub fn get_user3() -> Account {
-        Account::from_file("./tests/res/backend_access_keys/user1_backend.realis.testnet.json")
+        Account::from_file("./tests/res/backend_access_keys/user3_backend.realis.testnet.json")
     }
 
     pub fn get_user4() -> Account {
-        Account::from_file("./tests/res/backend_access_keys/user1_backend.realis.testnet.json")
+        Account::from_file("./tests/res/backend_access_keys/user4_backend.realis.testnet.json")
     }
 }
 
