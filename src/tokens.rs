@@ -18,7 +18,10 @@ impl Contract {
     /// let receiver_id = accounts(1);
     /// let mut contract = Contract::new(U128(3000000000), U128(50), 10, None, None);
     /// contract.accounts.insert(&sender_id, &sender_account.into());
-    /// contract.internal_transfer(sender_id, receiver_id, 20 , false);
+    /// let sender_balance_left = contract.internal_transfer(sender_id, receiver_id, 20 , false);
+    /// let reciever_account: Account = contract.accounts.get(&accounts(1)).unwrap().into();
+    /// assert_eq!(reciever_account.free, 20);
+    /// assert_eq!(sender_balance_left, 10);
     /// ```
     /// # Arguments
     ///  * `sender` - `AccountId` of transferring user
@@ -74,6 +77,7 @@ impl Contract {
     /// let mut contract = Contract::new(U128(3000000000), U128(50), 10, None, None);
     /// contract.accounts.insert(&sender_id, &sender_account.into());
     /// let sender_balance_left = contract.take_fee(sender_id, Some(15), false);
+    /// assert_eq!(sender_balance_left, 15);
     /// ```
     /// # Arguments
     ///  * `sender` - `AccountId` of transferring user

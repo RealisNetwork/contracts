@@ -15,9 +15,14 @@ impl Contract {
     /// use near_sdk::json_types::U128;
     /// use near_sdk::test_utils::accounts;
     /// use realis_near::Contract;
+    /// use realis_near::nft::Nft;
     ///
     /// let mut contract = Contract::new(U128(3000000000), U128(50), 10, None, None);
-    /// let nft_id = contract.nfts.mint_nft(&accounts(0), "".to_string());
+    /// let nft_id = contract.nfts.mint_nft(&accounts(0), "Duck".to_string());
+    /// let inserted_nft: Nft = contract.nfts.get_nft(&nft_id).into();
+    /// assert_eq!(inserted_nft.owner_id, accounts(0));
+    /// assert_eq!(inserted_nft.get_metadata(), "Duck".to_string());
+    ///
     /// ```
     /// # Arguments
     ///  * `recipient_id`- `AccountId` of future nft owner.
