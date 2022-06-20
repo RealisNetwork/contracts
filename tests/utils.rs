@@ -55,9 +55,10 @@ pub struct TestingEnvBuilder {
     total_supply: U128,
     constant_fee: U128,
     percent_fee: u8,
-    owner_id: AccountId,
     beneficiary_id: AccountId,
     backend_id: AccountId,
+    #[serde(skip_serializing)]
+    signer: Account,
 }
 
 impl Default for TestingEnvBuilder {
@@ -68,9 +69,9 @@ impl Default for TestingEnvBuilder {
             total_supply: (3_000_000_000 * ONE_LIS).into(),
             constant_fee: ONE_LIS.into(),
             percent_fee: 10,
-            owner_id: alice.id().clone(),
             beneficiary_id: alice.id().clone(),
             backend_id: alice.id().clone(),
+            signer: alice,
         }
     }
 }
@@ -85,8 +86,8 @@ impl TestingEnvBuilder {
             .dev_deploy(&wasm)
             .await
             .expect("Fail to deploy contract");
-        contract
-            .call(&worker, "new")
+        self.signer
+            .call(&worker, contract.id(), "new")
             .args_json(&serde_json::to_value(&self).expect("Fail to serialize input"))
             .expect("Invalid input args")
             .transact()
@@ -111,11 +112,6 @@ impl TestingEnvBuilder {
         self
     }
 
-    pub fn set_owner(mut self, account_id: AccountId) -> Self {
-        self.owner_id = account_id;
-        self
-    }
-
     pub fn set_beneficiary(mut self, account_id: AccountId) -> Self {
         self.beneficiary_id = account_id;
         self
@@ -123,6 +119,11 @@ impl TestingEnvBuilder {
 
     pub fn set_backend(mut self, account_id: AccountId) -> Self {
         self.backend_id = account_id;
+        self
+    }
+
+    pub fn set_signer(mut self, signer: Account) -> Self {
+        self.signer = signer;
         self
     }
 }
