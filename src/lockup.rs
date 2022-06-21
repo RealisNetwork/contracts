@@ -67,7 +67,7 @@ impl Lockup {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Debug)]
 #[serde(crate = "near_sdk::serde")]
 pub struct LockupInfo {
     pub amount: U128,

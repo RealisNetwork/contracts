@@ -129,7 +129,7 @@ impl TestingEnvBuilder {
     }
 }
 
-pub async fn balance_info(
+pub async fn get_balance_info(
     account: &Account,
     contract: &Contract,
     worker: &Worker<Testnet>,
@@ -144,16 +144,16 @@ pub async fn balance_info(
         .await;
 
     view_result
-        .unwrap()
+        .expect("Cannon get result")
         .json::<U128>()
-        .unwrap()
+        .expect("Cannot parse JSON")
         .0
 }
 
 pub async fn make_transfer(
     account: &Account,
     recipient_id: &AccountId,
-    amount: U128,
+    amount: u128,
     contract: &Contract,
     worker: &Worker<Testnet>,
 ) -> anyhow::Result<CallExecutionDetails> {
@@ -161,17 +161,17 @@ pub async fn make_transfer(
         .call(&worker, contract.id(), "transfer")
         .args_json(serde_json::json!({
             "recipient_id": recipient_id,
-            "amount": amount
+            "amount": U128(amount)
         }))
         .expect("Invalid input args")
         .transact()
         .await
 }
 
-pub async fn make_lockup(
+pub async fn create_lockup(
     account: &Account,
     recipient_id: &AccountId,
-    amount: U128,
+    amount: u128,
     duration: Option<Timestamp>,
     contract: &Contract,
     worker: &Worker<Testnet>,
@@ -180,7 +180,7 @@ pub async fn make_lockup(
         .call(&worker, contract.id(), "create_lockup")
         .args_json(serde_json::json!({
             "recipient_id": recipient_id,
-            "amount": amount,
+            "amount": U128(amount),
             "duration": duration
         }))
         .expect("Invalid input args")
@@ -188,23 +188,19 @@ pub async fn make_lockup(
         .await
 }
 
-pub async fn lockup_info(
+pub async fn get_lockup_info(
     account: &Account,
-    from_index: &Option<usize>,
-    limit: &Option<usize>,
     contract: &Contract,
     worker: &Worker<Testnet>,
-) -> Vec<LockupInfo> {
+) -> Vec<Value> {
     let view_result = account
         .call(&worker, contract.id(), "lockups_info")
         .args_json(serde_json::json!({
             "account_id": account.id(),
-            "from_index": from_index,
-            "limit": limit
         }))
         .expect("Invalid input args")
         .view()
         .await;
 
-    view_result.unwrap().json::<Vec<LockupInfo>>().unwrap()
+    view_result.expect("Cannot get result").json().expect("Cannot parse JSON")
 }
