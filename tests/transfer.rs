@@ -225,8 +225,7 @@ async fn transfer_with_expired_lockup() {
         &contract,
         &worker,
     )
-    .await
-    .expect("Failed to transfer");
+    .await;
 
     // Assert Bob has lockup
     assert_eq!(get_lockup_info(&bob, &contract, &worker).await.len(), 1);
@@ -279,8 +278,7 @@ async fn transfer_with_not_expired_lockup() {
         &contract,
         &worker,
     )
-    .await
-    .expect("Failed to transfer");
+    .await;
 
     // Assert Bob has lockup
     assert_eq!(get_lockup_info(&bob, &contract, &worker).await.len(), 1);
@@ -333,8 +331,7 @@ async fn transfer_get_balance_from_expired_lockup() {
         &contract,
         &worker,
     )
-    .await
-    .expect("Failed to transfer");
+    .await;
 
     // Assert Bob has lockup
     assert_eq!(get_lockup_info(&bob, &contract, &worker).await.len(), 1);
@@ -387,8 +384,7 @@ async fn transfer_get_balance_from_two_expired_lockups() {
         &contract,
         &worker,
     )
-    .await
-    .expect("Failed to transfer");
+    .await;
 
     // Alice create lockup for Bob with duration = 1 SECOND, amount - 50 LIS
     create_lockup_for_account(
@@ -399,8 +395,7 @@ async fn transfer_get_balance_from_two_expired_lockups() {
         &contract,
         &worker,
     )
-    .await
-    .expect("Failed to transfer");
+    .await;
 
     // Assert Bob has 2 lockups
     assert_eq!(get_lockup_info(&bob, &contract, &worker).await.len(), 2);
@@ -453,8 +448,7 @@ async fn transfer_get_balance_from_set_of_lockups() {
         &contract,
         &worker,
     )
-    .await
-    .expect("Failed to transfer");
+    .await;
 
     // Alice create lockup for Bob with duration = 1 SECOND, amount - 20 LIS
     create_lockup_for_account(
@@ -465,8 +459,7 @@ async fn transfer_get_balance_from_set_of_lockups() {
         &contract,
         &worker,
     )
-    .await
-    .expect("Failed to transfer");
+    .await;
 
     // Alice create lockup for Bob with duration = 1 SECOND, amount - 25 LIS
     create_lockup_for_account(
@@ -477,8 +470,7 @@ async fn transfer_get_balance_from_set_of_lockups() {
         &contract,
         &worker,
     )
-    .await
-    .expect("Failed to transfer");
+    .await;
 
     // Alice create lockup for Bob with duration = 1 DAY, amount - 50 LIS
     create_lockup_for_account(
@@ -489,8 +481,7 @@ async fn transfer_get_balance_from_set_of_lockups() {
         &contract,
         &worker,
     )
-    .await
-    .expect("Failed to transfer");
+    .await;
 
     // Alice create lockup for Bob with duration = 1 DAY, amount - 100 LIS
     create_lockup_for_account(
@@ -501,8 +492,7 @@ async fn transfer_get_balance_from_set_of_lockups() {
         &contract,
         &worker,
     )
-    .await
-    .expect("Failed to transfer");
+    .await;
 
     // Assert Bob has 5 lockups
     assert_eq!(get_lockup_info(&bob, &contract, &worker).await.len(), 5);
@@ -539,8 +529,7 @@ async fn transfer_get_balance_from_set_of_lockups() {
         &contract,
         &worker,
     )
-    .await
-    .expect("Failed to transfer");
+    .await;
 
     // Assert bob has 3 lockups
     assert_eq!(get_lockup_info(&bob, &contract, &worker).await.len(), 3);
@@ -603,8 +592,7 @@ async fn transfer_get_balance_from_not_expired_lockup() {
         &contract,
         &worker,
     )
-    .await
-    .expect("Failed to transfer");
+    .await;
 
     // Assert Bob has lockup
     assert_eq!(get_lockup_info(&bob, &contract, &worker).await.len(), 1);

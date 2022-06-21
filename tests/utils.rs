@@ -1,4 +1,10 @@
-pub use near_sdk::{json_types::U128, serde::{Serialize, Deserialize}, serde_json, serde_json::Value, Timestamp};
+pub use near_sdk::{
+    json_types::U128,
+    serde::{Deserialize, Serialize},
+    serde_json,
+    serde_json::Value,
+    Timestamp,
+};
 use workspaces::{network::DevAccountDeployer, result::CallExecutionDetails};
 pub use workspaces::{network::Testnet, Account, AccountId, Contract, Worker};
 
@@ -174,8 +180,8 @@ pub async fn create_lockup_for_account(
     duration: Option<Timestamp>,
     contract: &Contract,
     worker: &Worker<Testnet>,
-) -> anyhow::Result<CallExecutionDetails> {
-    account
+) -> Timestamp {
+    let call_result = account
         .call(&worker, contract.id(), "create_lockup")
         .args_json(serde_json::json!({
             "recipient_id": recipient_id,
@@ -184,10 +190,15 @@ pub async fn create_lockup_for_account(
         }))
         .expect("Invalid input args")
         .transact()
-        .await
+        .await;
+
+    call_result
+        .expect("Cannon get result")
+        .json::<Timestamp>()
+        .expect("Cannot parse JSON")
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 #[serde(crate = "near_sdk::serde")]
 pub struct LockupInfoDebug {
     pub amount: U128,
@@ -212,4 +223,43 @@ pub async fn get_lockup_info(
         .expect("Cannot get result")
         .json()
         .expect("Cannot parse JSON")
+}
+
+pub async fn claim_all_lockup_for_account(
+    account: &Account,
+    contract: &Contract,
+    worker: &Worker<Testnet>,
+) -> u128 {
+    let call_result = account
+        .call(&worker, contract.id(), "claim_all_lockup")
+        .args_json(serde_json::json!({}))
+        .expect("Invalid input args")
+        .transact()
+        .await;
+
+    call_result
+        .expect("Cannon get result")
+        .json::<U128>()
+        .expect("Cannot parse JSON")
+        .0
+}
+
+pub async fn claim_lockup_for_account(
+    account: &Account,
+    contract: &Contract,
+    worker: &Worker<Testnet>,
+    expire_on: u64,
+) -> u128 {
+    let call_result = account
+        .call(&worker, contract.id(), "claim_lockup")
+        .args_json(serde_json::json!({ "expire_on": expire_on }))
+        .expect("Invalid input args")
+        .transact()
+        .await;
+
+    call_result
+        .expect("Cannon get result")
+        .json::<U128>()
+        .expect("Cannot parse JSON")
+        .0
 }
