@@ -6,6 +6,8 @@ pub use workspaces::{network::Testnet, Account, AccountId, Contract, Worker};
 pub const WASM_FILE: &str = "./target/wasm32-unknown-unknown/release/realis_near.wasm";
 pub const ONE_LIS: u128 = 1_000_000_000_000;
 
+pub type TestWorker = Worker<Testnet>;
+
 pub fn get_alice() -> Account {
     Account::from_file("./tests/res/alice.realis.testnet.json")
 }
@@ -78,7 +80,7 @@ impl Default for TestingEnvBuilder {
 }
 
 impl TestingEnvBuilder {
-    pub async fn build(self) -> (Contract, Worker<Testnet>) {
+    pub async fn build(self) -> (Contract, TestWorker) {
         let worker = workspaces::testnet()
             .await
             .expect("Fail connect to testnet");
@@ -129,11 +131,7 @@ impl TestingEnvBuilder {
     }
 }
 
-pub async fn get_balance_info(
-    account: &Account,
-    contract: &Contract,
-    worker: &Worker<Testnet>,
-) -> u128 {
+pub async fn get_balance_info(account: &Account, contract: &Contract, worker: &TestWorker) -> u128 {
     let view_result = account
         .call(worker, contract.id(), "get_balance_info")
         .args_json(serde_json::json!({
@@ -155,7 +153,7 @@ pub async fn make_transfer(
     recipient_id: &AccountId,
     amount: u128,
     contract: &Contract,
-    worker: &Worker<Testnet>,
+    worker: &TestWorker,
 ) -> anyhow::Result<CallExecutionDetails> {
     account
         .call(&worker, contract.id(), "transfer")
@@ -174,7 +172,7 @@ pub async fn create_lockup(
     amount: u128,
     duration: Option<Timestamp>,
     contract: &Contract,
-    worker: &Worker<Testnet>,
+    worker: &TestWorker,
 ) -> anyhow::Result<CallExecutionDetails> {
     account
         .call(&worker, contract.id(), "create_lockup")
@@ -191,8 +189,8 @@ pub async fn create_lockup(
 pub async fn get_lockup_info(
     account: &Account,
     contract: &Contract,
-    worker: &Worker<Testnet>,
-) -> Vec<Value> {
+    worker: &TestWorker,
+) -> Vec<LockupInfo> {
     let view_result = account
         .call(&worker, contract.id(), "lockups_info")
         .args_json(serde_json::json!({
