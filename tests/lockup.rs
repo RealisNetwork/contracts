@@ -1,25 +1,111 @@
+mod utils;
+
+use realis_near::lockup::Lockup;
+use crate::utils::*;
+use realis_near::utils::{DAY, SECOND};
+
 #[tokio::test]
-#[ignore]
 async fn create_lockup() {
+    // User Initialization
+    let alice = get_alice();
+    let bob = get_bob();
+    let charlie = get_charlie();
+
     // Setup contract: Alice - owner, total_supply - 3_000_000_000 LIS
+    let (contract, worker) = TestingEnvBuilder::default().build().await;
+
+
+    // Alice transfer to Bob and Charlie 1 LIS to create accounts Bob and Charlie
+    make_transfer(&alice, &bob.id(), 1 * ONE_LIS, &contract, &worker)
+        .await
+        .expect("Failed to transfer");
+    make_transfer(&alice, &charlie.id(), 1 * ONE_LIS, &contract, &worker)
+        .await
+        .expect("Failed to transfer");
 
     // Alice create lockup for Bob with amount - 3_000 LIS
+    create_lockup_for_account(
+        &alice,
+        &bob.id(),
+        3000 * ONE_LIS,
+        None,
+        &contract,
+        &worker,
+    )
+        .await
+        .expect("Failed to transfer");
+
     // Assert Bob has lockup
+    let bobs_lockups = get_lockup_info(&bob, &contract, &worker).await;
+    assert_eq!(bobs_lockups.len(), 1);
+
     // Assert amount
+    assert_eq!(bobs_lockups.first().unwrap().amount, U128(3000 * ONE_LIS) );
+
     // Assert timestamp == default
+    assert_eq!(bobs_lockups.first().unwrap().expire_on, Lockup::get_current_timestamp() + 3 * DAY);
+
     // Assert Alice balance
+    assert_eq!(
+        get_balance_info(&alice, &contract, &worker).await,
+        3_000_000_000 * ONE_LIS
+    );
 
     // Alice create lockup for Charlie with amount - 150 LIS
+    create_lockup_for_account(
+        &alice,
+        &charlie.id(),
+        150 * ONE_LIS,
+        None,
+        &contract,
+        &worker,
+    )
+        .await
+        .expect("Failed to transfer");
+
     // Assert Charlie has lockup
+    let charlies_lockups = get_lockup_info(&charlie, &contract, &worker).await;
+    assert_eq!(charlies_lockups.len(), 1);
+
     // Assert amount
+    assert_eq!(charlies_lockups.first().unwrap().amount, U128(150 * ONE_LIS)) ;
+
     // Assert timestamp == default
+    assert_eq!(charlies_lockups.first().unwrap().expire_on, Lockup::get_current_timestamp() + 3 * DAY);
+
     // Assert Alice balance
+    assert_eq!(
+        get_balance_info(&alice, &contract, &worker).await,
+        3_000_000_000 * ONE_LIS
+    );
 
     // Alice create lockup for Bob with amount - 300 LIS
+    create_lockup_for_account(
+        &alice,
+        &bob.id(),
+        300 * ONE_LIS,
+        None,
+        &contract,
+        &worker,
+    )
+        .await
+        .expect("Failed to transfer");
+
+
     // Assert Bob has 2 lockups
+    let bobs_lockups = get_lockup_info(&bob, &contract, &worker).await;
+    assert_eq!(bobs_lockups.len(), 2);
+
     // Assert amounts
+    assert_eq!(bobs_lockups.first().unwrap().amount, U128(3000 * ONE_LIS));
+    assert_eq!(bobs_lockups.last().unwrap().amount, U128(300 * ONE_LIS));
+
     // Assert timestamp == default
+    assert_eq!(bobs_lockups.first().unwrap().expire_on, Lockup::get_current_timestamp() + 3 * DAY);
+    assert_eq!(bobs_lockups.last().unwrap().expire_on, Lockup::get_current_timestamp() + 3 * DAY);
+
     // Assert Alice balance
+    assert_eq!(get_balance_info(&alice, &contract, &worker).await, 2_999_999_998 * ONE_LIS);
 }
 
 #[tokio::test]

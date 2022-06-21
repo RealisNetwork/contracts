@@ -217,7 +217,7 @@ async fn transfer_with_expired_lockup() {
     );
 
     // Alice create lockup for Bob with duration = 1 SECOND, amount - 100 LIS
-    create_lockup(
+    create_lockup_for_account(
         &alice,
         &bob.id(),
         100 * ONE_LIS,
@@ -271,7 +271,7 @@ async fn transfer_with_not_expired_lockup() {
     );
 
     // Alice create lockup for Bob with duration = 1 DAY, amount - 100 LIS
-    create_lockup(
+    create_lockup_for_account(
         &alice,
         &bob.id(),
         100 * ONE_LIS,
@@ -325,7 +325,7 @@ async fn transfer_get_balance_from_expired_lockup() {
     );
 
     // Alice create lockup for Bob with duration = 1 SECOND, amount - 100 LIS
-    create_lockup(
+    create_lockup_for_account(
         &alice,
         &bob.id(),
         100 * ONE_LIS,
@@ -379,7 +379,7 @@ async fn transfer_get_balance_from_two_expired_lockups() {
         .expect("Failed to transfer");
 
     // Alice create lockup for Bob with duration = 1 SECOND, amount - 100 LIS
-    create_lockup(
+    create_lockup_for_account(
         &alice,
         &bob.id(),
         100 * ONE_LIS,
@@ -391,7 +391,7 @@ async fn transfer_get_balance_from_two_expired_lockups() {
     .expect("Failed to transfer");
 
     // Alice create lockup for Bob with duration = 1 SECOND, amount - 50 LIS
-    create_lockup(
+    create_lockup_for_account(
         &alice,
         &bob.id(),
         50 * ONE_LIS,
@@ -445,7 +445,7 @@ async fn transfer_get_balance_from_set_of_lockups() {
         .expect("Failed to transfer");
 
     // Alice create lockup for Bob with duration = 1 SECOND, amount - 10 LIS
-    create_lockup(
+    create_lockup_for_account(
         &alice,
         &bob.id(),
         10 * ONE_LIS,
@@ -457,7 +457,7 @@ async fn transfer_get_balance_from_set_of_lockups() {
     .expect("Failed to transfer");
 
     // Alice create lockup for Bob with duration = 1 SECOND, amount - 20 LIS
-    create_lockup(
+    create_lockup_for_account(
         &alice,
         &bob.id(),
         20 * ONE_LIS,
@@ -469,7 +469,7 @@ async fn transfer_get_balance_from_set_of_lockups() {
     .expect("Failed to transfer");
 
     // Alice create lockup for Bob with duration = 1 SECOND, amount - 25 LIS
-    create_lockup(
+    create_lockup_for_account(
         &alice,
         &bob.id(),
         25 * ONE_LIS,
@@ -481,7 +481,7 @@ async fn transfer_get_balance_from_set_of_lockups() {
     .expect("Failed to transfer");
 
     // Alice create lockup for Bob with duration = 1 DAY, amount - 50 LIS
-    create_lockup(
+    create_lockup_for_account(
         &alice,
         &bob.id(),
         50 * ONE_LIS,
@@ -493,7 +493,7 @@ async fn transfer_get_balance_from_set_of_lockups() {
     .expect("Failed to transfer");
 
     // Alice create lockup for Bob with duration = 1 DAY, amount - 100 LIS
-    create_lockup(
+    create_lockup_for_account(
         &alice,
         &bob.id(),
         100 * ONE_LIS,
@@ -531,7 +531,7 @@ async fn transfer_get_balance_from_set_of_lockups() {
     );
 
     // Alice create lockup for Bob with duration = 1 SECOND, amount - 25 LIS
-    create_lockup(
+    create_lockup_for_account(
         &alice,
         &bob.id(),
         25 * ONE_LIS,
@@ -595,7 +595,7 @@ async fn transfer_get_balance_from_not_expired_lockup() {
     );
 
     // Alice create lockup for Bob with duration = 1 DAY, amount - 100 LIS
-    create_lockup(
+    create_lockup_for_account(
         &alice,
         &bob.id(),
         100 * ONE_LIS,

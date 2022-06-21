@@ -1,5 +1,4 @@
-use near_sdk::{json_types::U128, serde::Serialize, serde_json, serde_json::Value, Timestamp};
-use realis_near::lockup::LockupInfo;
+pub use near_sdk::{json_types::U128, serde::{Serialize, Deserialize}, serde_json, serde_json::Value, Timestamp};
 use workspaces::{network::DevAccountDeployer, result::CallExecutionDetails};
 pub use workspaces::{network::Testnet, Account, AccountId, Contract, Worker};
 
@@ -168,7 +167,7 @@ pub async fn make_transfer(
         .await
 }
 
-pub async fn create_lockup(
+pub async fn create_lockup_for_account(
     account: &Account,
     recipient_id: &AccountId,
     amount: u128,
@@ -188,11 +187,18 @@ pub async fn create_lockup(
         .await
 }
 
+#[derive(Deserialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
+pub struct LockupInfoDebug {
+    pub amount: U128,
+    pub expire_on: Timestamp,
+}
+
 pub async fn get_lockup_info(
     account: &Account,
     contract: &Contract,
     worker: &Worker<Testnet>,
-) -> Vec<Value> {
+) -> Vec<LockupInfoDebug> {
     let view_result = account
         .call(&worker, contract.id(), "lockups_info")
         .args_json(serde_json::json!({
