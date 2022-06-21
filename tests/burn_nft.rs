@@ -18,16 +18,72 @@ async fn burn_nft() {
 }
 
 #[tokio::test]
-#[ignore]
 async fn burn_nft_non_existed_nft() {
+    let alice = get_alice();
     // Setup contract with owner Alice
+    let (contract, worker) = TestingEnvBuilder::default().build().await;
+    let bob = get_bob();
 
     // Alice mint nft for Bob with id = 1,2,3
+    for i in 0..3 {
+        let nft_id = alice.call(&worker, contract.id(), "mint")
+            .args_json(&json!({
+                "recipient_id": bob.id(),
+                "nft_metadata": "metadata"
+            }))
+            .expect("Invalid arguments")
+            .transact()
+            .await
+            .expect("Cant create NFT")
+            .json::<U128>()
+            .unwrap();
+        assert_eq!(nft_id.0, i)
+    }
+
     // Assert Bob has 3 nft
+    let bobs_nfts = contract
+        .call(&worker, "get_account_info")
+        .args_json(
+            &json!({
+                "account_id": bob.id()
+            }))
+        .expect("Invalid arguments")
+        .transact()
+        .await
+        .expect("Cant get info")
+        .json::<AccountInfo>()
+        .unwrap();
+    for i in 0..3 {
+        assert!(bobs_nfts.nfts.get(i).is_some());
+    }
 
     // Bob burn nft with id = 5
+    let result = bob.call(&worker, &contract.id(), &"internal_burn_nft")
+        .args_json(&json!({
+            "target_id": bob.id(),
+            "nft_id": U128::from(5),
+        }))
+        .expect("Invalid arguments")
+        .transact()
+        .await;
     // Assert error
+    assert!(result.is_err());
     // Assert Bob has 3 nft
+    let bobs_nfts = contract
+        .call(&worker, "get_account_info")
+        .args_json(
+            &json!({
+                "account_id": bob.id()
+            }))
+        .expect("Invalid arguments")
+        .transact()
+        .await
+        .expect("Cant get info")
+        .json::<AccountInfo>()
+        .unwrap();
+    for i in 0..3 {
+        assert!(bobs_nfts.nfts.get(i).is_some());
+    }
 }
 
 #[tokio::test]

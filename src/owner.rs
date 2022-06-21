@@ -56,7 +56,7 @@ impl Contract {
         );
 
         let nft_id = self.nfts.mint_nft(&recipient_id, nft_metadata);
-        nft_owner_id.nfts.insert(&nft_id);
+        nft_owner.nfts.insert(&nft_id);
         self.accounts
             .insert(&recipient_id, &VAccount::V1(nft_owner_id));
 
