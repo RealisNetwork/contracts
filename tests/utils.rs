@@ -13,6 +13,8 @@ pub const MAX_GAS: Gas = 300_000_000_000_000;
 
 pub type TestWorker = Worker<Testnet>;
 
+pub type TestWorker = Worker<Testnet>;
+
 pub fn get_alice() -> Account {
     Account::from_file("./tests/res/alice.realis.testnet.json")
 }
