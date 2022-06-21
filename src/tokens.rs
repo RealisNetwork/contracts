@@ -16,7 +16,13 @@ impl Contract {
     /// let sender_id = accounts(0);
     /// let sender_account = Account::new(sender_id.clone(), 30);
     /// let receiver_id = accounts(1);
-    /// let mut contract = Contract::new(Some(U128(3000000000)), Some(U128(50)), Some(10), None, None);
+    /// let mut contract = Contract::new(
+    ///     Some(U128(3000000000)),
+    ///     Some(U128(50)),
+    ///     Some(10),
+    ///     None,
+    ///     None
+    /// );
     /// contract.accounts.insert(&sender_id, &sender_account.into());
     /// let sender_balance_left = contract.internal_transfer(sender_id, receiver_id, 20 , false);
     /// let reciever_account: Account = contract.accounts.get(&accounts(1)).unwrap().into();
@@ -74,7 +80,13 @@ impl Contract {
     /// let sender_id = accounts(0);
     ///
     /// let sender_account = Account::new(sender_id.clone(), 30);
-    /// let mut contract = Contract::new(Some(U128(3000000000)), Some(U128(50)), Some(10), None, None);
+    /// let mut contract = Contract::new(
+    ///     Some(U128(3000000000)),
+    ///     Some(U128(50)),
+    ///     Some(10),
+    ///     None,
+    ///     None
+    /// );
     /// contract.accounts.insert(&sender_id, &sender_account.into());
     /// let sender_balance_left = contract.take_fee(sender_id, Some(15), false);
     /// assert_eq!(sender_balance_left, 15);

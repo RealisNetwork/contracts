@@ -23,7 +23,13 @@ impl Contract {
     /// use realis_near::Contract;
     /// use realis_near::nft::Nft;
     ///
-    /// let mut contract = Contract::new(Some(U128(3000000000)), Some(U128(50)), Some(10), None, None);
+    /// let mut contract = Contract::new(
+    ///     Some(U128(3000000000)),
+    ///     Some(U128(50)),
+    ///     Some(10),
+    ///     None,
+    ///     None
+    /// );
     /// let nft_id = contract.nfts.mint_nft(&accounts(0), "Duck".to_string());
     /// let inserted_nft: Nft = contract.nfts.get_nft(&nft_id).into();
     /// assert_eq!(inserted_nft.owner_id, accounts(0));
