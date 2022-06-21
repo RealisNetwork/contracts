@@ -24,13 +24,13 @@ impl Contract {
         // sender_free.into()
     }
 
-    pub fn backend_transfer_nft(&mut self, recipient_id: AccountId, nft_id: U128) -> U128 {
+    pub fn backend_transfer_nft(&mut self, recipient_id: AccountId, nft_id: U128) {
         self.assert_running();
         self.assert_backend();
         let sender_id = self.resolve_account(env::signer_account_pk());
         // let sender_free = self.take_fee(sender_id.clone(), None, true);
         self.internal_transfer_nft(sender_id, recipient_id, nft_id.0);
-        sender_free.into()
+        // sender_free.into()
     }
 
     #[allow(unused_variables)]
