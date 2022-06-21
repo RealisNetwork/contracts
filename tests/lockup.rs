@@ -290,23 +290,59 @@ async fn user_claim_lockup() {
 }
 
 #[tokio::test]
-#[ignore]
+#[should_panic(expected = "Cannon get result: Action #0: \
+    ExecutionError(\"Smart contract panicked: Only owner can do this\")")]
 async fn not_contract_owner_create_lockup() {
-    // Setup contract: Alice - owner
+    // User Initialization
+    let alice = get_alice();
+    let bob = get_bob();
+
+    // Setup contract: Alice - owner, total_supply - 3_000_000_000 LIS
+    let (contract, worker) = TestingEnvBuilder::default().build().await;
+
+    // Alice transfer to Bob 1 LIS to create accounts Bob
+    make_transfer(&alice, &bob.id(), 1 * ONE_LIS, &contract, &worker)
+        .await
+        .expect("Failed to transfer");
 
     // Bob create lockup
-    // Assert error
-    todo!()
+    create_lockup_for_account(
+        &bob,
+        &bob.id(),
+        15 * ONE_LIS,
+        Some(15 * SECOND),
+        &contract,
+        &worker,
+    )
+    .await;
 }
 
 #[tokio::test]
-#[ignore]
+#[should_panic(expected = "Cannon get result: Action #0: \
+    ExecutionError(\"Smart contract panicked: Not enough balance\")")]
 async fn not_enough_balance_to_create_lockup() {
+    // User Initialization
+    let alice = get_alice();
+    let bob = get_bob();
+
     // Setup contract: Alice - owner, total_supply - 3_000_000_000 LIS
+    let (contract, worker) = TestingEnvBuilder::default().build().await;
+
+    // Alice transfer to Bob 1 LIS to create accounts Bob
+    make_transfer(&alice, &bob.id(), 1 * ONE_LIS, &contract, &worker)
+        .await
+        .expect("Failed to transfer");
 
     // Alice create lockup for Bob with amount - 3_000_000_001 LIS
-    // Assert error
-    todo!()
+    create_lockup_for_account(
+        &alice,
+        &bob.id(),
+        3_000_000_001 * ONE_LIS,
+        Some(15 * SECOND),
+        &contract,
+        &worker,
+    )
+    .await;
 }
 
 #[tokio::test]
