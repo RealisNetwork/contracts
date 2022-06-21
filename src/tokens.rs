@@ -1,4 +1,7 @@
-use crate::{Account, Contract, *};
+use crate::{
+    events::{EventLog, EventLogVariant, Transfer},
+    Account, Contract, *,
+};
 use near_sdk::{env, near_bindgen, require, AccountId};
 use primitive_types::U256;
 
@@ -37,7 +40,7 @@ impl Contract {
         );
 
         // Charge fee and amount
-        let sender_balance_left = self.take_fee(sender, Some(amount), is_fee_required);
+        let sender_balance_left = self.take_fee(sender.clone(), Some(amount), is_fee_required);
         // Try to get recipient
         let mut recipient_account: Account = self
             .accounts
@@ -49,6 +52,13 @@ impl Contract {
         recipient_account.free += amount;
         self.accounts
             .insert(&recipient_id, &recipient_account.into());
+
+        EventLog::from(EventLogVariant::Transferred(Transfer {
+            sender_id: &sender,
+            recipient_id: &recipient_id,
+            amount: U128(amount),
+        }))
+        .emit();
 
         sender_balance_left
     }

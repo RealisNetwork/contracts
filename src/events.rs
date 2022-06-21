@@ -23,9 +23,11 @@ pub const NFT_STANDARD_NAME: &str = "nep171";
 #[serde(crate = "near_sdk::serde")]
 #[non_exhaustive]
 pub enum EventLogVariant<'a> {
+    Transferred(Transfer<'a>),
     LockupClaimed(Vec<LockupClaimed<'a>>),
     LockupRefund(LockupRefund<'a>),
     LockupCreated(LockupCreated<'a>),
+    NftTransferred(NftTransfer<'a>),
     NftMint(NftMint<'a>),
     NftBurn(NftBurn<'a>),
     ChangeState(ChangeState),
@@ -71,6 +73,14 @@ impl<'a> fmt::Display for EventLog<'a> {
 
 #[derive(Serialize, Debug)]
 #[serde(crate = "near_sdk::serde")]
+pub struct Transfer<'a> {
+    pub sender_id: &'a AccountId,
+    pub recipient_id: &'a AccountId,
+    pub amount: U128,
+}
+
+#[derive(Serialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
 pub struct LockupClaimed<'a> {
     pub amount: U128,
     pub account_id: &'a AccountId,
@@ -90,6 +100,14 @@ pub struct LockupCreated<'a> {
     pub amount: U128,
     pub recipient_id: &'a AccountId,
     pub expire_on: U64,
+}
+
+#[derive(Serialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
+pub struct NftTransfer<'a> {
+    pub sender_id: &'a AccountId,
+    pub recipient_id: &'a AccountId,
+    pub nft_id: U128,
 }
 
 #[derive(Serialize, Debug)]
