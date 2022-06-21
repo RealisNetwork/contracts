@@ -1,7 +1,7 @@
 use crate::utils::DEFAULT_LOCK_LIFE_TIME;
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
-    json_types::U128,
+    json_types::{U128, U64},
     serde::Serialize,
     Timestamp,
 };
@@ -71,14 +71,14 @@ impl Lockup {
 #[serde(crate = "near_sdk::serde")]
 pub struct LockupInfo {
     pub amount: U128,
-    pub expire_on: Timestamp,
+    pub expire_on: U64,
 }
 
 impl From<Lockup> for LockupInfo {
     fn from(lockup: Lockup) -> Self {
         LockupInfo {
             amount: U128(lockup.amount),
-            expire_on: lockup.expire_on,
+            expire_on: lockup.expire_on.into(),
         }
     }
 }

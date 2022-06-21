@@ -11,6 +11,7 @@ use near_sdk::{
 
 use crate::{
     auction::{Auction, Bid, DealData},
+    events::{EventLog, EventLogVariant, NftBurn},
     marketplace::Marketplace,
     Account, Contract, ContractExt, NftId, StorageKey,
 };
@@ -294,6 +295,11 @@ impl NftManager {
         self.nft_map
             .remove(nft_id)
             .unwrap_or_else(|| env::panic_str("Nft not exist"));
+        EventLog::from(EventLogVariant::NftBurn(NftBurn {
+            account_id: &account_id,
+            nft_id: U128(*nft_id),
+        }))
+        .emit();
     }
 
     /// Mint new `NFT` with generated id.

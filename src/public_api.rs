@@ -56,8 +56,7 @@ impl Contract {
         self.confirm_deal(nft_id.0, env::signer_account_id());
     }
 
-    // TODO check lockups
-    pub fn claim_lockup(&mut self, expire_on: u64) -> U128 {
+    pub fn claim_lockup(&mut self, amount: U128) -> U128 {
         self.assert_running();
         let target_id = env::signer_account_id();
         let mut target_account: Account = self
@@ -65,10 +64,9 @@ impl Contract {
             .get(&target_id)
             .unwrap_or_else(|| env::panic_str("No such account id"))
             .into();
-        let res = target_account.claim_lockup(expire_on);
-        self.accounts
-            .insert(&env::signer_account_id(), &target_account.into());
-        U128(res)
+        let total_claimed = target_account.claim_lockup(amount.0, target_id.clone());
+        self.accounts.insert(&target_id, &target_account.into());
+        U128(total_claimed)
     }
 
     pub fn claim_all_lockup(&mut self) -> U128 {
@@ -79,10 +77,9 @@ impl Contract {
             .get(&target_id)
             .unwrap_or_else(|| env::panic_str("No such account id"))
             .into();
-        let res = target_account.claim_all_lockups();
-        self.accounts
-            .insert(&env::signer_account_id(), &target_account.into());
-        U128(res)
+        let total_claimed = target_account.claim_all_lockups(target_id.clone());
+        self.accounts.insert(&target_id, &target_account.into());
+        U128(total_claimed)
     }
 
     // TODO: delegate nft
@@ -210,6 +207,7 @@ mod tests {
 
         let mut owner_account = Account::new(accounts(0), 5);
         owner_account.lockups.insert(&Lockup::new(5, None));
+        owner_account.lockups.insert(&Lockup::new(6, None));
         contract.accounts.insert(&owner, &owner_account.into());
 
         testing_env!(context
@@ -219,7 +217,7 @@ mod tests {
 
         contract.claim_all_lockup();
         let res_owner_account: Account = contract.accounts.get(&owner).unwrap().into();
-        assert_eq!(res_owner_account.free, 10);
+        assert_eq!(res_owner_account.free, 16);
     }
 
     #[test]
@@ -235,7 +233,7 @@ mod tests {
         });
         owner_account.lockups.insert(&Lockup {
             amount: 5,
-            expire_on: 1,
+            expire_on: 0,
         });
         owner_account.lockups.insert(&Lockup {
             amount: 5,
@@ -246,7 +244,7 @@ mod tests {
             .signer_account_id(accounts(0))
             .block_timestamp(2)
             .build());
-        contract.claim_lockup(1);
+        contract.claim_lockup(U128(5));
         let res_owner_account: Account = contract.accounts.get(&owner).unwrap().into();
         assert_eq!(res_owner_account.free, 55);
     }
@@ -259,6 +257,6 @@ mod tests {
             init_test_env(Some(owner.clone()), None, Some(owner.clone()));
         contract.state = State::Paused;
 
-        contract.claim_lockup(1);
+        contract.claim_lockup(U128(1));
     }
 }
