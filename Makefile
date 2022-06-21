@@ -1,5 +1,5 @@
 CONTRACT_NAME = token_contract_v2
-ROOT_ACCOUNT = ruslantahiiev.testnet
+ROOT_ACCOUNT = gleb_protasov.testnet
 
 .PHONY: deploy
 deploy:
@@ -7,9 +7,20 @@ deploy:
 	near delete $(CONTRACT_NAME).$(ROOT_ACCOUNT) $(ROOT_ACCOUNT)
 	near create-account $(CONTRACT_NAME).$(ROOT_ACCOUNT) --masterAccount $(ROOT_ACCOUNT)
 	near deploy --accountId $(CONTRACT_NAME).$(ROOT_ACCOUNT) \
-				--wasmFile ./target/wasm32-unknown-unknown/release/lis_token.wasm \
+				--wasmFile ./target/wasm32-unknown-unknown/release/lis_token.wasm \ 
 				--initFunction new \
-				--initArgs '{"total_supply": "3000000", "fee": '5', "beneficiary_pk": "FG6aRApk5Ym9nDwzdWFg22ti5GWeW8mBqCKL7M3LZH62"}'
+				--initArgs '{"total_supply": "3000000","constant_fee":"10", "percent_fee": '5', "beneficiary_pk": "FG6aRApk5Ym9nDwzdWFg22ti5GWeW8mBqCKL7M3LZH62"}'
+
+.PHONY: migrate
+migrate:
+	cargo build --target wasm32-unknown-unknown --release
+	near deploy	--accountId $(CONTRACT_NAME).$(ROOT_ACCOUNT) \
+				--wasmFile ./target/wasm32-unknown-unknown/release/lis_token.wasm \
+				--initFunction migrate \
+				--initArgs '{}'
+
+
+
 
 .PHONY: create
 create:
@@ -40,9 +51,10 @@ pre_commit:
 	cargo clippy -- -D warnings
 
 # MANUAL TESTING
-OWNER_ACC?=dev-1655281896313-38697444886102
+OWNER_ACC?=dev-1655368469513-67895817176815
 ACC1?=ruslantahiiev.testnet
 ACC2?=gleb_protasov.testnet
+ACC3=new_account.testnet
 
 
 .PHONY: dev-deploy
@@ -53,7 +65,7 @@ dev-deploy:
 .PHONY: dev-call-new
 dev-call-new:
 	near call $(OWNER_ACC) \
-		new '{"total_supply": "3000000", "constant_fee": "1", "percent_fee": '2', "beneficiary_id": "ruslantahiiev.testnet", "backend_id": "ruslantahiiev.testnet"}' \
+		new '{"total_supply": "3000000", "constant_fee": "1", "percent_fee": '2', "beneficiary_id": "testnetacc.testnet", "backend_id": "testnetacc.testnet"}' \
 		--accountId $(OWNER_ACC)
 
 .PHONY: dev-call-mint
@@ -66,7 +78,7 @@ dev-call-burn:
 
 .PHONY: dev-call-transfer-tokens
 dev-call-transfer-tokens:
-	near call $(OWNER_ACC) transfer '{"recipient_id":"$(ACC2)","amount":"200"}' --accountId $(ACC1)
+	near call $(OWNER_ACC) transfer '{"recipient_id":"$(ACC3)","amount":"200"}' --accountId $(OWNER_ACC)
 
 .PHONY: dev-call-transfer-nft
 dev-call-transfer-nft:

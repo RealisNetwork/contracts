@@ -3,8 +3,8 @@ use std::fmt;
 use crate::State;
 use near_sdk::{
     env,
-    json_types::U128,
-    serde::{Deserialize, Serialize},
+    json_types::{U128, U64},
+    serde::Serialize,
     serde_json, AccountId,
 };
 
@@ -17,36 +17,41 @@ pub const NFT_STANDARD_NAME: &str = "nep171";
 
 /// `EventLogVariant` help to use several variants of logging events.
 /// `NftMint` using for log event about creating new nft.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Debug)]
 #[serde(tag = "event", content = "data")]
 #[serde(rename_all = "snake_case")]
 #[serde(crate = "near_sdk::serde")]
 #[non_exhaustive]
-pub enum EventLogVariant {
-    NftMint(NftMintLog),
-    LockupLog(LockupLog),
-    ChangeState(ChangeStateLog),
-    ChangeBeneficiary(ChangeBeneficiaryLog),
+pub enum EventLogVariant<'a> {
+    LockupClaimed(Vec<LockupClaimed<'a>>),
+    LockupRefund(LockupRefund<'a>),
+    LockupCreated(LockupCreated<'a>),
+    NftMint(NftMint<'a>),
+    NftBurn(NftBurn<'a>),
+    ChangeState(ChangeState),
+    ChangeBeneficiary(ChangeBeneficiary<'a>),
+    AddBackendId(BackendId<'a>),
+    RemoveBackendId(BackendId<'a>),
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Debug)]
 #[serde(crate = "near_sdk::serde")]
-pub struct EventLog {
+pub struct EventLog<'a> {
     pub standard: String,
     pub version: String,
 
     #[serde(flatten)]
-    pub event: EventLogVariant,
+    pub event: EventLogVariant<'a>,
 }
 
-impl EventLog {
-    pub fn emit(&self) {
+impl<'a> EventLog<'a> {
+    pub fn emit(&'a self) {
         env::log_str(&self.to_string());
     }
 }
 
-impl From<EventLogVariant> for EventLog {
-    fn from(event: EventLogVariant) -> Self {
+impl<'a> From<EventLogVariant<'a>> for EventLog<'a> {
+    fn from(event: EventLogVariant<'a>) -> Self {
         Self {
             standard: NFT_STANDARD_NAME.to_string(),
             version: NFT_METADATA_SPEC.to_string(),
@@ -55,7 +60,7 @@ impl From<EventLogVariant> for EventLog {
     }
 }
 
-impl fmt::Display for EventLog {
+impl<'a> fmt::Display for EventLog<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_fmt(format_args!(
             "EVENT_JSON:{}",
@@ -64,29 +69,59 @@ impl fmt::Display for EventLog {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Debug)]
 #[serde(crate = "near_sdk::serde")]
-pub struct NftMintLog {
-    pub owner_id: String,
-    pub meta_data: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(crate = "near_sdk::serde")]
-pub struct LockupLog {
+pub struct LockupClaimed<'a> {
     pub amount: U128,
+    pub account_id: &'a AccountId,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Debug)]
 #[serde(crate = "near_sdk::serde")]
-pub struct ChangeStateLog {
+pub struct LockupRefund<'a> {
+    pub amount: U128,
+    pub account_id: &'a AccountId,
+    pub timestamp: U64,
+}
+
+#[derive(Serialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
+pub struct LockupCreated<'a> {
+    pub amount: U128,
+    pub recipient_id: &'a AccountId,
+    pub expire_on: U64,
+}
+
+#[derive(Serialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
+pub struct NftMint<'a> {
+    pub owner_id: &'a AccountId,
+    pub meta_data: &'a str,
+}
+
+#[derive(Serialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
+pub struct NftBurn<'a> {
+    pub account_id: &'a AccountId,
+    pub nft_id: U128,
+}
+
+#[derive(Serialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
+pub struct ChangeState {
     pub from: State,
     pub to: State,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Debug)]
 #[serde(crate = "near_sdk::serde")]
-pub struct ChangeBeneficiaryLog {
-    pub from: AccountId,
-    pub to: AccountId,
+pub struct ChangeBeneficiary<'a> {
+    pub from: &'a AccountId,
+    pub to: &'a AccountId,
+}
+
+#[derive(Serialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
+pub struct BackendId<'a> {
+    pub accounts: &'a Vec<AccountId>,
 }
