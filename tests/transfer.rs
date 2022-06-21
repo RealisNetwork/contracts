@@ -10,8 +10,7 @@ async fn transfer_from_not_exist_account() {
 
     // Transfer from non exist account
     let bob = get_bob();
-    let call_result =
-        make_transfer(&bob, &get_alice().id(), ONE_LIS, &contract, &worker).await;
+    let call_result = make_transfer(&bob, &get_alice().id(), ONE_LIS, &contract, &worker).await;
 
     // Assert error
     assert!(
@@ -40,14 +39,9 @@ async fn transfer_more_than_account_balance() {
     );
 
     // Alice transfer to Bob 1_000 LIS
-    make_transfer(
-        &alice,
-        &get_bob().id(),
-        1_000 * ONE_LIS,
-        &contract,
-        &worker,
-    )
-        .await.expect("Failed to transfer");
+    make_transfer(&alice, &get_bob().id(), 1_000 * ONE_LIS, &contract, &worker)
+        .await
+        .expect("Failed to transfer");
 
     // Assert Alice has 2_999_999_000 LIS
     assert_eq!(
@@ -62,14 +56,7 @@ async fn transfer_more_than_account_balance() {
     );
 
     // Bob transfer to Charlie 1_001 LIS
-    let response = make_transfer(
-        &bob,
-        &charlie.id(),
-        1_001 * ONE_LIS,
-        &contract,
-        &worker,
-    )
-        .await;
+    let response = make_transfer(&bob, &charlie.id(), 1_001 * ONE_LIS, &contract, &worker).await;
 
     // Assert error
     assert!(
@@ -88,7 +75,7 @@ async fn transfer_more_than_account_balance() {
         &contract,
         &worker,
     )
-        .await;
+    .await;
 
     // Assert error
     assert!(
@@ -140,14 +127,9 @@ async fn transfer() {
     let (contract, worker) = TestingEnvBuilder::default().build().await;
 
     // Alice transfer to Bob 1_000 LIS
-    make_transfer(
-        &alice,
-        &get_bob().id(),
-        1000 * ONE_LIS,
-        &contract,
-        &worker,
-    )
-        .await.expect("Failed to transfer");
+    make_transfer(&alice, &get_bob().id(), 1000 * ONE_LIS, &contract, &worker)
+        .await
+        .expect("Failed to transfer");
 
     // Assert Alice has 2_999_999_000 LIS
     assert_eq!(
@@ -162,14 +144,9 @@ async fn transfer() {
     );
 
     // Alice transfer to Charlie 13 LIS
-    make_transfer(
-        &alice,
-        &charlie.id(),
-        13 * ONE_LIS,
-        &contract,
-        &worker,
-    )
-        .await.expect("Failed to transfer");
+    make_transfer(&alice, &charlie.id(), 13 * ONE_LIS, &contract, &worker)
+        .await
+        .expect("Failed to transfer");
 
     // Assert Alice has 2_999_998_987 LIS
     assert_eq!(
@@ -184,14 +161,9 @@ async fn transfer() {
     );
 
     // Bob transfer to Charlie 100 LIS
-    make_transfer(
-        &bob,
-        &get_charlie().id(),
-        100 * ONE_LIS,
-        &contract,
-        &worker,
-    )
-        .await.expect("Failed to transfer");
+    make_transfer(&bob, &get_charlie().id(), 100 * ONE_LIS, &contract, &worker)
+        .await
+        .expect("Failed to transfer");
 
     // Assert Bob has 900 LIS
     assert_eq!(
@@ -206,14 +178,9 @@ async fn transfer() {
     );
 
     // Charlie transfer to Dave 1 LIS
-    make_transfer(
-        &charlie,
-        &get_dave().id(),
-        1 * ONE_LIS,
-        &contract,
-        &worker,
-    )
-        .await.expect("Failed to transfer");
+    make_transfer(&charlie, &get_dave().id(), 1 * ONE_LIS, &contract, &worker)
+        .await
+        .expect("Failed to transfer");
 
     // Assert Charlie has 112 LIS
     assert_eq!(
@@ -239,7 +206,9 @@ async fn transfer_with_expired_lockup() {
     let (contract, worker) = TestingEnvBuilder::default().build().await;
 
     // Alice transfer to Bob 100 LIS
-    make_transfer(&alice, &bob.id(), 100 * ONE_LIS, &contract, &worker).await.expect("Failed to transfer");
+    make_transfer(&alice, &bob.id(), 100 * ONE_LIS, &contract, &worker)
+        .await
+        .expect("Failed to transfer");
 
     // Assert Bob has 100 LIS
     assert_eq!(
@@ -256,32 +225,22 @@ async fn transfer_with_expired_lockup() {
         &contract,
         &worker,
     )
-        .await.expect("Failed to transfer");
+    .await
+    .expect("Failed to transfer");
 
     // Assert Bob has lockup
-    assert_eq!(
-        get_lockup_info(&bob, &contract, &worker)
-            .await
-            .len(),
-        1
-    );
+    assert_eq!(get_lockup_info(&bob, &contract, &worker).await.len(), 1);
 
     // Bob transfer to Dave 100 LIS
-    make_transfer(&bob, &dave.id(), 100 * ONE_LIS, &contract, &worker).await.expect("Failed to transfer");
+    make_transfer(&bob, &dave.id(), 100 * ONE_LIS, &contract, &worker)
+        .await
+        .expect("Failed to transfer");
 
     // Assert Bob has 0 LIS
-    assert_eq!(
-        get_balance_info(&bob, &contract, &worker).await,
-        0
-    );
+    assert_eq!(get_balance_info(&bob, &contract, &worker).await, 0);
 
     // Assert Bob has lockup
-    assert_eq!(
-        get_lockup_info(&bob, &contract, &worker)
-            .await
-            .len(),
-        1
-    );
+    assert_eq!(get_lockup_info(&bob, &contract, &worker).await.len(), 1);
 
     // Assert Dave has 100 LIS
     assert_eq!(
@@ -301,7 +260,9 @@ async fn transfer_with_not_expired_lockup() {
     let (contract, worker) = TestingEnvBuilder::default().build().await;
 
     // Alice transfer to Bob 100 LIS
-    make_transfer(&alice, &bob.id(), 100 * ONE_LIS, &contract, &worker).await.expect("Failed to transfer");
+    make_transfer(&alice, &bob.id(), 100 * ONE_LIS, &contract, &worker)
+        .await
+        .expect("Failed to transfer");
 
     // Assert Bob has 100 LIS
     assert_eq!(
@@ -318,32 +279,22 @@ async fn transfer_with_not_expired_lockup() {
         &contract,
         &worker,
     )
-        .await.expect("Failed to transfer");
+    .await
+    .expect("Failed to transfer");
 
     // Assert Bob has lockup
-    assert_eq!(
-        get_lockup_info(&bob,  &contract, &worker)
-            .await
-            .len(),
-        1
-    );
+    assert_eq!(get_lockup_info(&bob, &contract, &worker).await.len(), 1);
 
     // Bob transfer to Dave 100 LIS
-    make_transfer(&bob, &dave.id(), 100 * ONE_LIS, &contract, &worker).await.expect("Failed to transfer");
+    make_transfer(&bob, &dave.id(), 100 * ONE_LIS, &contract, &worker)
+        .await
+        .expect("Failed to transfer");
 
     // Assert Bob has 0 LIS
-    assert_eq!(
-        get_balance_info(&bob, &contract, &worker).await,
-        0
-    );
+    assert_eq!(get_balance_info(&bob, &contract, &worker).await, 0);
 
     // Assert Bob has lockup
-    assert_eq!(
-        get_lockup_info(&bob, &contract, &worker)
-            .await
-            .len(),
-        1
-    );
+    assert_eq!(get_lockup_info(&bob, &contract, &worker).await.len(), 1);
 
     // Assert Dave has 100 LIS
     assert_eq!(
@@ -363,7 +314,9 @@ async fn transfer_get_balance_from_expired_lockup() {
     let (contract, worker) = TestingEnvBuilder::default().build().await;
 
     // Alice transfer to Bob 100 LIS
-    make_transfer(&alice, &bob.id(), 100 * ONE_LIS, &contract, &worker).await.expect("Failed to transfer");
+    make_transfer(&alice, &bob.id(), 100 * ONE_LIS, &contract, &worker)
+        .await
+        .expect("Failed to transfer");
 
     // Assert Bob has 100 LIS
     assert_eq!(
@@ -380,21 +333,19 @@ async fn transfer_get_balance_from_expired_lockup() {
         &contract,
         &worker,
     )
-        .await.expect("Failed to transfer");
+    .await
+    .expect("Failed to transfer");
 
     // Assert Bob has lockup
-    assert_eq!(
-        get_lockup_info(&bob, &contract, &worker)
-            .await
-            .len(),
-        1
-    );
+    assert_eq!(get_lockup_info(&bob, &contract, &worker).await.len(), 1);
 
     // Wait while lockup is expired
     tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
 
     // Bob transfer to Dave 150 LIS
-    make_transfer(&bob, &dave.id(), 150 * ONE_LIS, &contract, &worker).await.expect("Failed to transfer");
+    make_transfer(&bob, &dave.id(), 150 * ONE_LIS, &contract, &worker)
+        .await
+        .expect("Failed to transfer");
 
     // Assert Bob has 50 LIS
     assert_eq!(
@@ -403,12 +354,7 @@ async fn transfer_get_balance_from_expired_lockup() {
     );
 
     // Assert Bob has not lockups
-    assert_eq!(
-        get_lockup_info(&bob, &contract, &worker)
-            .await
-            .len(),
-        0
-    );
+    assert_eq!(get_lockup_info(&bob, &contract, &worker).await.len(), 0);
 
     // Assert Dave has 150 LIS
     assert_eq!(
@@ -428,7 +374,9 @@ async fn transfer_get_balance_from_two_expired_lockups() {
     let (contract, worker) = TestingEnvBuilder::default().build().await;
 
     // Alice transfer 1 LIS to Bob
-    make_transfer(&alice, &bob.id(), 1 * ONE_LIS, &contract, &worker).await.expect("Failed to transfer");
+    make_transfer(&alice, &bob.id(), 1 * ONE_LIS, &contract, &worker)
+        .await
+        .expect("Failed to transfer");
 
     // Alice create lockup for Bob with duration = 1 SECOND, amount - 100 LIS
     create_lockup(
@@ -439,7 +387,8 @@ async fn transfer_get_balance_from_two_expired_lockups() {
         &contract,
         &worker,
     )
-        .await.expect("Failed to transfer");
+    .await
+    .expect("Failed to transfer");
 
     // Alice create lockup for Bob with duration = 1 SECOND, amount - 50 LIS
     create_lockup(
@@ -450,21 +399,19 @@ async fn transfer_get_balance_from_two_expired_lockups() {
         &contract,
         &worker,
     )
-        .await.expect("Failed to transfer");
+    .await
+    .expect("Failed to transfer");
 
     // Assert Bob has 2 lockups
-    assert_eq!(
-        get_lockup_info(&bob, &contract, &worker)
-            .await
-            .len(),
-        2
-    );
+    assert_eq!(get_lockup_info(&bob, &contract, &worker).await.len(), 2);
 
     // Wait while lockups is expired
     tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
 
     // Bob transfer to Dave 150 LIS
-    make_transfer(&bob, &dave.id(), 150 * ONE_LIS, &contract, &worker).await.expect("Failed to transfer");
+    make_transfer(&bob, &dave.id(), 150 * ONE_LIS, &contract, &worker)
+        .await
+        .expect("Failed to transfer");
 
     // Assert Bob has 1 LIS
     assert_eq!(
@@ -473,12 +420,7 @@ async fn transfer_get_balance_from_two_expired_lockups() {
     );
 
     // Assert Bob has not lockups
-    assert_eq!(
-        get_lockup_info(&bob, &contract, &worker)
-            .await
-            .len(),
-        0
-    );
+    assert_eq!(get_lockup_info(&bob, &contract, &worker).await.len(), 0);
 
     // Assert Dave has 150 LIS
     assert_eq!(
@@ -498,7 +440,9 @@ async fn transfer_get_balance_from_set_of_lockups() {
     let (contract, worker) = TestingEnvBuilder::default().build().await;
 
     // Alice transfer 1 LIS to Bob
-    make_transfer(&alice, &bob.id(), 1 * ONE_LIS, &contract, &worker).await.expect("Failed to transfer");
+    make_transfer(&alice, &bob.id(), 1 * ONE_LIS, &contract, &worker)
+        .await
+        .expect("Failed to transfer");
 
     // Alice create lockup for Bob with duration = 1 SECOND, amount - 10 LIS
     create_lockup(
@@ -509,7 +453,8 @@ async fn transfer_get_balance_from_set_of_lockups() {
         &contract,
         &worker,
     )
-        .await.expect("Failed to transfer");
+    .await
+    .expect("Failed to transfer");
 
     // Alice create lockup for Bob with duration = 1 SECOND, amount - 20 LIS
     create_lockup(
@@ -520,7 +465,8 @@ async fn transfer_get_balance_from_set_of_lockups() {
         &contract,
         &worker,
     )
-        .await.expect("Failed to transfer");
+    .await
+    .expect("Failed to transfer");
 
     // Alice create lockup for Bob with duration = 1 SECOND, amount - 25 LIS
     create_lockup(
@@ -531,7 +477,8 @@ async fn transfer_get_balance_from_set_of_lockups() {
         &contract,
         &worker,
     )
-        .await.expect("Failed to transfer");
+    .await
+    .expect("Failed to transfer");
 
     // Alice create lockup for Bob with duration = 1 DAY, amount - 50 LIS
     create_lockup(
@@ -542,7 +489,8 @@ async fn transfer_get_balance_from_set_of_lockups() {
         &contract,
         &worker,
     )
-        .await.expect("Failed to transfer");
+    .await
+    .expect("Failed to transfer");
 
     // Alice create lockup for Bob with duration = 1 DAY, amount - 100 LIS
     create_lockup(
@@ -553,21 +501,19 @@ async fn transfer_get_balance_from_set_of_lockups() {
         &contract,
         &worker,
     )
-        .await.expect("Failed to transfer");
+    .await
+    .expect("Failed to transfer");
 
     // Assert Bob has 5 lockups
-    assert_eq!(
-        get_lockup_info(&bob, &contract, &worker)
-            .await
-            .len(),
-        5
-    );
+    assert_eq!(get_lockup_info(&bob, &contract, &worker).await.len(), 5);
 
     // Wait while lockups is expired
     tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
 
     // Bob transfer to Dave 50 LIS
-    make_transfer(&bob, &dave.id(), 50 * ONE_LIS, &contract, &worker).await.expect("Failed to transfer");
+    make_transfer(&bob, &dave.id(), 50 * ONE_LIS, &contract, &worker)
+        .await
+        .expect("Failed to transfer");
 
     // Assert Bob has 6 LIS
     assert_eq!(
@@ -576,12 +522,7 @@ async fn transfer_get_balance_from_set_of_lockups() {
     );
 
     // Assert Bob has 2 lockups
-    assert_eq!(
-        get_lockup_info(&bob, &contract, &worker)
-            .await
-            .len(),
-        2
-    );
+    assert_eq!(get_lockup_info(&bob, &contract, &worker).await.len(), 2);
 
     // Assert Dave has 50 LIS
     assert_eq!(
@@ -598,15 +539,11 @@ async fn transfer_get_balance_from_set_of_lockups() {
         &contract,
         &worker,
     )
-        .await.expect("Failed to transfer");
+    .await
+    .expect("Failed to transfer");
 
     // Assert bob has 3 lockups
-    assert_eq!(
-        get_lockup_info(&bob, &contract, &worker)
-            .await
-            .len(),
-        3
-    );
+    assert_eq!(get_lockup_info(&bob, &contract, &worker).await.len(), 3);
 
     // Bob transfer to Dave 50 LIS
     let response = make_transfer(&bob, &dave.id(), 50 * ONE_LIS, &contract, &worker).await;
@@ -627,12 +564,7 @@ async fn transfer_get_balance_from_set_of_lockups() {
     );
 
     // Assert Bob has 3 lockups
-    assert_eq!(
-        get_lockup_info(&bob, &contract, &worker)
-            .await
-            .len(),
-        3
-    );
+    assert_eq!(get_lockup_info(&bob, &contract, &worker).await.len(), 3);
 
     // Assert Dave has 50 LIS
     assert_eq!(
@@ -652,7 +584,9 @@ async fn transfer_get_balance_from_not_expired_lockup() {
     let (contract, worker) = TestingEnvBuilder::default().build().await;
 
     // Alice transfer to Bob 100 LIS
-    make_transfer(&alice, &bob.id(), 100 * ONE_LIS, &contract, &worker).await.expect("Failed to transfer");
+    make_transfer(&alice, &bob.id(), 100 * ONE_LIS, &contract, &worker)
+        .await
+        .expect("Failed to transfer");
 
     // Assert Bob has 100 LIS
     assert_eq!(
@@ -669,15 +603,11 @@ async fn transfer_get_balance_from_not_expired_lockup() {
         &contract,
         &worker,
     )
-        .await.expect("Failed to transfer");
+    .await
+    .expect("Failed to transfer");
 
     // Assert Bob has lockup
-    assert_eq!(
-        get_lockup_info(&bob, &contract, &worker)
-            .await
-            .len(),
-        1
-    );
+    assert_eq!(get_lockup_info(&bob, &contract, &worker).await.len(), 1);
 
     // Bob transfer to Dave 150 LIS
     let response = make_transfer(&bob, &dave.id(), 150 * ONE_LIS, &contract, &worker).await;
@@ -698,16 +628,8 @@ async fn transfer_get_balance_from_not_expired_lockup() {
     );
 
     // Assert Bob has lockup
-    assert_eq!(
-        get_lockup_info(&bob, &contract, &worker)
-            .await
-            .len(),
-        1
-    );
+    assert_eq!(get_lockup_info(&bob, &contract, &worker).await.len(), 1);
 
     // Assert Dave has 0 LIS
-    assert_eq!(
-        get_balance_info(&dave, &contract, &worker).await,
-        0
-    );
+    assert_eq!(get_balance_info(&dave, &contract, &worker).await, 0);
 }

@@ -202,5 +202,8 @@ pub async fn get_lockup_info(
         .view()
         .await;
 
-    view_result.expect("Cannot get result").json().expect("Cannot parse JSON")
+    view_result
+        .expect("Cannot get result")
+        .json()
+        .expect("Cannot parse JSON")
 }
