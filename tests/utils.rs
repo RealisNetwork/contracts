@@ -273,7 +273,7 @@ pub async fn create_n_lockups_for_account(
     recipient_id: &AccountId,
     amount: u128,
     duration: Option<Timestamp>,
-    n: u64,
+    n: u64, // The n lockups will be created
     contract: &Contract,
     worker: &TestWorker,
 ) -> Vec<u64> {
@@ -281,6 +281,8 @@ pub async fn create_n_lockups_for_account(
     let mut timestamps = vec![];
 
     for index in 1..=n {
+        // We have to use index here to identify unique calls
+        // (in other case it will create only one lockup)
         transaction = transaction.call(
             Function::new("create_lockup")
                 .args_json(serde_json::json!({
