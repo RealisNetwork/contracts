@@ -31,7 +31,10 @@ async fn mint() {
     let bob_info = test_call_get_acc_info(&bob, &worker, &contract).await;
     assert!(bob_info.nfts.get(0).is_some());
     // Alice mint for Charlie
+    test_call_mint_nft(&contract, &worker, &charlie, &alice).await;
     // Alice mint for Charlie
+    test_call_mint_nft(&contract, &worker, &charlie, &alice).await;
     // Assert Charlie has 2 NFTs
-    // Assert Bob has NFT
+    let charlie_info = test_call_get_acc_info(&charlie, &worker, &contract).await;
+    assert_eq!(charlie_info.nfts.len(), 2);
 }
