@@ -1,10 +1,8 @@
 mod utils;
 
-use near_sdk::serde_json::{json};
-use workspaces::{Contract, Worker};
 use crate::utils::*;
-use workspaces::result::CallExecutionDetails;
-
+use near_sdk::serde_json::json;
+use workspaces::{result::CallExecutionDetails, Contract, Worker};
 
 #[tokio::test]
 async fn burn_nft() {
@@ -12,9 +10,7 @@ async fn burn_nft() {
     let alice = get_alice();
     let bob = get_bob();
 
-    let (contract, worker) = TestingEnvBuilder::default()
-        .build()
-        .await;
+    let (contract, worker) = TestingEnvBuilder::default().build().await;
 
     // Alice mint nft for Bob with id = 1
     let result = test_call_mint_nft(&contract, &worker, &bob, &alice).await;
@@ -39,7 +35,6 @@ async fn burn_nft() {
     // Assert Bob has 6 nfts
     let bob_info = test_call_get_acc_info(&bob, &worker, &contract).await;
     assert_eq!(bob_info.nfts.len(), 6);
-
 
     // Bob burn nfts with id = 3,5
     test_call_burn_nft(&bob, &contract, 3.into(), &worker).await;
@@ -82,7 +77,10 @@ async fn burn_nft_non_existed_nft() {
     // Bob burn nft with id = 5
     let result = test_call_burn_nft(&bob, &contract, 5.into(), &worker).await;
     // Assert error
-    assert_eq!(result.map_err(|err| err.to_string()), Err("Action #0: ExecutionError(\"Smart contract panicked: Nft not exist\")".to_owned()));
+    assert_eq!(
+        result.map_err(|err| err.to_string()),
+        Err("Action #0: ExecutionError(\"Smart contract panicked: Nft not exist\")".to_owned())
+    );
     // Assert Bob has 3 nft
     let bobs_nfts = test_call_get_acc_info(&bob, &worker, &contract).await;
     for i in 0..3 {
@@ -97,9 +95,7 @@ async fn burn_nft_not_own_nft() {
     let bob = get_bob();
     let charlie = get_charlie();
 
-    let (contract, worker) = TestingEnvBuilder::default()
-        .build()
-        .await;
+    let (contract, worker) = TestingEnvBuilder::default().build().await;
 
     // Alice mint nft for Bob with id = 0,1,2
     for _ in 0..3 {

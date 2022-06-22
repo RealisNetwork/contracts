@@ -14,7 +14,15 @@ pub mod types;
 pub mod update;
 pub mod utils;
 
-use near_sdk::{borsh::{self, BorshDeserialize, BorshSerialize}, collections::{LookupMap, LookupSet}, env, json_types::U128, near_bindgen, serde::{Deserialize, Serialize}, AccountId, BorshStorageKey, PublicKey, Balance};
+use near_sdk::{
+    borsh::{self, BorshDeserialize, BorshSerialize},
+    collections::{LookupMap, LookupSet},
+    env,
+    json_types::U128,
+    near_bindgen,
+    serde::{Deserialize, Serialize},
+    AccountId, BorshStorageKey, PublicKey,
+};
 
 use crate::{
     account::{Account, AccountInfo, VAccount},

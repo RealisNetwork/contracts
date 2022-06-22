@@ -4,7 +4,7 @@ use near_sdk::{
     collections::{UnorderedMap, Vector},
     env,
     json_types::U128,
-    near_bindgen, require,
+    require,
     serde::{Deserialize, Serialize},
     AccountId, Balance, Timestamp,
 };
@@ -13,7 +13,7 @@ use crate::{
     auction::{Auction, Bid, DealData},
     events::{EventLog, EventLogVariant, NftBurn},
     marketplace::Marketplace,
-    Account, Contract, ContractExt, NftId, StorageKey,
+    Account, Contract, NftId, StorageKey,
 };
 
 /// State of NFT.
