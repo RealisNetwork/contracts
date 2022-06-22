@@ -503,8 +503,7 @@ async fn transfer_get_balance_from_set_of_lockups() {
     .await;
 
     // Assert Bob has 5 lockups
-    println!("{:#?}", get_lockup_info(&bob, &contract, &worker).await);
-    //assert_eq!(get_lockup_info(&bob, &contract, &worker).await.len(), 5);
+    assert_eq!(get_lockup_info(&bob, &contract, &worker).await.len(), 5);
 
     // Wait while lockups is expired
     tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;

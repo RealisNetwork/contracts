@@ -13,8 +13,6 @@ pub const MAX_GAS: Gas = 300_000_000_000_000;
 
 pub type TestWorker = Worker<Testnet>;
 
-pub type TestWorker = Worker<Testnet>;
-
 pub fn get_alice() -> Account {
     Account::from_file("./tests/res/alice.realis.testnet.json")
 }
@@ -139,16 +137,14 @@ impl TestingEnvBuilder {
 }
 
 pub async fn get_balance_info(account: &Account, contract: &Contract, worker: &TestWorker) -> u128 {
-    let view_result = account
+   account
         .call(worker, contract.id(), "get_balance_info")
         .args_json(serde_json::json!({
             "account_id": account.id(),
         }))
         .expect("Invalid input args")
         .view()
-        .await;
-
-    view_result
+        .await
         .expect("Cannon get result")
         .json::<U128>()
         .expect("Cannot parse JSON")
@@ -181,7 +177,7 @@ pub async fn create_lockup_for_account(
     contract: &Contract,
     worker: &TestWorker,
 ) -> Timestamp {
-    let call_result = account
+    account
         .call(&worker, contract.id(), "create_lockup")
         .args_json(serde_json::json!({
             "recipient_id": recipient_id,
@@ -190,9 +186,7 @@ pub async fn create_lockup_for_account(
         }))
         .expect("Invalid input args")
         .transact()
-        .await;
-
-    call_result
+        .await
         .expect("Cannon get result")
         .json::<Timestamp>()
         .expect("Cannot parse JSON")
@@ -203,16 +197,14 @@ pub async fn get_lockup_info(
     contract: &Contract,
     worker: &TestWorker,
 ) -> Vec<LockupInfo> {
-    let view_result = account
+    account
         .call(&worker, contract.id(), "lockups_info")
         .args_json(serde_json::json!({
             "account_id": account.id(),
         }))
         .expect("Invalid input args")
         .view()
-        .await;
-
-    view_result
+        .await
         .expect("Cannot get result")
         .json()
         .expect("Cannot parse JSON")
@@ -223,15 +215,13 @@ pub async fn claim_all_lockup_for_account(
     contract: &Contract,
     worker: &Worker<Testnet>,
 ) -> u128 {
-    let call_result = account
+     account
         .call(&worker, contract.id(), "claim_all_lockup")
         .gas(MAX_GAS)
         .args_json(serde_json::json!({}))
         .expect("Invalid input args")
         .transact()
-        .await;
-
-    call_result
+        .await
         .expect("Cannon get result")
         .json::<U128>()
         .expect("Cannot parse JSON")
@@ -244,14 +234,12 @@ pub async fn claim_lockup_for_account(
     worker: &Worker<Testnet>,
     expire_on: u64,
 ) -> u128 {
-    let call_result = account
+    account
         .call(&worker, contract.id(), "claim_lockup")
         .args_json(serde_json::json!({ "expire_on": expire_on }))
         .expect("Invalid input args")
         .transact()
-        .await;
-
-    call_result
+        .await
         .expect("Cannon get result")
         .json::<U128>()
         .expect("Cannot parse JSON")
@@ -265,7 +253,7 @@ pub async fn refund_lockup_for_account(
     recipient_id: &AccountId,
     expire_on: u64,
 ) -> u128 {
-    let call_result = account
+    account
         .call(&worker, contract.id(), "refund_lockup")
         .args_json(serde_json::json!({
             "recipient_id": recipient_id,
@@ -273,9 +261,7 @@ pub async fn refund_lockup_for_account(
         }))
         .expect("Invalid input args")
         .transact()
-        .await;
-
-    call_result
+        .await
         .expect("Cannon get result")
         .json::<U128>()
         .expect("Cannot parse JSON")
