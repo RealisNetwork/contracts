@@ -1,9 +1,12 @@
-use near_sdk::{json_types::U128, serde::Serialize, serde_json};
-use workspaces::network::DevAccountDeployer;
+use near_sdk::{json_types::U128, serde::Serialize, serde_json, serde_json::Value, Timestamp};
+use realis_near::lockup::LockupInfo;
+use workspaces::{network::DevAccountDeployer, result::CallExecutionDetails};
 pub use workspaces::{network::Testnet, Account, AccountId, Contract, Worker};
 
 pub const WASM_FILE: &str = "./target/wasm32-unknown-unknown/release/realis_near.wasm";
 pub const ONE_LIS: u128 = 1_000_000_000_000;
+
+pub type TestWorker = Worker<Testnet>;
 
 pub fn get_alice() -> Account {
     Account::from_file("./tests/res/alice.realis.testnet.json")
@@ -77,7 +80,7 @@ impl Default for TestingEnvBuilder {
 }
 
 impl TestingEnvBuilder {
-    pub async fn build(self) -> (Contract, Worker<Testnet>) {
+    pub async fn build(self) -> (Contract, TestWorker) {
         let worker = workspaces::testnet()
             .await
             .expect("Fail connect to testnet");
@@ -126,4 +129,79 @@ impl TestingEnvBuilder {
         self.signer = signer;
         self
     }
+}
+
+pub async fn get_balance_info(account: &Account, contract: &Contract, worker: &TestWorker) -> u128 {
+    let view_result = account
+        .call(worker, contract.id(), "get_balance_info")
+        .args_json(serde_json::json!({
+            "account_id": account.id(),
+        }))
+        .expect("Invalid input args")
+        .view()
+        .await;
+
+    view_result
+        .expect("Cannon get result")
+        .json::<U128>()
+        .expect("Cannot parse JSON")
+        .0
+}
+
+pub async fn make_transfer(
+    account: &Account,
+    recipient_id: &AccountId,
+    amount: u128,
+    contract: &Contract,
+    worker: &TestWorker,
+) -> anyhow::Result<CallExecutionDetails> {
+    account
+        .call(&worker, contract.id(), "transfer")
+        .args_json(serde_json::json!({
+            "recipient_id": recipient_id,
+            "amount": U128(amount)
+        }))
+        .expect("Invalid input args")
+        .transact()
+        .await
+}
+
+pub async fn create_lockup(
+    account: &Account,
+    recipient_id: &AccountId,
+    amount: u128,
+    duration: Option<Timestamp>,
+    contract: &Contract,
+    worker: &TestWorker,
+) -> anyhow::Result<CallExecutionDetails> {
+    account
+        .call(&worker, contract.id(), "create_lockup")
+        .args_json(serde_json::json!({
+            "recipient_id": recipient_id,
+            "amount": U128(amount),
+            "duration": duration
+        }))
+        .expect("Invalid input args")
+        .transact()
+        .await
+}
+
+pub async fn get_lockup_info(
+    account: &Account,
+    contract: &Contract,
+    worker: &TestWorker,
+) -> Vec<LockupInfo> {
+    let view_result = account
+        .call(&worker, contract.id(), "lockups_info")
+        .args_json(serde_json::json!({
+            "account_id": account.id(),
+        }))
+        .expect("Invalid input args")
+        .view()
+        .await;
+
+    view_result
+        .expect("Cannot get result")
+        .json()
+        .expect("Cannot parse JSON")
 }
