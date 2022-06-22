@@ -1,7 +1,5 @@
 use crate::utils::*;
 
-mod utils;
-
 #[tokio::test]
 #[should_panic(expected = "Mint nft, Fail to make transaction.: \
 Action #0: ExecutionError(\"Smart contract panicked: Only owner can do this\")")]

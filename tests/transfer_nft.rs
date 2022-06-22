@@ -1,5 +1,3 @@
-mod utils;
-
 use crate::utils::*;
 use near_sdk::test_utils::accounts;
 
