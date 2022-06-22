@@ -37,8 +37,8 @@ async fn burn_nft() {
     assert_eq!(bob_info.nfts.len(), 6);
 
     // Bob burn nfts with id = 3,5
-    test_call_burn_nft(&bob, &contract, 3.into(), &worker).await;
-    test_call_burn_nft(&bob, &contract, 5.into(), &worker).await;
+    let _ = test_call_burn_nft(&bob, &contract, 3.into(), &worker).await;
+    let _ = test_call_burn_nft(&bob, &contract, 5.into(), &worker).await;
 
     // Assert Bob has 4 nft
     let bob_info = test_call_get_acc_info(&bob, &worker, &contract).await;
@@ -78,8 +78,8 @@ async fn burn_nft_non_existed_nft() {
     let result = test_call_burn_nft(&bob, &contract, 5.into(), &worker).await;
     // Assert error
     assert_eq!(
-        result.map_err(|err| err.to_string()),
-        Err("Action #0: ExecutionError(\"Smart contract panicked: Nft not exist\")".to_owned())
+        result.err().unwrap().to_string(),
+        "Action #0: ExecutionError(\"Smart contract panicked: Nft not exist\")"
     );
     // Assert Bob has 3 nft
     let bobs_nfts = test_call_get_acc_info(&bob, &worker, &contract).await;

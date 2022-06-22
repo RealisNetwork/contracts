@@ -168,7 +168,7 @@ pub async fn test_call_get_acc_info(
     contract
         .call(&worker, "get_account_info")
         .args_json(&json!({
-            "account_id":account.id()
+            "account_id": account.id()
         }))
         .expect("Get account info, wrong args.")
         .transact()
@@ -176,6 +176,25 @@ pub async fn test_call_get_acc_info(
         .expect("Get account info, Fail to make transaction.")
         .json::<AccountInfo>()
         .expect("Get account info, result is not OK")
+}
+
+pub async fn test_call_insert_acc(
+    account: &Account,
+    worker: &Worker<Testnet>,
+    contract: &Contract,
+    signer: &Account,
+) -> AccountInfo {
+    signer
+        .call(&worker, contract.id(), "insert_account")
+        .args_json(&json!({
+            "account_id": account.id()
+        }))
+        .expect("Insert account, wrong args.")
+        .transact()
+        .await
+        .expect("Insert account , Fail to make transaction.")
+        .json::<AccountInfo>()
+        .expect("Insert account, result is not OK")
 }
 
 pub async fn test_call_burn_nft(
