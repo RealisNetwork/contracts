@@ -1,4 +1,6 @@
+use std::str::FromStr;
 pub use near_sdk::{json_types::U128, serde::Serialize, serde_json, serde_json::Value, Timestamp};
+use near_sdk::{env, PublicKey};
 use realis_near::{lockup::LockupInfo, utils::DAY};
 pub use workspaces::{
     network::{DevAccountDeployer, Testnet},
@@ -6,6 +8,7 @@ pub use workspaces::{
     Account, AccountId, Contract, Worker,
 };
 use workspaces::{operations::Function, types::Gas};
+use workspaces::types::SecretKey;
 
 pub const WASM_FILE: &str = "./target/wasm32-unknown-unknown/release/realis_near.wasm";
 pub const ONE_LIS: u128 = 1_000_000_000_000;
@@ -29,19 +32,22 @@ pub fn get_dave() -> Account {
     Account::from_file("./tests/res/dave.realis.testnet.json")
 }
 
-pub struct BackendAccount;
+pub struct BackendAccount {}
 
 impl BackendAccount {
-    pub fn get_root() -> Account {
-        Account::from_file("./tests/res/backend.realis.testnet.json")
+    pub fn get_root() -> (Account, AccountId) {
+        (Account::from_file("./tests/res/backend.realis.testnet.json"),
+        Self::get_account_id(PublicKey::from_str("ed25519:J3SM6zr4kDKbmC639n9Kn4hbx8x3ESwkULAuYdywj5Mz").unwrap()))
+
     }
 
     pub fn get_user1() -> Account {
         Account::from_file("./tests/res/backend_access_keys/user1_backend.realis.testnet.json")
     }
 
-    pub fn get_user2() -> Account {
-        Account::from_file("./tests/res/backend_access_keys/user2_backend.realis.testnet.json")
+    pub fn get_user2() -> (Account, AccountId) {
+        (Account::from_file("./tests/res/backend_access_keys/user2_backend.realis.testnet.json"),
+         Self::get_account_id(PublicKey::from_str("ed25519:Goh1DvcPkxp7fuCTH3biCR1v5Smm6xykEWFeWpNT8CvS").unwrap()))
     }
 
     pub fn get_user3() -> Account {
@@ -52,8 +58,12 @@ impl BackendAccount {
         Account::from_file("./tests/res/backend_access_keys/user4_backend.realis.testnet.json")
     }
 
-    pub fn get_account_id(account: &Account) -> AccountId {
-        todo!()
+
+
+    pub fn get_account_id(pk: PublicKey) -> AccountId {
+        hex::encode(&pk.as_bytes()[1..])
+            .try_into()
+            .unwrap_or_else(|_| env::panic_str("Fail to convert PublicKey to AccountId"))
     }
 }
 
@@ -306,4 +316,38 @@ pub async fn create_n_lockups_for_account(
         .iter()
         .map(|elem| elem + transaction_result - n)
         .collect::<Vec<u64>>()
+}
+
+pub async fn make_backend_transfer(
+    signer: &Account,
+    recipient_id: &AccountId,
+    amount: u128,
+    contract: &Contract,
+    worker: &TestWorker,
+) -> anyhow::Result<CallExecutionDetails> {
+    signer
+        .call(&worker, contract.id(), "backend_transfer")
+        .args_json(serde_json::json!({
+            "recipient_id": recipient_id,
+            "amount": U128(amount)
+        }))
+        .expect("Invalid input args")
+        .transact()
+        .await
+}
+
+pub async fn add_to_backends(
+    signer: &Account,
+    account_ids: Vec<&AccountId>,
+    contract: &Contract,
+    worker: &TestWorker,
+) -> anyhow::Result<CallExecutionDetails> {
+    signer
+        .call(&worker, contract.id(), "owner_add_backends")
+        .args_json(serde_json::json!({
+            "account_ids": account_ids,
+        }))
+        .expect("Invalid input args")
+        .transact()
+        .await
 }

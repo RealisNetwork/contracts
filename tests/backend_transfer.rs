@@ -7,8 +7,8 @@ use near_sdk::{json_types::U128, serde_json};
 async fn backend_transfer_from_not_exist_account() {
     // Setup contract: Backend.root - owner/backend
     let (contract, worker) = TestingEnvBuilder::default()
-        .set_signer(BackendAccount::get_root())
-        .set_backend(BackendAccount::get_root().id().clone())
+        .set_signer(BackendAccount::get_root().0)
+        .set_backend(BackendAccount::get_root().1.clone())
         .build()
         .await;
 
@@ -35,22 +35,50 @@ async fn backend_transfer_from_not_exist_account() {
 }
 
 #[tokio::test]
-#[ignore]
 async fn backend_transfer_more_than_account_balance() {
+
+    let (root_account, root_id_by_pk) = BackendAccount::get_root();
+    let alice = get_alice();
+    let user2 = BackendAccount::get_user2();
+    let user3 = BackendAccount::get_user3();
+
     // Setup contract: Backend.root - owner/backend, Alice - beneficiary,
     // total_supply - 3_000_000_000 LIS
+    let (contract, worker) = TestingEnvBuilder::default()
+        .set_signer(BackendAccount::get_root().0)
+        .set_backend(root_account.id().clone())
+        .set_beneficiary(alice.id().clone())
+        .build()
+        .await;
+
+    root_account.call(&worker, contract.id(), "register_account").args_json(serde_json::json!({})).unwrap().transact().await.unwrap();
+
+    assert_eq!(get_balance_info(&root_account, &contract, &worker).await, 3_000_000_000 * ONE_LIS);
+
+    // Owner transfer 3_000_000_000 LIS to account_id = hash(backend_root.pk) = root_id_by_pk
+    make_transfer(&root_account, &root_id_by_pk, ONE_LIS, &contract, &worker).await.unwrap();
 
     // Backend.root backend_transfer to Backend.user2 1_000 LIS
+    make_backend_transfer(&root_account, &user2.1, 1000 * ONE_LIS, &contract, &worker).await.unwrap();
+
     // Assert Backend.root has 2_999_998_900 LIS
+    assert_eq!(get_balance_info(&root_account, &contract, &worker).await, 2_999_998_899 * ONE_LIS);
+
     // Assert Beneficiary has 100 LIS
+    assert_eq!(get_balance_info(&alice,&contract, &worker).await, 100 * ONE_LIS);
+
     // Assert Backend.user2 has 1_000 LIS
+    assert_eq!(get_balance_info(&user2.0, &contract, &worker).await, 1000 * ONE_LIS);
+
 
     // Backend.user2 backend_transfer to Backend.user3 1_001 LIS
+    //make_backend_transfer(&root, &user2.id(),1000 * ONE_LIS, &contract, &worker).await.unwrap();
+
     // Assert error
 
     // Backend.root backend_transfer to Backend.user3 3_000_000_000 LIS
     // Assert error
-    todo!()
+    //todo!()
 }
 
 #[tokio::test]

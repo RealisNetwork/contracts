@@ -39,7 +39,7 @@ async fn create_lockup() {
     assert_eq!(bobs_lockups[0].amount.0, 3000 * ONE_LIS);
 
     // Assert timestamp == default
-    assert_eq!(bobs_lockups[0].expire_on, bob_lockup_ts1);
+    assert_eq!(bobs_lockups[0].expire_on.0, bob_lockup_ts1);
 
     // Assert Alice balance
     assert_eq!(
@@ -66,7 +66,7 @@ async fn create_lockup() {
     assert_eq!(charlies_lockups[0].amount.0, 150 * ONE_LIS);
 
     // Assert timestamp == default
-    assert_eq!(charlies_lockups[0].expire_on, charlie_lockup_ts);
+    assert_eq!(charlies_lockups[0].expire_on.0, charlie_lockup_ts);
 
     // Assert Alice balance
     assert_eq!(
@@ -87,8 +87,8 @@ async fn create_lockup() {
     assert_eq!(bobs_lockups[1].amount.0, 300 * ONE_LIS);
 
     // Assert timestamp == default
-    assert_eq!(bobs_lockups[0].expire_on, bob_lockup_ts1);
-    assert_eq!(bobs_lockups[1].expire_on, bob_lockup_ts2);
+    assert_eq!(bobs_lockups[0].expire_on.0, bob_lockup_ts1);
+    assert_eq!(bobs_lockups[1].expire_on.0, bob_lockup_ts2);
 
     // Assert Alice balance
     assert_eq!(
@@ -130,7 +130,7 @@ async fn create_lockup_with_duration() {
     assert_eq!(bobs_lockups[0].amount.0, 10 * ONE_LIS);
 
     // Assert duration = 1 DAY
-    assert_eq!(bobs_lockups[0].expire_on, bob_lockup_ts1);
+    assert_eq!(bobs_lockups[0].expire_on.0, bob_lockup_ts1);
 
     // Assert Alice balance
     assert_eq!(
@@ -172,7 +172,7 @@ async fn user_claim_lockup() {
     assert_eq!(bobs_lockups[0].amount.0, 10 * ONE_LIS);
 
     // Assert duration = 10 SECONDS
-    assert_eq!(bobs_lockups[0].expire_on, bob_lockup_ts1);
+    assert_eq!(bobs_lockups[0].expire_on.0, bob_lockup_ts1);
 
     // Assert Alice balance
     assert_eq!(
@@ -248,7 +248,7 @@ async fn user_claim_lockup() {
         .iter()
         .zip(bob_timestamps.clone().iter())
         .for_each(|(lockup, timestamp)| {
-            assert_eq!(&lockup.expire_on, timestamp);
+            assert_eq!(&lockup.expire_on.0, timestamp);
         });
 
     // Assert Alice balance
@@ -371,7 +371,7 @@ async fn user_claimed_not_expired_lockup() {
     assert_eq!(bobs_lockups[0].amount.0, 10 * ONE_LIS);
 
     // Assert duration = 1 DAY
-    assert_eq!(bobs_lockups[0].expire_on, bob_lockup_ts);
+    assert_eq!(bobs_lockups[0].expire_on.0, bob_lockup_ts);
 
     // Assert Alice balance
     assert_eq!(
@@ -431,8 +431,8 @@ async fn claim_expired_lockup_when_other_not_expired() {
     assert_eq!(bobs_lockups[1].amount.0, 10 * ONE_LIS);
 
     // Assert duration
-    assert_eq!(bobs_lockups[0].expire_on, bob_lockup_ts1);
-    assert_eq!(bobs_lockups[1].expire_on, bob_lockup_ts2);
+    assert_eq!(bobs_lockups[0].expire_on.0, bob_lockup_ts1);
+    assert_eq!(bobs_lockups[1].expire_on.0, bob_lockup_ts2);
 
     // Assert Alice balance
     assert_eq!(
@@ -482,7 +482,7 @@ async fn refund_lockup() {
     assert_eq!(bobs_lockups[0].amount.0, 10 * ONE_LIS);
 
     // Assert duration
-    assert_eq!(bobs_lockups[0].expire_on, bob_lockup_ts1);
+    assert_eq!(bobs_lockups[0].expire_on.0, bob_lockup_ts1);
 
     // Assert Alice balance
     assert_eq!(
@@ -537,7 +537,7 @@ async fn refund_lockup() {
         .iter()
         .zip(bob_lockup_ts.clone().iter())
         .for_each(|(lockup, timestamp)| {
-            assert_eq!(&lockup.expire_on, timestamp);
+            assert_eq!(&lockup.expire_on.0, timestamp);
         });
 
     // Assert Alice balance
@@ -572,7 +572,7 @@ async fn refund_lockup() {
         .iter()
         .zip(bob_lockup_ts.clone().iter())
         .for_each(|(lockup, timestamp)| {
-            assert_eq!(&lockup.expire_on, timestamp);
+            assert_eq!(&lockup.expire_on.0, timestamp);
         });
 
     // Assert Bob balance
@@ -671,7 +671,7 @@ async fn claim_all_lockups() {
         .iter()
         .zip(timestamps.clone().iter())
         .for_each(|(lockup, timestamp)| {
-            assert_eq!(&lockup.expire_on, timestamp);
+            assert_eq!(&lockup.expire_on.0, timestamp);
         });
 
     // Assert Alice balance
@@ -739,7 +739,7 @@ async fn claim_all_lockups() {
         .iter()
         .zip(timestamps.clone().iter())
         .for_each(|(lockup, timestamp)| {
-            assert_eq!(&lockup.expire_on, timestamp);
+            assert_eq!(&lockup.expire_on.0, timestamp);
         });
 
     // Assert Alice balance
@@ -754,7 +754,7 @@ async fn claim_all_lockups() {
     // Bob claim all lockups with amount = 20 LIS
     for lockup in bobs_lockups {
         if lockup.amount.0 == 20 * ONE_LIS {
-            claim_lockup_for_account(&bob, &contract, &worker, lockup.expire_on).await;
+            claim_lockup_for_account(&bob, &contract, &worker, lockup.expire_on.0).await;
         }
     }
 
@@ -828,7 +828,7 @@ async fn claim_all_lockups_with_one_lockup() {
     assert_eq!(bobs_lockups[0].amount.0, 10 * ONE_LIS);
 
     // Assert duration
-    assert_eq!(bobs_lockups[0].expire_on, bob_lockup_ts1);
+    assert_eq!(bobs_lockups[0].expire_on.0, bob_lockup_ts1);
 
     // Assert Alice balance = 2_999_999_989 LIS
     assert_eq!(
@@ -878,7 +878,7 @@ async fn claim_all_lockups_with_non_expired_time() {
     assert_eq!(bobs_lockups[0].amount.0, 10 * ONE_LIS);
 
     // Assert duration
-    assert_eq!(bobs_lockups[0].expire_on, timestamp);
+    assert_eq!(bobs_lockups[0].expire_on.0, timestamp);
 
     // Assert Alice balance = 2_999_999_989 LIS
     assert_eq!(
@@ -950,7 +950,7 @@ async fn claim_all_lockups_with_partially_expired_time() {
         .iter()
         .zip(timestamps.clone().iter())
         .for_each(|(lockup, timestamp)| {
-            assert_eq!(&lockup.expire_on, timestamp);
+            assert_eq!(&lockup.expire_on.0, timestamp);
         });
 
     // Assert Alice balance = 2_999_999_900 LIS
