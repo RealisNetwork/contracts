@@ -1,7 +1,7 @@
 use crate::{
     events::{EventLog, EventLogVariant, LockupClaimed},
     lockup::Lockup,
-    LockupInfo, NftId, Serialize, StorageKey,
+    LockupInfo, NftId, Serialize, StorageKey, Deserialize,
 };
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
@@ -78,7 +78,7 @@ impl Account {
             amount: U128(lockup.amount),
             account_id: &account_id,
         }]))
-        .emit();
+            .emit();
 
         self.free
     }
@@ -110,7 +110,7 @@ impl From<Account> for VAccount {
     }
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
 pub struct AccountInfo {
     pub free: U128,
