@@ -288,13 +288,13 @@ pub async fn create_n_lockups_for_account(
                 .args_json(serde_json::json!({
                       "recipient_id": recipient_id,
                       "amount": U128(amount),
-                      "duration": duration.unwrap_or(3 * DAY)  + index
+                      "duration": duration.unwrap_or(3 * DAY) + index
                 }))
-                .unwrap(),
+                .expect("Cannot make JSON"),
         );
         timestamps.push(index);
     }
-    let transaction_result = transaction.transact().await.unwrap().json::<u64>().unwrap();
+    let transaction_result = transaction.transact().await.expect("Can't transact").json::<u64>().expect("Can`t parse JSON");
 
     // Return obtained timestamps
     timestamps
