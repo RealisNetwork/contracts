@@ -4,73 +4,9 @@ use near_sdk::json_types::{U128, U64};
 use near_sdk::serde_json;
 use near_sdk::serde_json::{json, Value};
 use workspaces::{Contract, Worker};
-use realis_near::types::NftId;
 use crate::utils::*;
-use near_sdk::serde::{Deserialize, self};
+use workspaces::result::CallExecutionDetails;
 
-#[derive(Deserialize)]
-#[serde(crate = "near_sdk::serde")]
-pub struct AccountInfo {
-    pub free: U128,
-    pub lockups: Vec<LockupInfo>,
-    pub nfts: Vec<NftId>,
-    pub lockups_free: U128,
-}
-
-#[derive(Deserialize)]
-#[serde(crate = "near_sdk::serde")]
-pub struct LockupInfo {
-    pub amount: U128,
-    pub expire_on: U64,
-}
-
-async fn mint_nft(contract: &Contract, worker: &Worker<Testnet>, acc_to_mint: &Account, signer_acc: &Account) -> u128 {
-    let nft_id = signer_acc.call(&worker, contract.id(), "mint")
-        .args_json(
-            &json!({
-                "recipient_id": &acc_to_mint.id(),
-                "nft_metadata": "metadata",
-            })
-        )
-        .unwrap()
-        .transact()
-        .await
-        .unwrap()
-        .json::<U128>();
-
-    assert!(nft_id.is_ok());
-
-    nft_id.unwrap().0
-}
-
-async fn get_acc_info(account: &Account, worker: &Worker<Testnet>, contract: &Contract) -> AccountInfo {
-  let res =  contract
-        .call(&worker, "get_account_info")
-        .args_json(
-            &json!({
-                "account_id":account.id()
-            }))
-        .unwrap()
-        .transact()
-        .await
-        .unwrap()
-        .json::<AccountInfo>();
-    assert!(res.is_ok());
-
-    res.unwrap()
-}
-
-async fn burn_nft_fn(caller_acc: &Account, contract: &Contract, nft_id: usize, worker: &Worker<Testnet>) {
-    let res = caller_acc.call(&worker, &contract.id(), &"internal_burn_nft")
-        .args_json(&json!({
-            "target_id": caller_acc.id(),
-            "nft_id": nft_id,
-        }))
-        .unwrap()
-        .transact()
-        .await;
-    assert!(res.is_ok())
-}
 
 #[tokio::test]
 // #[ignore]
@@ -91,10 +27,9 @@ async fn burn_nft() {
     let bobs_nfts = get_acc_info(&bob, &worker, &contract).await;
     assert!(bobs_nfts.nfts.get(0).is_some());
 
-
     // Bob burn nft with id = 0
-    burn_nft_fn(&bob, &contract, 0, &worker).await;
-
+    let result = test_call_burn_nft(&bob, &contract, 0.into(), &worker).await;
+    assert!(result.is_ok());
 
     // Assert Bob hasn't nft
     let bobs_nfts = get_acc_info(&bob, &worker, &contract).await;
@@ -137,68 +72,29 @@ async fn burn_nft_non_existed_nft() {
 
     // Alice mint nft for Bob with id = 1,2,3
     for i in 0..3 {
-        let nft_id = alice.call(&worker, contract.id(), "mint")
-            .args_json(&json!({
-                "recipient_id": bob.id(),
-                "nft_metadata": "metadata"
-            }))
-            .expect("Invalid arguments")
-            .transact()
-            .await
-            .expect("Cant create NFT")
-            .json::<U128>()
-            .unwrap();
-        assert_eq!(nft_id.0, i)
+        let nft_id = test_call_mint_nft(&contract, &worker, &bob, &alice).await;
+        assert_eq!(nft_id, i)
     }
 
     // Assert Bob has 3 nft
-    let bobs_nfts = contract
-        .call(&worker, "get_account_info")
-        .args_json(
-            &json!({
-                "account_id": bob.id()
-            }))
-        .expect("Invalid arguments")
-        .transact()
-        .await
-        .expect("Cant get info")
-        .json::<AccountInfo>()
-        .unwrap();
+    let bobs_nfts = test_call_get_acc_info(&bob, &worker, &contract).await;
+
     for i in 0..3 {
         assert!(bobs_nfts.nfts.get(i).is_some());
     }
 
     // Bob burn nft with id = 5
-    let result = bob.call(&worker, &contract.id(), &"internal_burn_nft")
-        .args_json(&json!({
-            "target_id": bob.id(),
-            "nft_id": U128::from(5),
-        }))
-        .expect("Invalid arguments")
-        .transact()
-        .await;
+    let result = test_call_burn_nft(&bob, &contract, 5.into(), &worker).await;
     // Assert error
-    assert!(result.is_err());
+    assert_eq!(result.map_err(|err| err.to_string()), Err("Action #0: ExecutionError(\"Smart contract panicked: Nft not exist\")".to_owned()));
     // Assert Bob has 3 nft
-    let bobs_nfts = contract
-        .call(&worker, "get_account_info")
-        .args_json(
-            &json!({
-                "account_id": bob.id()
-            }))
-        .expect("Invalid arguments")
-        .transact()
-        .await
-        .expect("Cant get info")
-        .json::<AccountInfo>()
-        .unwrap();
+    let bobs_nfts = test_call_get_acc_info(&bob, &worker, &contract).await;
     for i in 0..3 {
         assert!(bobs_nfts.nfts.get(i).is_some());
     }
 }
 
 #[tokio::test]
-#[ignore]
 async fn burn_nft_not_own_nft() {
     // Setup contract with owner Alice
 
@@ -220,15 +116,24 @@ async fn burn_nft_not_own_nft() {
 }
 
 #[tokio::test]
-#[ignore]
 async fn burn_nft_locked_nft() {
     // Setup contract with owner Alice
-
+    let (contract, worker) = TestingEnvBuilder::default().build().await;
+    let alice = get_alice();
+    let bob = get_bob();
     // Alice mint nft for Bob
+    let nft_id = test_call_mint_nft(&contract, &worker, &bob, &alice).await;
     // Assert Bob has nft
+    let bobs_nfts = test_call_get_acc_info(&bob, &worker, &contract).await;
+    assert!(bobs_nfts.nfts.get(nft_id as usize).is_some());
     // Bob change state of nft to locked
+    let price: u128 = 100;
+    let _ = test_call_sell_nft(&contract, &worker, &bob, nft_id.into(), price.into()).await;
+
     // Assert state of nft
 
     // Bob burn nft
+    let result = test_call_burn_nft(&bob, &contract, nft_id.into(), &worker).await;
     // Assert error
+    assert!(result.is_err());
 }

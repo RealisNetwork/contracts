@@ -334,7 +334,6 @@ impl NftManager {
     }
 }
 
-#[near_bindgen]
 impl Contract {
     pub fn get_nft_info(&self, nft_id: U128) -> Nft {
         self.nfts.get_nft(&nft_id.0).into()

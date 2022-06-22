@@ -2,6 +2,8 @@ use near_sdk::{json_types::U128, serde::Serialize, serde_json};
 use near_sdk::serde_json::json;
 use workspaces::network::DevAccountDeployer;
 pub use workspaces::{network::Testnet, Account, AccountId, Contract, Worker};
+use workspaces::result::CallExecutionDetails;
+use realis_near::account::AccountInfo;
 
 pub const WASM_FILE: &str = "./target/wasm32-unknown-unknown/release/realis_near.wasm";
 pub const ONE_LIS: u128 = 1_000_000_000_000;
@@ -132,3 +134,70 @@ impl TestingEnvBuilder {
         self
     }
 }
+
+// TEST FUNCTIONS
+pub async fn test_call_mint_nft(contract: &Contract, worker: &Worker<Testnet>, acc_to_mint: &Account, signer_acc: &Account) -> u128 {
+    signer_acc.call(&worker, contract.id(), "mint")
+        .args_json(
+            &json!({
+                "recipient_id": &acc_to_mint.id(),
+                "nft_metadata": "metadata",
+            })
+        )
+        .expect("Mint nft, wrong args.")
+        .transact()
+        .await
+        .expect("Mint nft, Fail to make transaction.")
+        .json::<U128>()
+        .expect("Mint nft, result is not OK")
+        .0
+}
+
+pub async fn test_call_get_acc_info(account: &Account, worker: &Worker<Testnet>, contract: &Contract) -> AccountInfo {
+    contract
+        .call(&worker, "get_account_info")
+        .args_json(
+            &json!({
+                "account_id":account.id()
+            }))
+        .expect("Get account info, wrong args.")
+        .transact()
+        .await
+        .expect("Get account info, Fail to make transaction.")
+        .json::<AccountInfo>()
+        .expect("Get account info, result is not OK")
+}
+
+pub async fn test_call_burn_nft(caller_acc: &Account, contract: &Contract, nft_id: U128, worker: &Worker<Testnet>) -> anyhow::Result<CallExecutionDetails> {
+    caller_acc.call(&worker, &contract.id(), "burn")
+        .args_json(&json!({
+            "nft_id": nft_id,
+        }))
+        .expect("Burn nft, wrong arg")
+        .transact()
+        .await
+}
+
+pub async fn test_call_sell_nft(contract: &Contract, worker: &Worker<Testnet>, seller: &Account, nft_id: U128, price: U128) {
+    seller.call(&worker, contract.id(), "sell_nft")
+        .args_json(&json!({"nft_id": nft_id, "price": price}))
+        .expect("Invalid arguments")
+        .transact()
+        .await
+        .expect("Cant sell NFT");
+}
+
+/// Return NFT price
+pub async fn test_call_get_nft_marketplace_info(contract: &Contract, worker: &Worker<Testnet>, nft_id: U128) -> U128 {
+    contract.call(&worker,"get_nft_marketplace_info")
+        .args_json(&json!({
+            "nft_id": nft_id
+        }))
+        .expect("Invalid arguments.")
+        .transact()
+        .await
+        .expect("Result in not OK")
+        .json::<U128>()
+        .expect("Fail to parse nft")
+}
+

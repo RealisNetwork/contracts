@@ -3,6 +3,11 @@ use near_sdk::{json_types::U128, AccountId};
 
 #[near_bindgen]
 impl Contract {
+    // Return NFT price
+    pub fn get_nft_marketplace_info(&self, nft_id: U128) -> U128 {
+        self.internal_get_nft_marketplace_info(nft_id.0).into()
+    }
+
     pub fn transfer(&mut self, recipient_id: AccountId, amount: U128) -> U128 {
         self.assert_running();
         let sender_id = env::signer_account_id();
