@@ -217,15 +217,6 @@ mod tests {
     use crate::utils::tests_utils::*;
 
     #[test]
-    #[should_panic]
-    fn mint_nft_test_panic() {
-        let (mut contract, _context) =
-            init_test_env(Some(accounts(0)), Some(accounts(0)), Some(accounts(0)));
-
-        contract.mint(accounts(2), "some_metadata".to_string());
-    }
-
-    #[test]
     fn mint_nft_test() {
         let (mut contract, _context) =
             init_test_env(Some(accounts(0)), Some(accounts(0)), Some(accounts(0)));
