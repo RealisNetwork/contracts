@@ -178,7 +178,7 @@ async fn transfer() {
     );
 
     // Charlie transfer to Dave 1 LIS
-    make_transfer(&charlie, &get_dave().id(), 1 * ONE_LIS, &contract, &worker)
+    make_transfer(&charlie, &get_dave().id(), ONE_LIS, &contract, &worker)
         .await
         .expect("Failed to transfer");
 
@@ -189,10 +189,7 @@ async fn transfer() {
     );
 
     // Assert Dave has 1 LIS
-    assert_eq!(
-        get_balance_info(&dave, &contract, &worker).await,
-        1 * ONE_LIS
-    );
+    assert_eq!(get_balance_info(&dave, &contract, &worker).await, ONE_LIS);
 }
 
 #[tokio::test]
@@ -221,7 +218,7 @@ async fn transfer_with_expired_lockup() {
         &alice,
         &bob.id(),
         100 * ONE_LIS,
-        Some(1 * SECOND),
+        Some(SECOND),
         &contract,
         &worker,
     )
@@ -282,7 +279,7 @@ async fn transfer_with_not_expired_lockup() {
         &alice,
         &bob.id(),
         100 * ONE_LIS,
-        Some(1 * DAY),
+        Some(DAY),
         &contract,
         &worker,
     )
@@ -335,7 +332,7 @@ async fn transfer_get_balance_from_expired_lockup() {
         &alice,
         &bob.id(),
         100 * ONE_LIS,
-        Some(1 * SECOND),
+        Some(SECOND),
         &contract,
         &worker,
     )
@@ -379,7 +376,7 @@ async fn transfer_get_balance_from_two_expired_lockups() {
     let (contract, worker) = TestingEnvBuilder::default().build().await;
 
     // Alice transfer 1 LIS to Bob
-    make_transfer(&alice, &bob.id(), 1 * ONE_LIS, &contract, &worker)
+    make_transfer(&alice, &bob.id(), ONE_LIS, &contract, &worker)
         .await
         .expect("Failed to transfer");
 
@@ -388,7 +385,7 @@ async fn transfer_get_balance_from_two_expired_lockups() {
         &alice,
         &bob.id(),
         100 * ONE_LIS,
-        Some(1 * SECOND),
+        Some(SECOND),
         &contract,
         &worker,
     )
@@ -399,7 +396,7 @@ async fn transfer_get_balance_from_two_expired_lockups() {
         &alice,
         &bob.id(),
         50 * ONE_LIS,
-        Some(1 * SECOND),
+        Some(SECOND),
         &contract,
         &worker,
     )
@@ -417,10 +414,7 @@ async fn transfer_get_balance_from_two_expired_lockups() {
         .expect("Failed to transfer");
 
     // Assert Bob has 1 LIS
-    assert_eq!(
-        get_balance_info(&bob, &contract, &worker).await,
-        1 * ONE_LIS
-    );
+    assert_eq!(get_balance_info(&bob, &contract, &worker).await, ONE_LIS);
 
     // Assert Bob has not lockups
     assert_eq!(get_lockup_info(&bob, &contract, &worker).await.len(), 0);
@@ -443,7 +437,7 @@ async fn transfer_get_balance_from_set_of_lockups() {
     let (contract, worker) = TestingEnvBuilder::default().build().await;
 
     // Alice transfer 1 LIS to Bob
-    make_transfer(&alice, &bob.id(), 1 * ONE_LIS, &contract, &worker)
+    make_transfer(&alice, &bob.id(), ONE_LIS, &contract, &worker)
         .await
         .expect("Failed to transfer");
 
@@ -452,7 +446,7 @@ async fn transfer_get_balance_from_set_of_lockups() {
         &alice,
         &bob.id(),
         10 * ONE_LIS,
-        Some(1 * SECOND),
+        Some(SECOND),
         &contract,
         &worker,
     )
@@ -463,7 +457,7 @@ async fn transfer_get_balance_from_set_of_lockups() {
         &alice,
         &bob.id(),
         20 * ONE_LIS,
-        Some(1 * SECOND),
+        Some(SECOND),
         &contract,
         &worker,
     )
@@ -474,7 +468,7 @@ async fn transfer_get_balance_from_set_of_lockups() {
         &alice,
         &bob.id(),
         25 * ONE_LIS,
-        Some(1 * SECOND),
+        Some(SECOND),
         &contract,
         &worker,
     )
@@ -485,7 +479,7 @@ async fn transfer_get_balance_from_set_of_lockups() {
         &alice,
         &bob.id(),
         50 * ONE_LIS,
-        Some(1 * DAY),
+        Some(DAY),
         &contract,
         &worker,
     )
@@ -496,7 +490,7 @@ async fn transfer_get_balance_from_set_of_lockups() {
         &alice,
         &bob.id(),
         100 * ONE_LIS,
-        Some(1 * DAY),
+        Some(DAY),
         &contract,
         &worker,
     )
@@ -533,7 +527,7 @@ async fn transfer_get_balance_from_set_of_lockups() {
         &alice,
         &bob.id(),
         25 * ONE_LIS,
-        Some(1 * SECOND),
+        Some(SECOND),
         &contract,
         &worker,
     )
@@ -596,7 +590,7 @@ async fn transfer_get_balance_from_not_expired_lockup() {
         &alice,
         &bob.id(),
         100 * ONE_LIS,
-        Some(1 * DAY),
+        Some(DAY),
         &contract,
         &worker,
     )
