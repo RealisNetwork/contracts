@@ -1,6 +1,5 @@
 use near_sdk::{json_types::U128, serde::Serialize, serde_json, serde_json::Value, Timestamp};
-use realis_near::lockup::LockupInfo;
-use realis_near::account::AccountInfo;
+use realis_near::{account::AccountInfo, lockup::LockupInfo};
 
 use workspaces::{network::DevAccountDeployer, result::CallExecutionDetails};
 pub use workspaces::{network::Testnet, Account, AccountId, Contract, Worker};
