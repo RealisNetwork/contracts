@@ -3,7 +3,6 @@ mod utils;
 use crate::utils::*;
 
 #[tokio::test]
-#[ignore]
 async fn sell_nft() {
     // Setup contract: Alice - owner
     let alice = get_alice();

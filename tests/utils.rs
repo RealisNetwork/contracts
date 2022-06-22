@@ -229,6 +229,21 @@ pub async fn test_call_sell_nft(
         .expect("Cant sell NFT");
 }
 
+pub async fn test_call_transfer_nft(
+    contract: &Contract,
+    worker: &Worker<Testnet>,
+    acc_recipient: &Account,
+    acc_sender: &Account,
+    nft_id: U128,
+) -> anyhow::Result<CallExecutionDetails> {
+    acc_sender
+        .call(&worker, contract.id(), "transfer_nft")
+        .args_json(&json!({"nft_id": nft_id, "recipient_id": acc_recipient.id()}))
+        .expect("Transfer_nft, Invalid args")
+        .transact()
+        .await
+}
+
 /// Return NFT price
 pub async fn test_call_get_nft_marketplace_info(
     contract: &Contract,
