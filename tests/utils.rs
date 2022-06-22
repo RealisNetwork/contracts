@@ -137,7 +137,7 @@ impl TestingEnvBuilder {
 }
 
 pub async fn get_balance_info(account: &Account, contract: &Contract, worker: &TestWorker) -> u128 {
-   account
+    account
         .call(worker, contract.id(), "get_balance_info")
         .args_json(serde_json::json!({
             "account_id": account.id(),
@@ -215,7 +215,7 @@ pub async fn claim_all_lockup_for_account(
     contract: &Contract,
     worker: &Worker<Testnet>,
 ) -> u128 {
-     account
+    account
         .call(&worker, contract.id(), "claim_all_lockup")
         .gas(MAX_GAS)
         .args_json(serde_json::json!({}))

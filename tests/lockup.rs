@@ -5,6 +5,8 @@ use realis_near::{
     lockup::Lockup,
     utils::{DAY, MINUTE, SECOND},
 };
+use std::borrow::BorrowMut;
+use workspaces::operations::{Function, Transaction};
 
 #[tokio::test]
 async fn create_lockup() {
@@ -61,16 +63,10 @@ async fn create_lockup() {
     assert_eq!(charlies_lockups.len(), 1);
 
     // Assert amount
-    assert_eq!(
-        charlies_lockups[0].amount.0,
-        150 * ONE_LIS
-    );
+    assert_eq!(charlies_lockups[0].amount.0, 150 * ONE_LIS);
 
     // Assert timestamp == default
-    assert_eq!(
-        charlies_lockups[0].expire_on,
-        charlie_lockup_ts
-    );
+    assert_eq!(charlies_lockups[0].expire_on, charlie_lockup_ts);
 
     // Assert Alice balance
     assert_eq!(
@@ -767,7 +763,7 @@ async fn claim_all_lockups() {
 
     // Bob claim all lockups with amount = 20 LIS
     for lockup in bobs_lockups {
-        if lockup.amount == U128(20 * ONE_LIS) {
+        if lockup.amount.0 == 20 * ONE_LIS {
             claim_lockup_for_account(&bob, &contract, &worker, lockup.expire_on).await;
         }
     }
