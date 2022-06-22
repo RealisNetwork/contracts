@@ -294,7 +294,12 @@ pub async fn create_n_lockups_for_account(
         );
         timestamps.push(index);
     }
-    let transaction_result = transaction.transact().await.expect("Can't transact").json::<u64>().expect("Can`t parse JSON");
+    let transaction_result = transaction
+        .transact()
+        .await
+        .expect("Can't transact")
+        .json::<u64>()
+        .expect("Can`t parse JSON");
 
     // Return obtained timestamps
     timestamps
