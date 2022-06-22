@@ -1,11 +1,11 @@
 pub use near_sdk::{json_types::U128, serde::Serialize, serde_json, serde_json::Value, Timestamp};
-use realis_near::lockup::LockupInfo;
-use workspaces::types::Gas;
+use realis_near::{lockup::LockupInfo, utils::DAY};
 pub use workspaces::{
     network::{DevAccountDeployer, Testnet},
     result::CallExecutionDetails,
     Account, AccountId, Contract, Worker,
 };
+use workspaces::{operations::Function, types::Gas};
 
 pub const WASM_FILE: &str = "./target/wasm32-unknown-unknown/release/realis_near.wasm";
 pub const ONE_LIS: u128 = 1_000_000_000_000;
@@ -266,4 +266,37 @@ pub async fn refund_lockup_for_account(
         .json::<U128>()
         .expect("Cannot parse JSON")
         .0
+}
+
+pub async fn create_n_lockups_for_account(
+    signer: &Account,
+    recipient_id: &AccountId,
+    amount: u128,
+    duration: Option<Timestamp>,
+    n: u64,
+    contract: &Contract,
+    worker: &TestWorker,
+) -> Vec<u64> {
+    let mut transaction = signer.batch(&worker, contract.id());
+    let mut timestamps = vec![];
+
+    for index in 1..=n {
+        transaction = transaction.call(
+            Function::new("create_lockup")
+                .args_json(serde_json::json!({
+                      "recipient_id": recipient_id,
+                      "amount": U128(amount),
+                      "duration": duration.unwrap_or(3 * DAY)  + index
+                }))
+                .unwrap(),
+        );
+        timestamps.push(index);
+    }
+    let transaction_result = transaction.transact().await.unwrap().json::<u64>().unwrap();
+
+    // Return obtained timestamps
+    timestamps
+        .iter()
+        .map(|elem| elem + transaction_result - n)
+        .collect::<Vec<u64>>()
 }

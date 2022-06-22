@@ -651,21 +651,16 @@ async fn claim_all_lockups() {
 
     // Alice create 10 lockups for Bob with duration 1 min, amount - 10 LIS
 
-    let mut timestamps = vec![];
-
-    for index in 0..10 {
-        timestamps.push(
-            create_lockup_for_account(
-                &alice,
-                &bob.id(),
-                10 * ONE_LIS,
-                Some(1 * MINUTE),
-                &contract,
-                &worker,
-            )
-            .await,
-        );
-    }
+    let mut timestamps = create_n_lockups_for_account(
+        &alice,
+        &bob.id(),
+        10 * ONE_LIS,
+        Some(1 * MINUTE),
+        10,
+        &contract,
+        &worker,
+    )
+    .await;
 
     // Assert Bob has lockup
     let bobs_lockups = get_lockup_info(&bob, &contract, &worker).await;
@@ -707,32 +702,33 @@ async fn claim_all_lockups() {
 
     // Alice create 10 lockups for Bob with duration 1 min,
     // amount for 5 = 10 LIS, the others = 20 LIS
-    for index in 0..5 {
-        timestamps.push(
-            create_lockup_for_account(
-                &alice,
-                &bob.id(),
-                10 * ONE_LIS,
-                Some(1 * MINUTE),
-                &contract,
-                &worker,
-            )
-            .await,
-        );
-    }
-    for index in 0..5 {
-        timestamps.push(
-            create_lockup_for_account(
-                &alice,
-                &bob.id(),
-                20 * ONE_LIS,
-                Some(1 * MINUTE),
-                &contract,
-                &worker,
-            )
-            .await,
-        );
-    }
+    timestamps.append(
+        create_n_lockups_for_account(
+            &alice,
+            &bob.id(),
+            10 * ONE_LIS,
+            Some(1 * MINUTE),
+            5,
+            &contract,
+            &worker,
+        )
+        .await
+        .as_mut(),
+    );
+
+    timestamps.append(
+        create_n_lockups_for_account(
+            &alice,
+            &bob.id(),
+            20 * ONE_LIS,
+            Some(1 * MINUTE),
+            5,
+            &contract,
+            &worker,
+        )
+        .await
+        .as_mut(),
+    );
 
     // Assert Bob has lockups
     let bobs_lockups = get_lockup_info(&bob, &contract, &worker).await;
@@ -929,40 +925,27 @@ async fn claim_all_lockups_with_partially_expired_time() {
     let mut timestamps = vec![];
 
     // Alice create lockups for Bob:
-    timestamps.push(
-        create_lockup_for_account(
+    // 6 with duration 10 seconds, amount = 10 LIS
+    timestamps.append(
+        create_n_lockups_for_account(
             &alice,
             &bob.id(),
             10 * ONE_LIS,
             Some(10 * SECOND),
+            6,
             &contract,
             &worker,
         )
-        .await,
+        .await
+        .as_mut(),
     );
 
-    // 5 with duration 10 seconds, amount = 10 LIS
-    for index in 0..5 {
-        timestamps.push(
-            create_lockup_for_account(
-                &alice,
-                &bob.id(),
-                10 * ONE_LIS,
-                Some(10 * SECOND),
-                &contract,
-                &worker,
-            )
-            .await,
-        );
-    }
-
     // 5 with duration default, amount = 10 LIS
-    for index in 0..5 {
-        timestamps.push(
-            create_lockup_for_account(&alice, &bob.id(), 10 * ONE_LIS, None, &contract, &worker)
-                .await,
-        );
-    }
+    timestamps.append(
+        create_n_lockups_for_account(&alice, &bob.id(), 10 * ONE_LIS, None, 5, &contract, &worker)
+            .await
+            .as_mut(),
+    );
 
     // Assert Bob has lockup
     let bob_lockups = get_lockup_info(&bob, &contract, &worker).await;
@@ -987,6 +970,9 @@ async fn claim_all_lockups_with_partially_expired_time() {
         get_balance_info(&alice, &contract, &worker).await,
         2_999_999_889 * ONE_LIS
     );
+
+    // Wait till lockups expired
+    tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
 
     // Bob claim all lockups
     claim_all_lockup_for_account(&bob, &contract, &worker).await;
