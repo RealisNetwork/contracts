@@ -1,8 +1,8 @@
 use crate::utils::DEFAULT_LOCK_LIFE_TIME;
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
-    serde::{Deserialize, Serialize},
     json_types::{U128, U64},
+    serde::{Deserialize, Serialize},
     Timestamp,
 };
 
