@@ -403,4 +403,48 @@ mod tests {
 
         contract.owner_remove_backends(vec![accounts(1), accounts(2)]);
     }
+
+    #[test]
+    fn owner_add_to_pull() {
+        // create Owner
+        let owner = accounts(2);
+
+        // Init contract
+        let (mut contract, mut context) = init_test_env(Some(owner.clone()), None, None);
+
+        // set signer as owner
+        testing_env!(context.signer_account_id(owner).build());
+
+        contract.owner_add_to_staking_pool(U128(100 * ONE_LIS));
+
+        assert_eq!(contract.staking.total_supply, 100 * ONE_LIS);
+        assert_eq!(contract.staking.total_x_supply, 0);
+    }
+
+    #[test]
+    #[should_panic = "Not enough balance"]
+    fn owner_add_to_pull_over_balance() {
+        // create Owner
+        let owner = accounts(2);
+
+        // Init contract
+        let (mut contract, mut context) = init_test_env(Some(owner.clone()), None, None);
+
+        // set signer as owner
+        testing_env!(context.signer_account_id(owner).build());
+
+        contract.owner_add_to_staking_pool(U128(3_000_000_001 * ONE_LIS));
+    }
+
+    #[test]
+    #[should_panic = "Only owner can do this"]
+    fn owner_add_to_pull_not_owner() {
+        // Init contract
+        let (mut contract, mut context) = init_test_env(Some(accounts(1)), None, None);
+
+        // set signer as owner
+        testing_env!(context.signer_account_id(accounts(0)).build());
+
+        contract.owner_add_to_staking_pool(U128(3_000_000_000 * ONE_LIS));
+    }
 }

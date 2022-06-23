@@ -10,8 +10,8 @@ pub const DEFAULT_LOCKUP_TIME: Timestamp = 7 * DAY;
 
 #[derive(BorshSerialize, BorshDeserialize)]
 pub struct Staking {
-    total_supply: Balance,
-    total_x_supply: Balance,
+    pub total_supply: Balance,
+    pub total_x_supply: Balance,
     /// xLIS = x_cost * LIS default x_cost = 0.001;
     x_cost: Balance,
 
@@ -119,8 +119,10 @@ impl Contract {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::{
         staking::{Staking, STARTED_COST},
+        utils::tests_utils::*,
         ONE_LIS,
     };
 
@@ -175,5 +177,93 @@ mod tests {
         assert_eq!(staking.total_supply, 0 * ONE_LIS);
         assert_eq!(staking.total_x_supply, 0 * STARTED_COST * ONE_LIS);
         assert_eq!(staking.x_cost, 4);
+    }
+
+    #[test]
+    fn full_staking_cycle() {
+        // create Owner
+        let owner = accounts(2);
+
+        // Init contract
+        let (mut contract, mut context) = init_test_env(Some(owner.clone()), None, None);
+
+        // create User 1
+        let user1 = accounts(0);
+
+        // register User 1 with 250 LiS
+        contract
+            .accounts
+            .insert(&user1, &Account::new(accounts(0), 250 * ONE_LIS).into());
+
+        let account: Account = contract.accounts.get(&user1).unwrap().into();
+        assert_eq!(account.free, 250 * ONE_LIS);
+
+        // create User 2
+        let user2 = accounts(1);
+
+        // register User 2 with 150 LiS
+        contract
+            .accounts
+            .insert(&user2, &Account::new(accounts(1), 150 * ONE_LIS).into());
+        let account: Account = contract.accounts.get(&user2).unwrap().into();
+        assert_eq!(account.free, 150 * ONE_LIS);
+
+        // set signer as User 1
+        testing_env!(context.signer_account_id(user1.clone()).build());
+
+        // stake as User 1  100 LiS
+        let user1_staked = contract.stake(U128(100 * ONE_LIS));
+
+        // Assert user1 tokens was taken
+        let account: Account = contract.accounts.get(&user1).unwrap().into();
+        assert_eq!(account.free, 150 * ONE_LIS);
+
+        // set signer as owner
+        testing_env!(context.signer_account_id(owner).build());
+
+        // Airdrop 100 LIS
+        contract.owner_add_to_staking_pool(U128(100 * ONE_LIS));
+        let pool_staking = contract.staking.total_supply;
+
+        // set signer as User 2
+        testing_env!(context.signer_account_id(user2.clone()).build());
+
+        // stake as User 2  100 LiS
+        let user2_staked = contract.stake(U128(100 * ONE_LIS));
+
+        // Assert user2 tokens was taken
+        let account: Account = contract.accounts.get(&user2).unwrap().into();
+        assert_eq!(account.free, 50 * ONE_LIS);
+
+        // set signer as user1
+        testing_env!(context.signer_account_id(user1.clone()).build());
+
+        // user1 unstake
+        contract.unstake(user1_staked);
+
+        // set signer as user2
+        testing_env!(context.signer_account_id(user2.clone()).build());
+
+        // user2 unstake
+        contract.unstake(user2_staked);
+
+        // Wait till lockups are expired
+        testing_env!(context.block_timestamp(9999999999999999).build());
+
+        // claim loockup for staiking for User 2
+        contract.claim_all_lockup();
+
+        testing_env!(context.signer_account_id(user1.clone()).build());
+
+        // Claim lockups for user1
+        contract.claim_all_lockup();
+
+        // Assert user1 balance == 350
+        let account: Account = contract.accounts.get(&user1).unwrap().into();
+        assert_eq!(account.free, 350 * ONE_LIS);
+
+        // Assert user2 balance == 150
+        let account: Account = contract.accounts.get(&user2).unwrap().into();
+        assert_eq!(account.free, 150 * ONE_LIS);
     }
 }
