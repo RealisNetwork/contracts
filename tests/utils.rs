@@ -286,11 +286,11 @@ pub async fn claim_lockup_for_account(
     account: &Account,
     contract: &Contract,
     worker: &Worker<Testnet>,
-    expire_on: u64,
+    amount: U128,
 ) -> u128 {
     account
         .call(&worker, contract.id(), "claim_lockup")
-        .args_json(serde_json::json!({ "expire_on": expire_on }))
+        .args_json(serde_json::json!({ "amount": amount }))
         .expect("Invalid input args")
         .transact()
         .await
@@ -326,13 +326,14 @@ pub async fn create_n_lockups_for_account(
     signer: &Account,
     recipient_id: &AccountId,
     amount: u128,
-    duration: Option<Timestamp>,
+    duration: Option<U64>,
     n: u64, // The n lockups will be created
     contract: &Contract,
     worker: &TestWorker,
 ) -> Vec<u64> {
     let mut transaction = signer.batch(&worker, contract.id());
     let mut timestamps = vec![];
+    let duration = duration.unwrap_or_else(|| U64(3 * DAY)).0;
 
     for index in 1..=n {
         // We have to use index here to identify unique calls
@@ -342,7 +343,7 @@ pub async fn create_n_lockups_for_account(
                 .args_json(serde_json::json!({
                       "recipient_id": recipient_id,
                       "amount": U128(amount),
-                      "duration": duration.unwrap_or(3 * DAY) + index
+                      "duration": U64(duration + index)
                 }))
                 .expect("Cannot make JSON"),
         );
@@ -352,8 +353,8 @@ pub async fn create_n_lockups_for_account(
         .transact()
         .await
         .expect("Can't transact")
-        .json::<u64>()
-        .expect("Can`t parse JSON");
+        .json::<U64>()
+        .expect("Can`t parse JSON").0;
 
     // Return obtained timestamps
     timestamps

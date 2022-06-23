@@ -185,7 +185,7 @@ async fn user_claim_lockup() {
     tokio::time::sleep(tokio::time::Duration::from_secs(11)).await;
 
     // Bob claim lockup
-    claim_lockup_for_account(&bob, &contract, &worker, bob_lockup_ts1).await;
+    claim_all_lockup_for_account(&bob, &contract, &worker).await;
 
     // Assert Bob's balance = 11 LIS
     assert_eq!(
@@ -262,7 +262,7 @@ async fn user_claim_lockup() {
     tokio::time::sleep(tokio::time::Duration::from_secs(15)).await;
 
     // Bob claim 15 LIS
-    claim_lockup_for_account(&bob, &contract, &worker, *bob_timestamps.get(2).unwrap()).await;
+    claim_lockup_for_account(&bob, &contract, &worker, U128(15)).await;
 
     // Assert Bob has 2 lockup
     let bobs_lockups = get_lockup_info(&bob, &contract, &worker).await;
@@ -381,7 +381,7 @@ async fn user_claimed_not_expired_lockup() {
     );
 
     // Bob claim lockup
-    let claimed = claim_lockup_for_account(&bob, &contract, &worker, bob_lockup_ts).await;
+    let claimed = claim_all_lockup_for_account(&bob, &contract, &worker).await;
 
     // Assert that we claimed nothing
     assert_eq!(claimed, 0);
@@ -650,7 +650,7 @@ async fn claim_all_lockups() {
         &alice,
         &bob.id(),
         10 * ONE_LIS,
-        Some(MINUTE),
+        Some(U64(MINUTE)),
         10,
         &contract,
         &worker,
@@ -702,7 +702,7 @@ async fn claim_all_lockups() {
             &alice,
             &bob.id(),
             10 * ONE_LIS,
-            Some(MINUTE),
+            Some(U64(MINUTE)),
             5,
             &contract,
             &worker,
@@ -716,7 +716,7 @@ async fn claim_all_lockups() {
             &alice,
             &bob.id(),
             20 * ONE_LIS,
-            Some(MINUTE),
+            Some(U64(MINUTE)),
             5,
             &contract,
             &worker,
@@ -755,7 +755,7 @@ async fn claim_all_lockups() {
     // Bob claim all lockups with amount = 20 LIS
     for lockup in bobs_lockups {
         if lockup.amount.0 == 20 * ONE_LIS {
-            claim_lockup_for_account(&bob, &contract, &worker, lockup.expire_on.0).await;
+            claim_lockup_for_account(&bob, &contract, &worker, lockup.amount).await;
         }
     }
 
@@ -920,7 +920,7 @@ async fn claim_all_lockups_with_partially_expired_time() {
             &alice,
             &bob.id(),
             10 * ONE_LIS,
-            Some(10 * SECOND),
+            Some(U64 (10 * SECOND)),
             6,
             &contract,
             &worker,
