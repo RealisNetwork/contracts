@@ -95,7 +95,7 @@ impl Contract {
 
 #[cfg(test)]
 mod tests {
-    use crate::{nft::Nft, utils::tests_utils::*};
+    use crate::{lockup::Lockup, nft::Nft, utils::tests_utils::*};
 
     #[test]
     #[should_panic = "Contract is paused"]
@@ -296,7 +296,9 @@ mod tests {
             init_test_env(Some(owner.clone()), None, Some(owner.clone()));
 
         let mut owner_account = Account::new(accounts(1), 5);
-        owner_account.lockups.insert(&SimpleLockup::new(5, None));
+        owner_account
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup::new(5, None)));
         contract.accounts.insert(&owner, &owner_account.into());
         contract.registered_accounts.insert(&owner_pk, &owner);
 
@@ -327,7 +329,9 @@ mod tests {
             .build());
 
         let mut owner_account = Account::new(owner.clone(), 5);
-        owner_account.lockups.insert(&SimpleLockup::new(5, None));
+        owner_account
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup::new(5, None)));
         contract.accounts.insert(&owner, &owner_account.into());
         contract.backend_claim_all_lockup();
     }
@@ -342,18 +346,24 @@ mod tests {
         contract.registered_accounts.insert(&owner_pk, &owner);
 
         let mut owner_account = Account::new(owner.clone(), 50);
-        owner_account.lockups.insert(&SimpleLockup {
-            amount: 5,
-            expire_on: 10,
-        });
-        owner_account.lockups.insert(&SimpleLockup {
-            amount: 5,
-            expire_on: 2,
-        });
-        owner_account.lockups.insert(&SimpleLockup {
-            amount: 5,
-            expire_on: 3,
-        });
+        owner_account
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup {
+                amount: 5,
+                expire_on: 10,
+            }));
+        owner_account
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup {
+                amount: 5,
+                expire_on: 2,
+            }));
+        owner_account
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup {
+                amount: 5,
+                expire_on: 3,
+            }));
         contract.accounts.insert(&owner, &owner_account.into());
         testing_env!(context
             .signer_account_id(owner.clone())

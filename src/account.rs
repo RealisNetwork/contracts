@@ -146,11 +146,13 @@ mod tests {
         let account_id = accounts(0);
         let mut account = Account::new(account_id.clone(), 5);
         // Just locked (will unlock in 3 days (default lifetime))
-        account.lockups.insert(&SimpleLockup::new(55, None));
-        account.lockups.insert(&SimpleLockup {
+        account
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup::new(55, None)));
+        account.lockups.insert(&Lockup::GooglePlayBuy(SimpleLockup {
             amount: 5,
             expire_on: 1,
-        }); // Lock from 1970
+        })); // Lock from 1970
 
         // Balance of lock from 1970 will be transferred to main balance
         testing_env!(context.block_timestamp(999).build());
@@ -167,15 +169,17 @@ mod tests {
         let account_id = accounts(0);
         let mut account = Account::new(account_id.clone(), 5);
         // Just locked (will unlock in 3 days (default lifetime))
-        account.lockups.insert(&SimpleLockup::new(55, None));
-        account.lockups.insert(&SimpleLockup {
+        account
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup::new(55, None)));
+        account.lockups.insert(&Lockup::GooglePlayBuy(SimpleLockup {
             amount: 5,
             expire_on: 0,
-        }); // Lock from 1970
-        account.lockups.insert(&SimpleLockup {
+        })); // Lock from 1970
+        account.lockups.insert(&Lockup::GooglePlayBuy(SimpleLockup {
             amount: 8,
             expire_on: 16457898,
-        }); // Lock from 1970
+        })); // Lock from 1970
 
         testing_env!(context.block_timestamp(16457899).build());
 

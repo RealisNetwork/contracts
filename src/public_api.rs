@@ -88,7 +88,7 @@ impl Contract {
 
 #[cfg(test)]
 mod tests {
-    use crate::{nft::Nft, utils::tests_utils::*};
+    use crate::{lockup::Lockup, nft::Nft, utils::tests_utils::*};
 
     #[test]
     #[should_panic = "Contract is paused"]
@@ -206,8 +206,12 @@ mod tests {
             init_test_env(Some(owner.clone()), None, Some(owner.clone()));
 
         let mut owner_account = Account::new(accounts(0), 5);
-        owner_account.lockups.insert(&SimpleLockup::new(5, None));
-        owner_account.lockups.insert(&SimpleLockup::new(6, None));
+        owner_account
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup::new(5, None)));
+        owner_account
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup::new(6, None)));
         contract.accounts.insert(&owner, &owner_account.into());
 
         testing_env!(context
@@ -227,18 +231,24 @@ mod tests {
             init_test_env(Some(owner.clone()), None, Some(owner.clone()));
 
         let mut owner_account = Account::new(accounts(0), 50);
-        owner_account.lockups.insert(&SimpleLockup {
-            amount: 5,
-            expire_on: 0,
-        });
-        owner_account.lockups.insert(&SimpleLockup {
-            amount: 5,
-            expire_on: 0,
-        });
-        owner_account.lockups.insert(&SimpleLockup {
-            amount: 5,
-            expire_on: 3,
-        });
+        owner_account
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup {
+                amount: 5,
+                expire_on: 0,
+            }));
+        owner_account
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup {
+                amount: 5,
+                expire_on: 0,
+            }));
+        owner_account
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup {
+                amount: 5,
+                expire_on: 3,
+            }));
         contract.accounts.insert(&owner, &owner_account.into());
         testing_env!(context
             .signer_account_id(accounts(0))
