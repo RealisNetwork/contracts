@@ -115,8 +115,6 @@ impl Contract {
     }
 
     /// Remove lockup from account and return balance to owner
-    // This allow added for match lockup (in future we would have another variant)
-    #[allow(unreachable_patterns)]
     pub fn refund_lockup(&mut self, recipient_id: AccountId, expire_on: U64) -> U128 {
         self.assert_owner();
 
@@ -203,6 +201,12 @@ impl Contract {
             accounts: &account_ids,
         }))
         .emit();
+    }
+
+    pub fn owner_add_to_staking_pool(&mut self, amount: U128) -> U128 {
+        self.assert_owner();
+        let owner_id = env::signer_account_id();
+        self.internal_add_pool(owner_id, amount.0).into()
     }
 }
 

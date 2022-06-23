@@ -47,9 +47,10 @@ impl Staking {
     fn add_to_pool(&mut self, amount: u128) {
         self.total_supply += amount;
         if self.total_x_supply == 0 {
-            return;
+            return self.total_supply;
         }
         self.x_cost = self.total_supply * STARTED_COST / self.total_x_supply;
+        self.total_supply
     }
 
     pub fn convert_to_x(&self, amount: u128) -> u128 {
@@ -62,7 +63,7 @@ impl Staking {
 }
 
 impl Contract {
-    pub fn internal_stake(&mut self, staker_id: AccountId, amount: u128) {
+    pub fn internal_stake(&mut self, staker_id: AccountId, amount: u128) -> u128 {
         require!(amount > 0, "You can't stake zero tokens");
 
         let mut staker_account: Account = self
@@ -75,6 +76,7 @@ impl Contract {
         let x_amount = self.staking.stake(amount);
         staker_account.x_staked += x_amount;
         self.accounts.insert(&staker_id, &staker_account.into());
+        x_amount
     }
 
     pub fn internal_un_stake(&mut self, staker_id: AccountId, x_amount: u128) {
@@ -96,9 +98,10 @@ impl Contract {
                 expire_on: self.staking.default_lockup_time,
             }));
         self.accounts.insert(&staker_id, &staker_account.into());
+        amount
     }
 
-    pub fn internal_add_pool(&mut self, account_id: AccountId, amount: u128) {
+    pub fn internal_add_pool(&mut self, account_id: AccountId, amount: u128) -> u128 {
         require!(amount > 0, "You can't add to pool zero tokens");
 
         let mut pool_account: Account = self
@@ -108,8 +111,9 @@ impl Contract {
             .into();
         require!(pool_account.free >= amount, "Not enough balance");
         pool_account.free -= amount;
-        self.staking.add_to_pool(amount);
+        let pool_total_supply = self.staking.add_to_pool(amount);
         self.accounts.insert(&account_id, &pool_account.into());
+        pool_total_supply
     }
 }
 
