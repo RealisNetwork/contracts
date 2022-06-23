@@ -6,13 +6,32 @@ use near_sdk::{
     Timestamp,
 };
 
-#[derive(BorshSerialize, BorshDeserialize, Debug)]
-pub struct Lockup {
+#[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
+pub enum Lockup {
+    GooglePlayBuy(SimpleLockup),
+}
+
+impl Lockup {
+    pub fn is_expired(&self) -> bool {
+        match self {
+            Self::GooglePlayBuy(lockup) => lockup.is_expired(),
+        }
+    }
+
+    pub fn get_amount(&self) -> Option<u128> {
+        match self {
+            Self::GooglePlayBuy(lockup) => Some(lockup.amount),
+        }
+    }
+}
+
+#[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
+pub struct SimpleLockup {
     pub amount: u128,
     pub expire_on: Timestamp,
 }
 
-impl Lockup {
+impl SimpleLockup {
     /// `fn get_current_timestamp` returns blocks timestamp in u64.
     ///  # Examples
     /// ```
@@ -39,7 +58,7 @@ impl Lockup {
     pub fn new(amount: u128, live_time: Option<u64>) -> Self {
         Self {
             amount,
-            expire_on: Lockup::get_current_timestamp()
+            expire_on: SimpleLockup::get_current_timestamp()
                 + live_time.unwrap_or(DEFAULT_LOCK_LIFE_TIME),
         }
     }
@@ -74,9 +93,11 @@ pub struct LockupInfo {
 
 impl From<Lockup> for LockupInfo {
     fn from(lockup: Lockup) -> Self {
-        LockupInfo {
-            amount: U128(lockup.amount),
-            expire_on: lockup.expire_on.into(),
+        match lockup {
+            Lockup::GooglePlayBuy(lockup) => LockupInfo {
+                amount: U128(lockup.amount),
+                expire_on: lockup.expire_on.into(),
+            },
         }
     }
 }

@@ -296,7 +296,7 @@ mod tests {
             init_test_env(Some(owner.clone()), None, Some(owner.clone()));
 
         let mut owner_account = Account::new(accounts(1), 5);
-        owner_account.lockups.insert(&Lockup::new(5, None));
+        owner_account.lockups.insert(&SimpleLockup::new(5, None));
         contract.accounts.insert(&owner, &owner_account.into());
         contract.registered_accounts.insert(&owner_pk, &owner);
 
@@ -327,7 +327,7 @@ mod tests {
             .build());
 
         let mut owner_account = Account::new(owner.clone(), 5);
-        owner_account.lockups.insert(&Lockup::new(5, None));
+        owner_account.lockups.insert(&SimpleLockup::new(5, None));
         contract.accounts.insert(&owner, &owner_account.into());
         contract.backend_claim_all_lockup();
     }
@@ -342,15 +342,15 @@ mod tests {
         contract.registered_accounts.insert(&owner_pk, &owner);
 
         let mut owner_account = Account::new(owner.clone(), 50);
-        owner_account.lockups.insert(&Lockup {
+        owner_account.lockups.insert(&SimpleLockup {
             amount: 5,
             expire_on: 10,
         });
-        owner_account.lockups.insert(&Lockup {
+        owner_account.lockups.insert(&SimpleLockup {
             amount: 5,
             expire_on: 2,
         });
-        owner_account.lockups.insert(&Lockup {
+        owner_account.lockups.insert(&SimpleLockup {
             amount: 5,
             expire_on: 3,
         });
