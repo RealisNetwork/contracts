@@ -40,9 +40,6 @@ async fn transfer_non_existent_nft() {
     let (contract, worker) = TestingEnvBuilder::default().build().await;
     // Alice mint nft for Bob with id = 0
     let _ = test_call_mint_nft(&contract, &worker, &bob, &alice).await;
-    //Add Dave to account list.
-    let dave_info = test_call_insert_acc(&dave, &worker, &contract, &alice).await;
-    assert_eq!(dave_info.nfts.len(), 0);
     // Assert Bob has nft
     let bob_info = test_call_get_acc_info(&bob, &worker, &contract).await;
     assert_eq!(bob_info.nfts.len(), 1);
@@ -75,11 +72,6 @@ async fn transfer_nft_not_own_nft() {
     // Assert Bob has nft
     let bob_info = test_call_get_acc_info(&bob, &worker, &contract).await;
     assert!(bob_info.nfts.get(0).is_some());
-    // Add Charlie and Dave
-    let dave_info = test_call_insert_acc(&dave, &worker, &contract, &alice).await;
-    assert!(dave_info.nfts.get(0).is_none());
-    let charlie_info = test_call_insert_acc(&charlie, &worker, &contract, &alice).await;
-    assert!(charlie_info.nfts.get(0).is_none());
 
     // Dave transfer nft to Charlie with id = 0
     let result = test_call_transfer_nft(&contract, &worker, &dave, &charlie, nft_id.into()).await;
@@ -107,9 +99,6 @@ async fn transfer_nft_locked_nft() {
     let (contract, worker) = TestingEnvBuilder::default().build().await;
     // Alice mint nft for Bob with id = 1
     let nft_id = test_call_mint_nft(&contract, &worker, &bob, &alice).await;
-    //Add dave to account list.
-    let dave_info = test_call_insert_acc(&dave, &worker, &contract, &alice).await;
-    assert_eq!(dave_info.nfts.len(), 0);
     // Assert Bob has nft
     let bob_info = test_call_get_acc_info(&bob, &worker, &contract).await;
     assert_eq!(bob_info.nfts.len(), 1);
