@@ -920,7 +920,7 @@ async fn claim_all_lockups_with_partially_expired_time() {
             &alice,
             &bob.id(),
             10 * ONE_LIS,
-            Some(U64 (10 * SECOND)),
+            Some(U64(10 * SECOND)),
             6,
             &contract,
             &worker,

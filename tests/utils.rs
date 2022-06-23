@@ -354,7 +354,8 @@ pub async fn create_n_lockups_for_account(
         .await
         .expect("Can't transact")
         .json::<U64>()
-        .expect("Can`t parse JSON").0;
+        .expect("Can`t parse JSON")
+        .0;
 
     // Return obtained timestamps
     timestamps
