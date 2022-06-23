@@ -1,4 +1,8 @@
-use crate::{lockup::Lockup, utils::DAY, *};
+use crate::{
+    lockup::{Lockup, SimpleLockup},
+    utils::DAY,
+    *,
+};
 use near_sdk::{env, require, AccountId, Balance, Timestamp};
 
 pub const STARTED_COST: u128 = 1000;
@@ -85,10 +89,12 @@ impl Contract {
         staker_account.x_staked -= x_amount;
 
         let amount = self.staking.un_stake(x_amount);
-        staker_account.lockups.insert(&Lockup {
-            amount,
-            expire_on: DEFAULT_LOCKUP_TIME,
-        });
+        staker_account
+            .lockups
+            .insert(&Lockup::Staking(SimpleLockup {
+                amount,
+                expire_on: self.staking.default_lockup_time,
+            }));
         self.accounts.insert(&staker_id, &staker_account.into());
     }
 

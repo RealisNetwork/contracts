@@ -15,13 +15,13 @@ pub enum Lockup {
 impl Lockup {
     pub fn is_expired(&self) -> bool {
         match self {
-            Self::GooglePlayBuy(lockup) => lockup.is_expired(),
+            Self::GooglePlayBuy(lockup) | Self::Staking(lockup) => lockup.is_expired(),
         }
     }
 
     pub fn get_amount(&self) -> Option<u128> {
         match self {
-            Self::GooglePlayBuy(lockup) => Some(lockup.amount),
+            Self::GooglePlayBuy(lockup) | Self::Staking(lockup) => Some(lockup.amount),
         }
     }
 }
@@ -98,6 +98,11 @@ impl From<Lockup> for LockupInfo {
     fn from(lockup: Lockup) -> Self {
         match lockup {
             Lockup::GooglePlayBuy(lockup) => LockupInfo {
+                amount: U128(lockup.amount),
+                expire_on: lockup.expire_on.into(),
+                lockup_type: "GooglePlayBuy".to_string(),
+            },
+            Lockup::Staking(lockup) => LockupInfo {
                 amount: U128(lockup.amount),
                 expire_on: lockup.expire_on.into(),
                 lockup_type: "Staking".to_string(),
