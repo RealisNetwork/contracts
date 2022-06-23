@@ -1,6 +1,7 @@
 mod utils;
 
 use crate::utils::*;
+use near_sdk::json_types::U64;
 use realis_near::utils::{DAY, SECOND};
 
 #[tokio::test]
@@ -218,7 +219,7 @@ async fn transfer_with_expired_lockup() {
         &alice,
         &bob.id(),
         100 * ONE_LIS,
-        Some(SECOND),
+        Some(U64(SECOND)),
         &contract,
         &worker,
     )
@@ -279,7 +280,7 @@ async fn transfer_with_not_expired_lockup() {
         &alice,
         &bob.id(),
         100 * ONE_LIS,
-        Some(DAY),
+        Some(U64(DAY)),
         &contract,
         &worker,
     )
@@ -332,7 +333,7 @@ async fn transfer_get_balance_from_expired_lockup() {
         &alice,
         &bob.id(),
         100 * ONE_LIS,
-        Some(SECOND),
+        Some(U64(SECOND)),
         &contract,
         &worker,
     )
@@ -385,7 +386,7 @@ async fn transfer_get_balance_from_two_expired_lockups() {
         &alice,
         &bob.id(),
         100 * ONE_LIS,
-        Some(SECOND),
+        Some(U64(SECOND)),
         &contract,
         &worker,
     )
@@ -396,7 +397,7 @@ async fn transfer_get_balance_from_two_expired_lockups() {
         &alice,
         &bob.id(),
         50 * ONE_LIS,
-        Some(SECOND),
+        Some(U64(SECOND)),
         &contract,
         &worker,
     )
@@ -446,7 +447,7 @@ async fn transfer_get_balance_from_set_of_lockups() {
         &alice,
         &bob.id(),
         10 * ONE_LIS,
-        Some(SECOND),
+        Some(U64(SECOND)),
         &contract,
         &worker,
     )
@@ -457,7 +458,7 @@ async fn transfer_get_balance_from_set_of_lockups() {
         &alice,
         &bob.id(),
         20 * ONE_LIS,
-        Some(SECOND),
+        Some(U64(SECOND)),
         &contract,
         &worker,
     )
@@ -468,7 +469,7 @@ async fn transfer_get_balance_from_set_of_lockups() {
         &alice,
         &bob.id(),
         25 * ONE_LIS,
-        Some(SECOND),
+        Some(U64(SECOND)),
         &contract,
         &worker,
     )
@@ -479,7 +480,7 @@ async fn transfer_get_balance_from_set_of_lockups() {
         &alice,
         &bob.id(),
         50 * ONE_LIS,
-        Some(DAY),
+        Some(U64(DAY)),
         &contract,
         &worker,
     )
@@ -490,7 +491,7 @@ async fn transfer_get_balance_from_set_of_lockups() {
         &alice,
         &bob.id(),
         100 * ONE_LIS,
-        Some(DAY),
+        Some(U64(DAY)),
         &contract,
         &worker,
     )
@@ -527,7 +528,7 @@ async fn transfer_get_balance_from_set_of_lockups() {
         &alice,
         &bob.id(),
         25 * ONE_LIS,
-        Some(SECOND),
+        Some(U64(SECOND)),
         &contract,
         &worker,
     )
@@ -590,7 +591,7 @@ async fn transfer_get_balance_from_not_expired_lockup() {
         &alice,
         &bob.id(),
         100 * ONE_LIS,
-        Some(DAY),
+        Some(U64(DAY)),
         &contract,
         &worker,
     )
