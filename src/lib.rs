@@ -87,8 +87,6 @@ impl Contract {
     ) -> Self {
         let owner_id = env::signer_account_id();
 
-        println!("{:#?}", owner_id);
-
         let mut accounts = LookupMap::new(StorageKey::Accounts);
         accounts.insert(
             &owner_id,
