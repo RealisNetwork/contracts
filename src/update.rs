@@ -17,6 +17,7 @@ impl Contract {
             beneficiary_id: old_contract.beneficiary_id,
             state: old_contract.state,
             registered_accounts: old_contract.registered_accounts,
+            staking: old_contract.staking,
         }
     }
 }
