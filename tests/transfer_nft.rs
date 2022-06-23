@@ -1,3 +1,5 @@
+pub mod utils;
+
 use crate::utils::*;
 use near_sdk::test_utils::accounts;
 
@@ -12,16 +14,13 @@ async fn transfer_nft() {
 
     // Alice mint nft for Bob with id = 0
     let nft_id = test_call_mint_nft(&contract, &worker, &bob, &alice).await;
-    // Add dave to account list.
-    let dave_info = test_call_insert_acc(&dave, &worker, &contract, &alice).await;
-    assert_eq!(dave_info.nfts.len(), 0);
+
     // Assert Bob has nft
     let bob_info = test_call_get_acc_info(&bob, &worker, &contract).await;
     assert!(bob_info.nfts.get(0).is_some());
 
     // Bob transfer nft to Dave
     let result = test_call_transfer_nft(&contract, &worker, &dave, &bob, nft_id.into()).await;
-    println!("{:?}", result);
     assert!(result.is_ok());
     // Assert Bob hasn't nft
     let bob_info = test_call_get_acc_info(&bob, &worker, &contract).await;

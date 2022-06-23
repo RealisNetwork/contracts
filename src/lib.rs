@@ -140,7 +140,7 @@ impl Contract {
         }
     }
 
-    pub fn get_account_info(&mut self, account_id: &AccountId) -> AccountInfo {
+    pub fn get_account_info(&self, account_id: &AccountId) -> AccountInfo {
         let res: Account = self
             .accounts
             .get(account_id)
@@ -150,16 +150,6 @@ impl Contract {
         res.into()
     }
 
-    pub fn insert_account(&mut self, account_id: &AccountId) -> AccountInfo {
-        self.assert_owner();
-        let res = self
-            .accounts
-            .get(account_id)
-            .unwrap_or_else(|| Account::new(account_id.clone(), 0).into());
-
-        self.accounts.insert(account_id, &res);
-        Account::from(res).into()
-    }
 }
 
 impl Default for Contract {

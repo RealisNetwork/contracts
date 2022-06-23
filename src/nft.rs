@@ -313,11 +313,11 @@ impl NftManager {
     }
 
     /// Transfer `NFT` between two users if NFT available.
-    pub fn transfer_nft(&mut self, old_owner: AccountId, new_owner: AccountId, nft_id: &NftId) {
+    pub fn transfer_nft(&mut self, old_owner: &AccountId, new_owner: &AccountId, nft_id: &NftId) {
         let nft: Nft = self.get_if_available(nft_id).into();
-        require!(nft.is_owner(&old_owner), "Only for NFT owner.");
+        require!(nft.is_owner(old_owner), "Only for NFT owner.");
         self.nft_map
-            .insert(nft_id, &nft.set_owner_id(&new_owner).into());
+            .insert(nft_id, &nft.set_owner_id(new_owner).into());
     }
 
     /// Generate new id for new `NFT`.
@@ -369,16 +369,24 @@ impl Contract {
             .get(&sender_id)
             .unwrap_or_else(|| env::panic_str("No such account id (sender)"))
             .into();
-        sender_account.nfts.remove(&nft_id);
-        let mut recipient_account: Account = self
+
+        let mut recipient_account: Account  = self
             .accounts
             .get(&recipient_id)
-            .unwrap_or_else(|| env::panic_str("No such account id (recipient)"))
-            .into();
+            .unwrap_or_else(|| {
+                Account::new(recipient_id.clone(), 0).into()
+            }).into();
+
+        sender_account.nfts.remove(&nft_id);
         recipient_account.nfts.insert(&nft_id);
-        self.accounts.insert(&sender_id, &sender_account.into());
+
+        self.accounts.insert(&sender_id, &sender_account);
         self.accounts
-            .insert(&recipient_id, &recipient_account.into());
+            .insert(&recipient_id, &recipient_account);
+
+        self.nfts
+            .transfer_nft(&sender_id, &recipient_id, &nft_id);
+
     }
 }
 

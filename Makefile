@@ -19,8 +19,9 @@ migrate:
 				--initFunction migrate \
 				--initArgs '{}'
 
-
-
+.PHONY: integration-tests
+integration-tests:
+	cargo test --test mod -- --test-threads=1
 
 .PHONY: create
 create:
