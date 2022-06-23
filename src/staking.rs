@@ -37,14 +37,14 @@ impl Staking {
         x_amount
     }
 
-    fn un_stake(&mut self, x_amount: u128) -> u128 {
+    fn unstake(&mut self, x_amount: u128) -> u128 {
         let amount = self.convert_to_amount(x_amount);
         self.total_supply -= amount;
         self.total_x_supply -= x_amount;
         amount
     }
 
-    fn add_to_pool(&mut self, amount: u128) {
+    fn add_to_pool(&mut self, amount: u128) -> u128 {
         self.total_supply += amount;
         if self.total_x_supply == 0 {
             return self.total_supply;
@@ -79,7 +79,7 @@ impl Contract {
         x_amount
     }
 
-    pub fn internal_un_stake(&mut self, staker_id: AccountId, x_amount: u128) {
+    pub fn internal_unstake(&mut self, staker_id: AccountId, x_amount: u128) -> u128 {
         require!(x_amount > 0, "You can't unstake zero x tokens");
 
         let mut staker_account: Account = self
@@ -90,7 +90,7 @@ impl Contract {
         require!(staker_account.x_staked >= x_amount, "Not enough x balance");
         staker_account.x_staked -= x_amount;
 
-        let amount = self.staking.un_stake(x_amount);
+        let amount = self.staking.unstake(x_amount);
         staker_account
             .lockups
             .insert(&Lockup::Staking(SimpleLockup {
@@ -159,19 +159,19 @@ mod tests {
         assert_eq!(staking.x_cost, 4);
 
         // State: 6
-        staking.un_stake(50 * STARTED_COST * ONE_LIS);
+        staking.unstake(50 * STARTED_COST * ONE_LIS);
         assert_eq!(staking.total_supply, 600 * ONE_LIS);
         assert_eq!(staking.total_x_supply, 150 * STARTED_COST * ONE_LIS);
         assert_eq!(staking.x_cost, 4);
 
         // State: 7
-        staking.un_stake(100 * STARTED_COST * ONE_LIS);
+        staking.unstake(100 * STARTED_COST * ONE_LIS);
         assert_eq!(staking.total_supply, 200 * ONE_LIS);
         assert_eq!(staking.total_x_supply, 50 * STARTED_COST * ONE_LIS);
         assert_eq!(staking.x_cost, 4);
 
         // State: 8
-        staking.un_stake(50 * STARTED_COST * ONE_LIS);
+        staking.unstake(50 * STARTED_COST * ONE_LIS);
         assert_eq!(staking.total_supply, 0 * ONE_LIS);
         assert_eq!(staking.total_x_supply, 0 * STARTED_COST * ONE_LIS);
         assert_eq!(staking.x_cost, 4);

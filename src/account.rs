@@ -120,6 +120,7 @@ impl From<Account> for VAccount {
 #[serde(crate = "near_sdk::serde")]
 pub struct AccountInfo {
     pub free: U128,
+    pub x_staked: U128,
     pub lockups: Vec<LockupInfo>,
     pub nfts: Vec<NftId>,
     pub lockups_free: U128,
@@ -129,6 +130,7 @@ impl From<Account> for AccountInfo {
     fn from(account: Account) -> Self {
         AccountInfo {
             free: U128(account.free),
+            x_staked: U128(account.x_staked),
             lockups: account.get_lockups(None, None),
             nfts: account.get_nfts(),
             lockups_free: U128(account.get_lockups_free()),

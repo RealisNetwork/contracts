@@ -82,6 +82,18 @@ impl Contract {
         U128(total_claimed)
     }
 
+    pub fn stake(&mut self, amount: U128) -> U128 {
+        self.assert_running();
+        let staker_id = env::signer_account_id();
+        self.internal_stake(staker_id, amount.0).into()
+    }
+
+    pub fn unstake(&mut self, x_amount: U128) -> U128 {
+        self.assert_running();
+        let staker_id = env::signer_account_id();
+        self.internal_unstake(staker_id, x_amount.0).into()
+    }
+
     // TODO: delegate nft
     // Discuss general structure of delegation
 }
