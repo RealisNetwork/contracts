@@ -50,16 +50,18 @@ impl Account {
         let fold = collection
             .iter()
             .filter(|lock| lock.is_expired())
-            .map(|lock| {
-                self.lockups.remove(lock);
+            .map(|lockup| {
+                self.lockups.remove(lockup);
                 events.push(LockupClaimed {
-                    amount: U128(lock.amount),
+                    amount: U128(lockup.get_amount().unwrap_or_default()),
                     account_id: &account_id,
                 });
 
-                lock
+                lockup
             })
-            .fold(0, |acc, lock| acc + lock.amount);
+            .fold(0, |acc, lockup| {
+                acc + lockup.get_amount().unwrap_or_default()
+            });
         self.free += fold;
 
         EventLog::from(EventLogVariant::LockupClaimed(events)).emit();
@@ -71,13 +73,13 @@ impl Account {
         let lockup = self
             .lockups
             .iter()
-            .find(|lockup| lockup.amount == amount && lockup.is_expired())
+            .find(|lockup| lockup.get_amount().unwrap_or_default() == amount && lockup.is_expired())
             .unwrap_or_else(|| env::panic_str("No such lockup"));
-        self.free += lockup.amount;
+        self.free += lockup.get_amount().unwrap_or_default();
         self.lockups.remove(&lockup);
 
         EventLog::from(EventLogVariant::LockupClaimed(vec![LockupClaimed {
-            amount: U128(lockup.amount),
+            amount: U128(lockup.get_amount().unwrap_or_default()),
             account_id: &account_id,
         }]))
         .emit();
@@ -98,7 +100,9 @@ impl Account {
         self.lockups
             .iter()
             .filter(|lock| lock.is_expired())
-            .fold(0, |acc, lock| acc + lock.amount)
+            .fold(0, |acc, lockup| {
+                acc + lockup.get_amount().unwrap_or_default()
+            })
     }
 
     pub fn get_nfts(&self) -> Vec<NftId> {
@@ -144,11 +148,13 @@ mod tests {
         let account_id = accounts(0);
         let mut account = Account::new(account_id.clone(), 5);
         // Just locked (will unlock in 3 days (default lifetime))
-        account.lockups.insert(&Lockup::new(55, None));
-        account.lockups.insert(&Lockup {
+        account
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup::new(55, None)));
+        account.lockups.insert(&Lockup::GooglePlayBuy(SimpleLockup {
             amount: 5,
             expire_on: 1,
-        }); // Lock from 1970
+        })); // Lock from 1970
 
         // Balance of lock from 1970 will be transferred to main balance
         testing_env!(context.block_timestamp(999).build());
@@ -165,15 +171,17 @@ mod tests {
         let account_id = accounts(0);
         let mut account = Account::new(account_id.clone(), 5);
         // Just locked (will unlock in 3 days (default lifetime))
-        account.lockups.insert(&Lockup::new(55, None));
-        account.lockups.insert(&Lockup {
+        account
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup::new(55, None)));
+        account.lockups.insert(&Lockup::GooglePlayBuy(SimpleLockup {
             amount: 5,
             expire_on: 0,
-        }); // Lock from 1970
-        account.lockups.insert(&Lockup {
+        })); // Lock from 1970
+        account.lockups.insert(&Lockup::GooglePlayBuy(SimpleLockup {
             amount: 8,
             expire_on: 16457898,
-        }); // Lock from 1970
+        })); // Lock from 1970
 
         testing_env!(context.block_timestamp(16457899).build());
 

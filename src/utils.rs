@@ -35,7 +35,7 @@ impl Contract {
 
 #[cfg(test)]
 pub mod tests_utils {
-    pub use crate::{lockup::Lockup, utils::ONE_LIS, *};
+    pub use crate::{lockup::SimpleLockup, utils::ONE_LIS, *};
     pub use near_sdk::{
         collections::LookupMap,
         json_types::U128,
