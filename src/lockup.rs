@@ -9,6 +9,7 @@ use near_sdk::{
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
 pub enum Lockup {
     GooglePlayBuy(SimpleLockup),
+    Staking(SimpleLockup),
 }
 
 impl Lockup {
@@ -89,6 +90,8 @@ impl SimpleLockup {
 pub struct LockupInfo {
     pub amount: U128,
     pub expire_on: U64,
+    #[serde(rename = "type")]
+    pub lockup_type: String,
 }
 
 impl From<Lockup> for LockupInfo {
@@ -97,6 +100,7 @@ impl From<Lockup> for LockupInfo {
             Lockup::GooglePlayBuy(lockup) => LockupInfo {
                 amount: U128(lockup.amount),
                 expire_on: lockup.expire_on.into(),
+                lockup_type: "Staking".to_string(),
             },
         }
     }
