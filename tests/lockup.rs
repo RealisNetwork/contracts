@@ -1,6 +1,7 @@
 mod utils;
 
 use crate::utils::*;
+use near_sdk::json_types::U64;
 use realis_near::{
     lockup::Lockup,
     utils::{DAY, MINUTE, SECOND},
@@ -116,7 +117,7 @@ async fn create_lockup_with_duration() {
         &alice,
         &bob.id(),
         10 * ONE_LIS,
-        Some(DAY),
+        Some(U64(DAY)),
         &contract,
         &worker,
     )
@@ -158,7 +159,7 @@ async fn user_claim_lockup() {
         &alice,
         &bob.id(),
         10 * ONE_LIS,
-        Some(10 * SECOND),
+        Some(U64(10 * SECOND)),
         &contract,
         &worker,
     )
@@ -200,7 +201,7 @@ async fn user_claim_lockup() {
             &alice,
             &bob.id(),
             10 * ONE_LIS,
-            Some(5 * SECOND),
+            Some(U64(5 * SECOND)),
             &contract,
             &worker,
         )
@@ -213,7 +214,7 @@ async fn user_claim_lockup() {
             &alice,
             &bob.id(),
             15 * ONE_LIS,
-            Some(10 * SECOND),
+            Some(U64(10 * SECOND)),
             &contract,
             &worker,
         )
@@ -226,7 +227,7 @@ async fn user_claim_lockup() {
             &alice,
             &bob.id(),
             15 * ONE_LIS,
-            Some(15 * SECOND),
+            Some(U64(15 * SECOND)),
             &contract,
             &worker,
         )
@@ -303,7 +304,7 @@ async fn not_contract_owner_create_lockup() {
         &bob,
         &bob.id(),
         15 * ONE_LIS,
-        Some(15 * SECOND),
+        Some(U64(15 * SECOND)),
         &contract,
         &worker,
     )
@@ -331,7 +332,7 @@ async fn not_enough_balance_to_create_lockup() {
         &alice,
         &bob.id(),
         3_000_000_001 * ONE_LIS,
-        Some(15 * SECOND),
+        Some(U64(15 * SECOND)),
         &contract,
         &worker,
     )
@@ -357,7 +358,7 @@ async fn user_claimed_not_expired_lockup() {
         &alice,
         &bob.id(),
         10 * ONE_LIS,
-        Some(DAY),
+        Some(U64(DAY)),
         &contract,
         &worker,
     )
@@ -405,7 +406,7 @@ async fn claim_expired_lockup_when_other_not_expired() {
         &alice,
         &bob.id(),
         10 * ONE_LIS,
-        Some(SECOND),
+        Some(U64(SECOND)),
         &contract,
         &worker,
     )
@@ -416,7 +417,7 @@ async fn claim_expired_lockup_when_other_not_expired() {
         &alice,
         &bob.id(),
         10 * ONE_LIS,
-        Some(DAY),
+        Some(U64(DAY)),
         &contract,
         &worker,
     )
@@ -814,7 +815,7 @@ async fn claim_all_lockups_with_one_lockup() {
         &alice,
         &bob.id(),
         10 * ONE_LIS,
-        Some(10 * SECOND),
+        Some(U64(10 * SECOND)),
         &contract,
         &worker,
     )

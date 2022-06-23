@@ -1,14 +1,16 @@
-use std::str::FromStr;
+use near_sdk::{env, json_types::U64, PublicKey};
 pub use near_sdk::{json_types::U128, serde::Serialize, serde_json, serde_json::Value, Timestamp};
-use near_sdk::{env, PublicKey};
 use realis_near::{lockup::LockupInfo, utils::DAY};
+use std::{collections::HashMap, str::FromStr};
 pub use workspaces::{
     network::{DevAccountDeployer, Testnet},
     result::CallExecutionDetails,
     Account, AccountId, Contract, Worker,
 };
-use workspaces::{operations::Function, types::Gas};
-use workspaces::types::SecretKey;
+use workspaces::{
+    operations::Function,
+    types::{Gas, SecretKey},
+};
 
 pub const WASM_FILE: &str = "./target/wasm32-unknown-unknown/release/realis_near.wasm";
 pub const ONE_LIS: u128 = 1_000_000_000_000;
@@ -34,36 +36,59 @@ pub fn get_dave() -> Account {
 
 pub struct BackendAccount {}
 
-impl BackendAccount {
-    pub fn get_root() -> (Account, AccountId) {
-        (Account::from_file("./tests/res/backend.realis.testnet.json"),
-        Self::get_account_id(PublicKey::from_str("ed25519:J3SM6zr4kDKbmC639n9Kn4hbx8x3ESwkULAuYdywj5Mz").unwrap()))
+pub struct CustomBackendAccount {
+    pub account: Account,
+    pub id_by_pk: AccountId,
+}
 
+impl CustomBackendAccount {
+    pub fn get_account_from_file(filename: &str) -> CustomBackendAccount {
+        let account_content = std::fs::read_to_string(filename);
+        let json: HashMap<String, String> =
+            serde_json::from_str(account_content.expect("Can't read file").as_str())
+                .expect("Can't get JSON");
+        Self {
+            account: Account::from_file(filename),
+            id_by_pk: Self::get_account_id(
+                PublicKey::from_str(json.get("public_key").expect("Can't get public_key")).unwrap(),
+            ),
+        }
     }
-
-    pub fn get_user1() -> Account {
-        Account::from_file("./tests/res/backend_access_keys/user1_backend.realis.testnet.json")
-    }
-
-    pub fn get_user2() -> (Account, AccountId) {
-        (Account::from_file("./tests/res/backend_access_keys/user2_backend.realis.testnet.json"),
-         Self::get_account_id(PublicKey::from_str("ed25519:Goh1DvcPkxp7fuCTH3biCR1v5Smm6xykEWFeWpNT8CvS").unwrap()))
-    }
-
-    pub fn get_user3() -> Account {
-        Account::from_file("./tests/res/backend_access_keys/user3_backend.realis.testnet.json")
-    }
-
-    pub fn get_user4() -> Account {
-        Account::from_file("./tests/res/backend_access_keys/user4_backend.realis.testnet.json")
-    }
-
-
 
     pub fn get_account_id(pk: PublicKey) -> AccountId {
         hex::encode(&pk.as_bytes()[1..])
             .try_into()
             .unwrap_or_else(|_| env::panic_str("Fail to convert PublicKey to AccountId"))
+    }
+}
+
+impl BackendAccount {
+    pub fn get_root() -> CustomBackendAccount {
+        CustomBackendAccount::get_account_from_file("./tests/res/backend.realis.testnet.json")
+    }
+
+    pub fn get_user1() -> CustomBackendAccount {
+        CustomBackendAccount::get_account_from_file(
+            "./tests/res/backend_access_keys/user1_backend.realis.testnet.json",
+        )
+    }
+
+    pub fn get_user2() -> CustomBackendAccount {
+        CustomBackendAccount::get_account_from_file(
+            "./tests/res/backend_access_keys/user2_backend.realis.testnet.json",
+        )
+    }
+
+    pub fn get_user3() -> CustomBackendAccount {
+        CustomBackendAccount::get_account_from_file(
+            "./tests/res/backend_access_keys/user3_backend.realis.testnet.json",
+        )
+    }
+
+    pub fn get_user4() -> CustomBackendAccount {
+        CustomBackendAccount::get_account_from_file(
+            "./tests/res/backend_access_keys/user4_backend.realis.testnet.json",
+        )
     }
 }
 
@@ -147,10 +172,19 @@ impl TestingEnvBuilder {
 }
 
 pub async fn get_balance_info(account: &Account, contract: &Contract, worker: &TestWorker) -> u128 {
-    account
+    get_balance_info_signed(account, account.id(), contract, worker).await
+}
+
+pub async fn get_balance_info_signed(
+    signer: &Account,
+    account_id: &AccountId,
+    contract: &Contract,
+    worker: &TestWorker,
+) -> u128 {
+    signer
         .call(worker, contract.id(), "get_balance_info")
         .args_json(serde_json::json!({
-            "account_id": account.id(),
+            "account_id": account_id,
         }))
         .expect("Invalid input args")
         .view()
@@ -183,7 +217,7 @@ pub async fn create_lockup_for_account(
     account: &Account,
     recipient_id: &AccountId,
     amount: u128,
-    duration: Option<Timestamp>,
+    duration: Option<U64>,
     contract: &Contract,
     worker: &TestWorker,
 ) -> Timestamp {
@@ -198,8 +232,9 @@ pub async fn create_lockup_for_account(
         .transact()
         .await
         .expect("Cannon get result")
-        .json::<Timestamp>()
+        .json::<U64>()
         .expect("Cannot parse JSON")
+        .0
 }
 
 pub async fn get_lockup_info(
@@ -207,10 +242,19 @@ pub async fn get_lockup_info(
     contract: &Contract,
     worker: &TestWorker,
 ) -> Vec<LockupInfo> {
-    account
+    get_lockup_info_signed(account, account.id(), &contract, &worker).await
+}
+
+pub async fn get_lockup_info_signed(
+    signer: &Account,
+    account_id: &AccountId,
+    contract: &Contract,
+    worker: &TestWorker,
+) -> Vec<LockupInfo> {
+    signer
         .call(&worker, contract.id(), "lockups_info")
         .args_json(serde_json::json!({
-            "account_id": account.id(),
+            "account_id": account_id,
         }))
         .expect("Invalid input args")
         .view()
