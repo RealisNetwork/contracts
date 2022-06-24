@@ -23,8 +23,7 @@ impl XCost {
 pub struct Staking {
     total_supply: Balance,
     total_x_supply: Balance,
-    /// xLIS = x_cost * LIS default x_cost = 0.001;
-    x_cost: Balance,
+    x_cost: XCost,
 
     pub default_lockup_time: Timestamp,
 }
@@ -34,7 +33,7 @@ impl Default for Staking {
         Self {
             total_supply: 0,
             total_x_supply: 0,
-            x_cost: 1,
+            x_cost: XCost::new(1, STARTED_COST),
             default_lockup_time: DEFAULT_LOCKUP_TIME,
         }
     }
@@ -60,12 +59,12 @@ impl Staking {
         if self.total_x_supply == 0 {
             return self.total_supply;
         }
-        self.x_cost = self.total_supply * STARTED_COST / self.total_x_supply;
+        self.x_cost = XCost::new(self.total_supply, self.total_x_supply);
         self.total_supply
     }
 
     pub fn convert_to_x(&self, amount: u128) -> u128 {
-        amount * STARTED_COST / self.x_cost
+        amount * self.x_cost.x_amount / self.x_cost.amount
     }
 
     pub fn convert_to_amount(&self, x_amount: u128) -> u128 {
@@ -141,7 +140,7 @@ mod tests {
         let mut staking = Staking::default();
 
         // State: 1
-        staking.stake(100 * ONE_LIS);
+        staking.stake(100 * ONE_LIS); // 100_000_000_000_000
         assert_eq!(staking.total_supply, 100 * ONE_LIS);
         assert_eq!(staking.total_x_supply, 100 * STARTED_COST * ONE_LIS);
         assert_eq!(staking.x_cost, 1);
@@ -187,5 +186,25 @@ mod tests {
         assert_eq!(staking.total_supply, 0 * ONE_LIS);
         assert_eq!(staking.total_x_supply, 0 * STARTED_COST * ONE_LIS);
         assert_eq!(staking.x_cost, 4);
+
+        staking.stake(25 * ONE_LIS);
+        assert_eq!(staking.total_supply, 25 * ONE_LIS);
+        assert_eq!(staking.total_x_supply, 625 * STARTED_COST * ONE_LIS / 100);
+        assert_eq!(staking.x_cost, 4);
+
+        staking.add_to_pool(100 * ONE_LIS);
+        assert_eq!(staking.total_supply, 125 * ONE_LIS);
+        assert_eq!(staking.total_x_supply, 625 * STARTED_COST * ONE_LIS / 100);
+        assert_eq!(staking.x_cost, 20);
+
+        staking.stake(20 * ONE_LIS);
+        assert_eq!(staking.total_supply, 145 * ONE_LIS);
+        assert_eq!(staking.total_x_supply, 725 * STARTED_COST * ONE_LIS / 100);
+        assert_eq!(staking.x_cost, 20);
+
+        staking.add_to_pool(1000 * ONE_LIS);
+        assert_eq!(staking.total_supply, 1145 * ONE_LIS);
+        assert_eq!(staking.total_x_supply, 725 * STARTED_COST * ONE_LIS / 100);
+        assert_eq!(staking.x_cost, 157); // Must be 157,931034
     }
 }
