@@ -8,6 +8,17 @@ use near_sdk::{env, require, AccountId, Balance, Timestamp};
 pub const STARTED_COST: u128 = 1000;
 pub const DEFAULT_LOCKUP_TIME: Timestamp = 7 * DAY;
 
+struct XCost {
+    pub amount: u128,
+    pub x_amount: u128
+}
+
+impl XCost {
+    pub fn new(amount: u128, x_amount: u128) -> Self {
+        Self { amount, x_amount }
+    }
+}
+
 #[derive(BorshSerialize, BorshDeserialize)]
 pub struct Staking {
     total_supply: Balance,
@@ -58,7 +69,7 @@ impl Staking {
     }
 
     pub fn convert_to_amount(&self, x_amount: u128) -> u128 {
-        x_amount * self.x_cost / STARTED_COST
+        x_amount * self.x_cost.amount / self.x_cost.x_amount
     }
 }
 
