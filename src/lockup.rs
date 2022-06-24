@@ -9,18 +9,19 @@ use near_sdk::{
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
 pub enum Lockup {
     GooglePlayBuy(SimpleLockup),
+    Staking(SimpleLockup),
 }
 
 impl Lockup {
     pub fn is_expired(&self) -> bool {
         match self {
-            Self::GooglePlayBuy(lockup) => lockup.is_expired(),
+            Self::GooglePlayBuy(lockup) | Self::Staking(lockup) => lockup.is_expired(),
         }
     }
 
     pub fn get_amount(&self) -> Option<u128> {
         match self {
-            Self::GooglePlayBuy(lockup) => Some(lockup.amount),
+            Self::GooglePlayBuy(lockup) | Self::Staking(lockup) => Some(lockup.amount),
         }
     }
 }
@@ -89,6 +90,8 @@ impl SimpleLockup {
 pub struct LockupInfo {
     pub amount: U128,
     pub expire_on: U64,
+    #[serde(rename = "type")]
+    pub lockup_type: String,
 }
 
 impl From<Lockup> for LockupInfo {
@@ -97,6 +100,12 @@ impl From<Lockup> for LockupInfo {
             Lockup::GooglePlayBuy(lockup) => LockupInfo {
                 amount: U128(lockup.amount),
                 expire_on: lockup.expire_on.into(),
+                lockup_type: "GooglePlayBuy".to_string(),
+            },
+            Lockup::Staking(lockup) => LockupInfo {
+                amount: U128(lockup.amount),
+                expire_on: lockup.expire_on.into(),
+                lockup_type: "Staking".to_string(),
             },
         }
     }

@@ -27,6 +27,7 @@ impl From<VAccount> for Account {
 #[derive(BorshSerialize, BorshDeserialize, Debug)]
 pub struct Account {
     pub free: Balance,
+    pub x_staked: Balance,
     pub lockups: UnorderedSet<Lockup>,
     pub nfts: UnorderedSet<NftId>,
 }
@@ -36,6 +37,7 @@ impl Account {
         let hash = env::sha256(account_id.as_bytes());
         Self {
             free: balance,
+            x_staked: 0,
             lockups: UnorderedSet::new(StorageKey::AccountLockup { hash: hash.clone() }),
             nfts: UnorderedSet::new(StorageKey::AccountNftId { hash }),
         }
@@ -118,6 +120,7 @@ impl From<Account> for VAccount {
 #[serde(crate = "near_sdk::serde")]
 pub struct AccountInfo {
     pub free: U128,
+    pub x_staked: U128,
     pub lockups: Vec<LockupInfo>,
     pub nfts: Vec<NftId>,
     pub lockups_free: U128,
@@ -127,6 +130,7 @@ impl From<Account> for AccountInfo {
     fn from(account: Account) -> Self {
         AccountInfo {
             free: U128(account.free),
+            x_staked: U128(account.x_staked),
             lockups: account.get_lockups(None, None),
             nfts: account.get_nfts(),
             lockups_free: U128(account.get_lockups_free()),
