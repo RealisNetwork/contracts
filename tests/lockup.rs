@@ -1,6 +1,7 @@
 mod utils;
 
 use crate::utils::*;
+use near_sdk::json_types::U64;
 use realis_near::{
     lockup::Lockup,
     utils::{DAY, MINUTE, SECOND},
@@ -39,7 +40,7 @@ async fn create_lockup() {
     assert_eq!(bobs_lockups[0].amount.0, 3000 * ONE_LIS);
 
     // Assert timestamp == default
-    assert_eq!(bobs_lockups[0].expire_on, bob_lockup_ts1);
+    assert_eq!(bobs_lockups[0].expire_on.0, bob_lockup_ts1);
 
     // Assert Alice balance
     assert_eq!(
@@ -66,7 +67,7 @@ async fn create_lockup() {
     assert_eq!(charlies_lockups[0].amount.0, 150 * ONE_LIS);
 
     // Assert timestamp == default
-    assert_eq!(charlies_lockups[0].expire_on, charlie_lockup_ts);
+    assert_eq!(charlies_lockups[0].expire_on.0, charlie_lockup_ts);
 
     // Assert Alice balance
     assert_eq!(
@@ -87,8 +88,8 @@ async fn create_lockup() {
     assert_eq!(bobs_lockups[1].amount.0, 300 * ONE_LIS);
 
     // Assert timestamp == default
-    assert_eq!(bobs_lockups[0].expire_on, bob_lockup_ts1);
-    assert_eq!(bobs_lockups[1].expire_on, bob_lockup_ts2);
+    assert_eq!(bobs_lockups[0].expire_on.0, bob_lockup_ts1);
+    assert_eq!(bobs_lockups[1].expire_on.0, bob_lockup_ts2);
 
     // Assert Alice balance
     assert_eq!(
@@ -116,7 +117,7 @@ async fn create_lockup_with_duration() {
         &alice,
         &bob.id(),
         10 * ONE_LIS,
-        Some(DAY),
+        Some(U64(DAY)),
         &contract,
         &worker,
     )
@@ -130,7 +131,7 @@ async fn create_lockup_with_duration() {
     assert_eq!(bobs_lockups[0].amount.0, 10 * ONE_LIS);
 
     // Assert duration = 1 DAY
-    assert_eq!(bobs_lockups[0].expire_on, bob_lockup_ts1);
+    assert_eq!(bobs_lockups[0].expire_on.0, bob_lockup_ts1);
 
     // Assert Alice balance
     assert_eq!(
@@ -158,7 +159,7 @@ async fn user_claim_lockup() {
         &alice,
         &bob.id(),
         10 * ONE_LIS,
-        Some(10 * SECOND),
+        Some(U64(10 * SECOND)),
         &contract,
         &worker,
     )
@@ -172,7 +173,7 @@ async fn user_claim_lockup() {
     assert_eq!(bobs_lockups[0].amount.0, 10 * ONE_LIS);
 
     // Assert duration = 10 SECONDS
-    assert_eq!(bobs_lockups[0].expire_on, bob_lockup_ts1);
+    assert_eq!(bobs_lockups[0].expire_on.0, bob_lockup_ts1);
 
     // Assert Alice balance
     assert_eq!(
@@ -184,7 +185,7 @@ async fn user_claim_lockup() {
     tokio::time::sleep(tokio::time::Duration::from_secs(11)).await;
 
     // Bob claim lockup
-    claim_lockup_for_account(&bob, &contract, &worker, bob_lockup_ts1).await;
+    claim_all_lockup_for_account(&bob, &contract, &worker).await;
 
     // Assert Bob's balance = 11 LIS
     assert_eq!(
@@ -200,7 +201,7 @@ async fn user_claim_lockup() {
             &alice,
             &bob.id(),
             10 * ONE_LIS,
-            Some(5 * SECOND),
+            Some(U64(5 * SECOND)),
             &contract,
             &worker,
         )
@@ -213,7 +214,7 @@ async fn user_claim_lockup() {
             &alice,
             &bob.id(),
             15 * ONE_LIS,
-            Some(10 * SECOND),
+            Some(U64(10 * SECOND)),
             &contract,
             &worker,
         )
@@ -226,7 +227,7 @@ async fn user_claim_lockup() {
             &alice,
             &bob.id(),
             15 * ONE_LIS,
-            Some(15 * SECOND),
+            Some(U64(15 * SECOND)),
             &contract,
             &worker,
         )
@@ -248,7 +249,7 @@ async fn user_claim_lockup() {
         .iter()
         .zip(bob_timestamps.clone().iter())
         .for_each(|(lockup, timestamp)| {
-            assert_eq!(&lockup.expire_on, timestamp);
+            assert_eq!(&lockup.expire_on.0, timestamp);
         });
 
     // Assert Alice balance
@@ -261,7 +262,7 @@ async fn user_claim_lockup() {
     tokio::time::sleep(tokio::time::Duration::from_secs(15)).await;
 
     // Bob claim 15 LIS
-    claim_lockup_for_account(&bob, &contract, &worker, *bob_timestamps.get(2).unwrap()).await;
+    claim_lockup_for_account(&bob, &contract, &worker, U128(15)).await;
 
     // Assert Bob has 2 lockup
     let bobs_lockups = get_lockup_info(&bob, &contract, &worker).await;
@@ -303,7 +304,7 @@ async fn not_contract_owner_create_lockup() {
         &bob,
         &bob.id(),
         15 * ONE_LIS,
-        Some(15 * SECOND),
+        Some(U64(15 * SECOND)),
         &contract,
         &worker,
     )
@@ -331,7 +332,7 @@ async fn not_enough_balance_to_create_lockup() {
         &alice,
         &bob.id(),
         3_000_000_001 * ONE_LIS,
-        Some(15 * SECOND),
+        Some(U64(15 * SECOND)),
         &contract,
         &worker,
     )
@@ -357,7 +358,7 @@ async fn user_claimed_not_expired_lockup() {
         &alice,
         &bob.id(),
         10 * ONE_LIS,
-        Some(DAY),
+        Some(U64(DAY)),
         &contract,
         &worker,
     )
@@ -371,7 +372,7 @@ async fn user_claimed_not_expired_lockup() {
     assert_eq!(bobs_lockups[0].amount.0, 10 * ONE_LIS);
 
     // Assert duration = 1 DAY
-    assert_eq!(bobs_lockups[0].expire_on, bob_lockup_ts);
+    assert_eq!(bobs_lockups[0].expire_on.0, bob_lockup_ts);
 
     // Assert Alice balance
     assert_eq!(
@@ -380,7 +381,7 @@ async fn user_claimed_not_expired_lockup() {
     );
 
     // Bob claim lockup
-    let claimed = claim_lockup_for_account(&bob, &contract, &worker, bob_lockup_ts).await;
+    let claimed = claim_all_lockup_for_account(&bob, &contract, &worker).await;
 
     // Assert that we claimed nothing
     assert_eq!(claimed, 0);
@@ -405,7 +406,7 @@ async fn claim_expired_lockup_when_other_not_expired() {
         &alice,
         &bob.id(),
         10 * ONE_LIS,
-        Some(SECOND),
+        Some(U64(SECOND)),
         &contract,
         &worker,
     )
@@ -416,7 +417,7 @@ async fn claim_expired_lockup_when_other_not_expired() {
         &alice,
         &bob.id(),
         10 * ONE_LIS,
-        Some(DAY),
+        Some(U64(DAY)),
         &contract,
         &worker,
     )
@@ -431,8 +432,8 @@ async fn claim_expired_lockup_when_other_not_expired() {
     assert_eq!(bobs_lockups[1].amount.0, 10 * ONE_LIS);
 
     // Assert duration
-    assert_eq!(bobs_lockups[0].expire_on, bob_lockup_ts1);
-    assert_eq!(bobs_lockups[1].expire_on, bob_lockup_ts2);
+    assert_eq!(bobs_lockups[0].expire_on.0, bob_lockup_ts1);
+    assert_eq!(bobs_lockups[1].expire_on.0, bob_lockup_ts2);
 
     // Assert Alice balance
     assert_eq!(
@@ -482,7 +483,7 @@ async fn refund_lockup() {
     assert_eq!(bobs_lockups[0].amount.0, 10 * ONE_LIS);
 
     // Assert duration
-    assert_eq!(bobs_lockups[0].expire_on, bob_lockup_ts1);
+    assert_eq!(bobs_lockups[0].expire_on.0, bob_lockup_ts1);
 
     // Assert Alice balance
     assert_eq!(
@@ -537,7 +538,7 @@ async fn refund_lockup() {
         .iter()
         .zip(bob_lockup_ts.clone().iter())
         .for_each(|(lockup, timestamp)| {
-            assert_eq!(&lockup.expire_on, timestamp);
+            assert_eq!(&lockup.expire_on.0, timestamp);
         });
 
     // Assert Alice balance
@@ -572,7 +573,7 @@ async fn refund_lockup() {
         .iter()
         .zip(bob_lockup_ts.clone().iter())
         .for_each(|(lockup, timestamp)| {
-            assert_eq!(&lockup.expire_on, timestamp);
+            assert_eq!(&lockup.expire_on.0, timestamp);
         });
 
     // Assert Bob balance
@@ -649,7 +650,7 @@ async fn claim_all_lockups() {
         &alice,
         &bob.id(),
         10 * ONE_LIS,
-        Some(MINUTE),
+        Some(U64(MINUTE)),
         10,
         &contract,
         &worker,
@@ -671,7 +672,7 @@ async fn claim_all_lockups() {
         .iter()
         .zip(timestamps.clone().iter())
         .for_each(|(lockup, timestamp)| {
-            assert_eq!(&lockup.expire_on, timestamp);
+            assert_eq!(&lockup.expire_on.0, timestamp);
         });
 
     // Assert Alice balance
@@ -701,7 +702,7 @@ async fn claim_all_lockups() {
             &alice,
             &bob.id(),
             10 * ONE_LIS,
-            Some(MINUTE),
+            Some(U64(MINUTE)),
             5,
             &contract,
             &worker,
@@ -715,7 +716,7 @@ async fn claim_all_lockups() {
             &alice,
             &bob.id(),
             20 * ONE_LIS,
-            Some(MINUTE),
+            Some(U64(MINUTE)),
             5,
             &contract,
             &worker,
@@ -739,7 +740,7 @@ async fn claim_all_lockups() {
         .iter()
         .zip(timestamps.clone().iter())
         .for_each(|(lockup, timestamp)| {
-            assert_eq!(&lockup.expire_on, timestamp);
+            assert_eq!(&lockup.expire_on.0, timestamp);
         });
 
     // Assert Alice balance
@@ -754,7 +755,7 @@ async fn claim_all_lockups() {
     // Bob claim all lockups with amount = 20 LIS
     for lockup in bobs_lockups {
         if lockup.amount.0 == 20 * ONE_LIS {
-            claim_lockup_for_account(&bob, &contract, &worker, lockup.expire_on).await;
+            claim_lockup_for_account(&bob, &contract, &worker, lockup.amount).await;
         }
     }
 
@@ -814,7 +815,7 @@ async fn claim_all_lockups_with_one_lockup() {
         &alice,
         &bob.id(),
         10 * ONE_LIS,
-        Some(10 * SECOND),
+        Some(U64(10 * SECOND)),
         &contract,
         &worker,
     )
@@ -828,7 +829,7 @@ async fn claim_all_lockups_with_one_lockup() {
     assert_eq!(bobs_lockups[0].amount.0, 10 * ONE_LIS);
 
     // Assert duration
-    assert_eq!(bobs_lockups[0].expire_on, bob_lockup_ts1);
+    assert_eq!(bobs_lockups[0].expire_on.0, bob_lockup_ts1);
 
     // Assert Alice balance = 2_999_999_989 LIS
     assert_eq!(
@@ -878,7 +879,7 @@ async fn claim_all_lockups_with_non_expired_time() {
     assert_eq!(bobs_lockups[0].amount.0, 10 * ONE_LIS);
 
     // Assert duration
-    assert_eq!(bobs_lockups[0].expire_on, timestamp);
+    assert_eq!(bobs_lockups[0].expire_on.0, timestamp);
 
     // Assert Alice balance = 2_999_999_989 LIS
     assert_eq!(
@@ -919,7 +920,7 @@ async fn claim_all_lockups_with_partially_expired_time() {
             &alice,
             &bob.id(),
             10 * ONE_LIS,
-            Some(10 * SECOND),
+            Some(U64(10 * SECOND)),
             6,
             &contract,
             &worker,
@@ -950,7 +951,7 @@ async fn claim_all_lockups_with_partially_expired_time() {
         .iter()
         .zip(timestamps.clone().iter())
         .for_each(|(lockup, timestamp)| {
-            assert_eq!(&lockup.expire_on, timestamp);
+            assert_eq!(&lockup.expire_on.0, timestamp);
         });
 
     // Assert Alice balance = 2_999_999_900 LIS

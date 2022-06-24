@@ -165,7 +165,7 @@ impl Contract {
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use crate::utils::tests_utils::*;
+    use crate::{lockup::Lockup, utils::tests_utils::*};
 
     #[test]
     fn transfer() {
@@ -404,10 +404,12 @@ pub mod tests {
 
         let mut account_sender: Account = Account::new(accounts(0), 250 * ONE_LIS).into();
 
-        account_sender.lockups.insert(&Lockup {
-            amount: 36 * ONE_LIS,
-            expire_on: 1654762489,
-        });
+        account_sender
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup {
+                amount: 36 * ONE_LIS,
+                expire_on: 1654762489,
+            }));
 
         contract.accounts.insert(&sender_id, &account_sender.into());
 
@@ -447,25 +449,33 @@ pub mod tests {
 
         let mut account_sender: Account = Account::new(accounts(0), 250 * ONE_LIS).into();
 
-        account_sender.lockups.insert(&Lockup {
-            amount: 10 * ONE_LIS,
-            expire_on: 1654867011023,
-        });
+        account_sender
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup {
+                amount: 10 * ONE_LIS,
+                expire_on: 1654867011023,
+            }));
 
-        account_sender.lockups.insert(&Lockup {
-            amount: 17 * ONE_LIS,
-            expire_on: 1654867011023,
-        });
+        account_sender
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup {
+                amount: 17 * ONE_LIS,
+                expire_on: 1654867011023,
+            }));
 
-        account_sender.lockups.insert(&Lockup {
-            amount: 14 * ONE_LIS,
-            expire_on: 1654867011023,
-        });
+        account_sender
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup {
+                amount: 14 * ONE_LIS,
+                expire_on: 1654867011023,
+            }));
 
-        account_sender.lockups.insert(&Lockup {
-            amount: 4 * ONE_LIS,
-            expire_on: u64::MAX,
-        });
+        account_sender
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup {
+                amount: 4 * ONE_LIS,
+                expire_on: u64::MAX,
+            }));
 
         contract.accounts.insert(&sender_id, &account_sender.into());
 
@@ -510,25 +520,33 @@ pub mod tests {
 
         let mut account_sender: Account = Account::new(accounts(0), 250 * ONE_LIS).into();
 
-        account_sender.lockups.insert(&Lockup {
-            amount: 10 * ONE_LIS,
-            expire_on: 1654762489,
-        });
+        account_sender
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup {
+                amount: 10 * ONE_LIS,
+                expire_on: 1654762489,
+            }));
 
-        account_sender.lockups.insert(&Lockup {
-            amount: 12 * ONE_LIS,
-            expire_on: u64::MAX,
-        });
+        account_sender
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup {
+                amount: 12 * ONE_LIS,
+                expire_on: u64::MAX,
+            }));
 
-        account_sender.lockups.insert(&Lockup {
-            amount: 4 * ONE_LIS,
-            expire_on: 1654762489,
-        });
+        account_sender
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup {
+                amount: 4 * ONE_LIS,
+                expire_on: 1654762489,
+            }));
 
-        account_sender.lockups.insert(&Lockup {
-            amount: 4 * ONE_LIS,
-            expire_on: u64::MAX,
-        });
+        account_sender
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup {
+                amount: 4 * ONE_LIS,
+                expire_on: u64::MAX,
+            }));
 
         contract.accounts.insert(&sender_id, &account_sender.into());
 
