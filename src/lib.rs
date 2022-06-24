@@ -14,6 +14,7 @@ use crate::{
     account::{Account, AccountInfo, VAccount},
     lockup::LockupInfo,
     nft::NftManager,
+    staking::Staking,
     types::NftId,
     utils::ONE_LIS,
 };
@@ -29,6 +30,7 @@ mod metadata;
 mod nft;
 mod owner;
 mod public_api;
+mod staking;
 mod tokens;
 mod types;
 mod update;
@@ -60,6 +62,7 @@ pub struct Contract {
     pub state: State,
     // API accounts.
     pub registered_accounts: LookupMap<PublicKey, AccountId>,
+    pub staking: Staking,
 }
 
 #[derive(BorshStorageKey, BorshSerialize, BorshDeserialize)]
@@ -112,6 +115,7 @@ impl Contract {
             state: State::Running,
             accounts,
             registered_accounts: LookupMap::new(StorageKey::RegisteredAccounts),
+            staking: Staking::default(),
         }
     }
 

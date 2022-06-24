@@ -8,7 +8,7 @@ use crate::{
         BackendId, ChangeBeneficiary, ChangeState, EventLog, EventLogVariant, LockupCreated,
         LockupRefund, NftMint,
     },
-    lockup::Lockup,
+    lockup::{Lockup, SimpleLockup},
     *,
 };
 
@@ -99,8 +99,10 @@ impl Contract {
             .get(&recipient_id.clone())
             .unwrap_or_else(|| Account::new(recipient_id.clone(), 0).into())
             .into();
-        let lockup = Lockup::new(amount.0, duration.map(|value| value.0));
-        recipient_account.lockups.insert(&lockup);
+        let lockup = SimpleLockup::new(amount.0, duration.map(|value| value.0));
+        recipient_account
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(lockup.clone()));
         self.accounts
             .insert(&recipient_id, &recipient_account.into());
         EventLog::from(EventLogVariant::LockupCreated(LockupCreated {
@@ -124,9 +126,15 @@ impl Contract {
         let lockup = recipient_account
             .lockups
             .iter()
+            .filter_map(|lockup| match lockup {
+                Lockup::GooglePlayBuy(lockup) => Some(lockup),
+                _ => None,
+            })
             .find(|lockup| lockup.expire_on == expire_on.0)
             .unwrap_or_else(|| env::panic_str("No such lockup"));
-        recipient_account.lockups.remove(&lockup);
+        recipient_account
+            .lockups
+            .remove(&Lockup::GooglePlayBuy(lockup.clone()));
         self.accounts
             .insert(&recipient_id, &recipient_account.into());
 
@@ -193,6 +201,12 @@ impl Contract {
             accounts: &account_ids,
         }))
         .emit();
+    }
+
+    pub fn owner_add_to_staking_pool(&mut self, amount: U128) -> U128 {
+        self.assert_owner();
+        let owner_id = env::signer_account_id();
+        self.internal_add_pool(owner_id, amount.0).into()
     }
 }
 
