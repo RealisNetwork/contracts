@@ -1,7 +1,7 @@
 use crate::{
     events::{EventLog, EventLogVariant, LockupClaimed},
-    lockup::Lockup,
-    LockupInfo, NftId, Serialize, StorageKey,
+    lockup::{Lockup, LockupInfo},
+    NftId, Serialize, StorageKey,
 };
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},

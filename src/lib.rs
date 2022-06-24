@@ -11,8 +11,7 @@ use near_sdk::{
 };
 
 use crate::{
-    account::{Account, AccountInfo, VAccount},
-    lockup::LockupInfo,
+    account::{Account, VAccount},
     nft::NftManager,
     staking::Staking,
     types::NftId,
@@ -35,6 +34,7 @@ mod tokens;
 mod types;
 mod update;
 mod utils;
+mod view;
 
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
 #[serde(crate = "near_sdk::serde")]
@@ -117,42 +117,6 @@ impl Contract {
             registered_accounts: LookupMap::new(StorageKey::RegisteredAccounts),
             staking: Staking::default(),
         }
-    }
-
-    pub fn lockups_info(
-        &self,
-        account_id: AccountId,
-        from_index: Option<usize>,
-        limit: Option<usize>,
-    ) -> Vec<LockupInfo> {
-        match self.accounts.get(&account_id) {
-            Some(user) => {
-                let user_account: Account = user.into();
-                user_account.get_lockups(from_index, limit)
-            }
-            None => {
-                vec![]
-            }
-        }
-    }
-
-    pub fn get_balance_info(&self, account_id: AccountId) -> U128 {
-        match self.accounts.get(&account_id) {
-            Some(user) => {
-                let user_account: Account = user.into();
-                U128(user_account.free)
-            }
-            None => U128(0u128),
-        }
-    }
-
-    pub fn get_account_info(&self, account_id: &AccountId) -> AccountInfo {
-        let res: Account = self
-            .accounts
-            .get(account_id)
-            .unwrap_or_else(|| Account::new(account_id.clone(), 0).into())
-            .into();
-        res.into()
     }
 }
 
