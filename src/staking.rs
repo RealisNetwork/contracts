@@ -13,7 +13,7 @@ pub struct Staking {
     pub total_supply: Balance,
     pub total_x_supply: Balance,
     /// xLIS = x_cost * LIS default x_cost = 0.001;
-    x_cost: Balance,
+    pub x_cost: Balance,
 
     pub default_lockup_time: Timestamp,
 }

@@ -81,6 +81,98 @@ async fn regular_staking_test() {
     );
 }
 
+//TODO fix me
+#[tokio::test]
+async fn regular_staking_test_decimal_course() {
+    // User Initialization
+    let alice = get_alice();
+    let bob = get_bob();
+    let dave = get_dave();
+
+    // Setup contract: Alice - owner, total_supply - 3_000_000_000 LIS
+    let (contract, worker) = TestingEnvBuilder::default().build().await;
+
+    // register Bob with 250 LiS
+    make_transfer(&alice, &bob.id(), 250 * ONE_LIS, &contract, &worker)
+        .await
+        .expect("Failed to transfer");
+
+    // register Dave with 150 LiS
+    make_transfer(&alice, &dave.id(), 150 * ONE_LIS, &contract, &worker)
+        .await
+        .expect("Failed to transfer");
+
+    // stake as Bob 100 LiS
+    let mut bob_staked_x = make_stake(&bob, 100 * ONE_LIS, &contract, &worker).await;
+
+    // stake as Bob 100 LiS
+    bob_staked_x += make_stake(&bob, 100 * ONE_LIS, &contract, &worker).await;
+
+    println!("{}", bob_staked_x);
+
+    // Assert Bob tokens was taken, 50 Lis reminds
+    assert_eq!(
+        get_balance_info(&bob, &contract, &worker).await,
+        50 * ONE_LIS
+    );
+
+    // Airdrop 101 LIS
+    make_add_to_pool(&alice, 101 * ONE_LIS, &contract, &worker).await;
+
+    let current_course = alice
+        .call(&worker, contract.id(), "get_x_lis_course")
+        .args_json({})
+        .expect("Can't serialize")
+        .transact()
+        .await
+        .expect("Can't transact")
+        .json::<U128>()
+        .expect("Can't deserialize")
+        .0;
+
+    // Course here have to be 1.505, however...
+    assert_eq!(current_course as f64, 1.0); //1.505
+
+    // stake as Dave  100 LiS
+    let dave_staked_x = make_stake(&dave, 101 * ONE_LIS, &contract, &worker).await;
+
+    // Assert Dave's tokens was taken
+    assert_eq!(
+        get_balance_info(&dave, &contract, &worker).await,
+        49 * ONE_LIS
+    );
+
+    // Set default staking lockup time as 10 seconds
+    set_def_staking_lockup_time(&alice, 10 * SECOND, &contract, &worker).await;
+
+    // Bob unstake
+    make_unstake(&bob, bob_staked_x, &contract, &worker).await;
+
+    // Dave unstake
+    make_unstake(&dave, dave_staked_x, &contract, &worker).await;
+
+    // Wait till lockups are expired
+    tokio::time::sleep(tokio::time::Duration::from_secs(12)).await;
+
+    // claim loockup for staiking for Dave
+    claim_all_lockup_for_account(&dave, &contract, &worker).await;
+
+    // Claim lockups for Bob
+    claim_all_lockup_for_account(&bob, &contract, &worker).await;
+
+    // Assert Bob's balance == 450
+    assert_eq!(
+        get_balance_info(&bob, &contract, &worker).await,
+        351 * ONE_LIS
+    );
+
+    // Assert Dave`s balance == 150
+    assert_eq!(
+        get_balance_info(&dave, &contract, &worker).await,
+        150 * ONE_LIS
+    );
+}
+
 #[tokio::test]
 async fn staking_with_expired_lockup() {
     // User Initialization

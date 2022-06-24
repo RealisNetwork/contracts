@@ -154,6 +154,10 @@ impl Contract {
             .into();
         res.into()
     }
+
+    pub fn get_x_lis_course(&self) -> U128 {
+        U128(self.staking.x_cost)
+    }
 }
 
 impl Default for Contract {
