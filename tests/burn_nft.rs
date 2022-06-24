@@ -1,6 +1,4 @@
 use crate::utils::*;
-use near_sdk::serde_json::json;
-use workspaces::{result::CallExecutionDetails, Contract, Worker};
 
 #[tokio::test]
 async fn burn_nft() {

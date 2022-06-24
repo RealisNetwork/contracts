@@ -299,7 +299,7 @@ impl NftManager {
             account_id: &account_id,
             nft_id: U128(*nft_id),
         }))
-            .emit();
+        .emit();
     }
 
     /// Mint new `NFT` with generated id.
@@ -362,29 +362,26 @@ impl Contract {
         recipient_id: AccountId,
         nft_id: u128,
     ) {
-        let mut sender_account: Account  = self
+        let mut sender_account: Account = self
             .accounts
             .get(&sender_id)
             .unwrap_or_else(|| env::panic_str("No such account id (sender)"))
             .into();
 
-        let mut recipient_account: Account  = self
+        let mut recipient_account: Account = self
             .accounts
             .get(&recipient_id)
-            .unwrap_or_else(|| {
-                Account::new(recipient_id.clone(), 0).into()
-            }).into();
+            .unwrap_or_else(|| Account::new(recipient_id.clone(), 0).into())
+            .into();
 
         sender_account.nfts.remove(&nft_id);
         recipient_account.nfts.insert(&nft_id);
 
-        self.accounts.insert(&sender_id, &sender_account);
+        self.accounts.insert(&sender_id, &sender_account.into());
         self.accounts
-            .insert(&recipient_id, &recipient_account);
+            .insert(&recipient_id, &recipient_account.into());
 
-        self.nfts
-            .transfer_nft(&sender_id, &recipient_id, &nft_id);
-
+        self.nfts.transfer_nft(&sender_id, &recipient_id, &nft_id);
     }
 }
 

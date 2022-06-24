@@ -149,7 +149,6 @@ impl Contract {
 
         res.into()
     }
-
 }
 
 impl Default for Contract {

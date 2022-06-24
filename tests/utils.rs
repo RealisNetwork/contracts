@@ -2,7 +2,7 @@ use near_sdk::{
     json_types::U128,
     serde::Serialize,
     serde_json,
-    serde_json::{json, Value},
+    serde_json::json,
     Timestamp,
 };
 use realis_near::{account::AccountInfo, lockup::LockupInfo, utils::DAY};
@@ -58,7 +58,7 @@ impl BackendAccount {
         Account::from_file("./tests/res/backend_access_keys/user4_backend.realis.testnet.json")
     }
 
-    pub fn get_account_id(account: &Account) -> AccountId {
+    pub fn get_account_id(_account: &Account) -> AccountId {
         todo!()
     }
 }
