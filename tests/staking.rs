@@ -119,20 +119,6 @@ async fn regular_staking_test_decimal_course() {
     // Airdrop 101 LIS
     make_add_to_pool(&alice, 101 * ONE_LIS, &contract, &worker).await;
 
-    let current_course = alice
-        .call(&worker, contract.id(), "get_x_lis_course")
-        .args_json({})
-        .expect("Can't serialize")
-        .transact()
-        .await
-        .expect("Can't transact")
-        .json::<U128>()
-        .expect("Can't deserialize")
-        .0;
-
-    // Course here have to be 1.505, however...
-    assert_eq!(current_course as f64, 1.0); //1.505
-
     // stake as Dave  100 LiS
     let dave_staked_x = make_stake(&dave, 101 * ONE_LIS, &contract, &worker).await;
 
