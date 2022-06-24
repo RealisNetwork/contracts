@@ -66,13 +66,13 @@ impl Contract {
     pub fn internal_stake(&mut self, staker_id: AccountId, amount: u128) -> u128 {
         require!(amount > 0, "You can't stake zero tokens");
 
+        //staker_account.free -= amount;
+        self.take_fee(staker_id.clone(), Some(amount), false);
         let mut staker_account: Account = self
             .accounts
             .get(&staker_id)
             .unwrap_or_else(|| env::panic_str("No such account"))
             .into();
-        require!(staker_account.free >= amount, "Not enough balance");
-        staker_account.free -= amount;
         let x_amount = self.staking.stake(amount);
         staker_account.x_staked += x_amount;
         self.accounts.insert(&staker_id, &staker_account.into());
@@ -93,10 +93,10 @@ impl Contract {
         let amount = self.staking.unstake(x_amount);
         staker_account
             .lockups
-            .insert(&Lockup::Staking(SimpleLockup {
+            .insert(&Lockup::Staking(SimpleLockup::new(
                 amount,
-                expire_on: self.staking.default_lockup_time,
-            }));
+                Some(self.staking.default_lockup_time),
+            )));
         self.accounts.insert(&staker_id, &staker_account.into());
         amount
     }

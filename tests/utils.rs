@@ -397,3 +397,84 @@ pub async fn add_to_backends(
         .transact()
         .await
 }
+
+// Returns staked xLis, takes as amount LIS
+pub async fn make_stake(
+    signer: &Account,
+    amount: u128,
+    contract: &Contract,
+    worker: &TestWorker,
+) -> u128 {
+    signer
+        .call(&worker, contract.id(), "stake")
+        .args_json(serde_json::json!({
+            "amount": U128(amount),
+        }))
+        .expect("Invalid input args")
+        .transact()
+        .await
+        .expect("Can't get result")
+        .json::<U128>()
+        .expect("Can't parse JSON")
+        .0
+}
+
+// Returns unstaked LIS, takes as amount xLIS
+pub async fn make_unstake(
+    signer: &Account,
+    x_amount: u128,
+    contract: &Contract,
+    worker: &TestWorker,
+) -> u128 {
+    signer
+        .call(&worker, contract.id(), "unstake")
+        .args_json(serde_json::json!({
+            "x_amount": U128(x_amount),
+        }))
+        .expect("Invalid input args")
+        .transact()
+        .await
+        .expect("Can't get result")
+        .json::<U128>()
+        .expect("Can't parse JSON")
+        .0
+}
+
+// Returns added LIS, takes as amount LIS
+pub async fn make_add_to_pool(
+    signer: &Account,
+    amount: u128,
+    contract: &Contract,
+    worker: &TestWorker,
+) -> u128 {
+    signer
+        .call(&worker, contract.id(), "owner_add_to_staking_pool")
+        .args_json(serde_json::json!({
+            "amount": U128(amount),
+        }))
+        .expect("Invalid input args")
+        .transact()
+        .await
+        .expect("Can't get result")
+        .json::<U128>()
+        .expect("Can't parse JSON")
+        .0
+}
+
+// Takes as time timestamp
+pub async fn set_def_staking_lockup_time(
+    signer: &Account,
+    time: u64,
+    contract: &Contract,
+    worker: &TestWorker,
+) -> CallExecutionDetails {
+    signer
+        .call(&worker, contract.id(), "owner_set_default_lockup_time")
+        .args_json(serde_json::json!({
+            "time": U64(time),
+        }))
+        .expect("Invalid input args")
+        .transact()
+        .await
+        .expect("Can't get result")
+}

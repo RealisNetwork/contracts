@@ -224,6 +224,12 @@ impl Contract {
         let owner_id = env::signer_account_id();
         self.internal_add_pool(owner_id, amount.0).into()
     }
+
+    // TODO: Debug only
+    pub fn owner_set_default_lockup_time(&mut self, time: U64) {
+        self.assert_owner();
+        self.staking.default_lockup_time = time.0;
+    }
 }
 
 #[cfg(test)]
