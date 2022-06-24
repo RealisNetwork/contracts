@@ -412,6 +412,37 @@ mod tests {
         // Init contract
         let (mut contract, mut context) = init_test_env(Some(owner.clone()), None, None);
 
+        // create User 1
+        let user1 = accounts(0);
+
+        // register User 1 with 250 LiS
+        contract
+            .accounts
+            .insert(&user1, &Account::new(accounts(0), 250 * ONE_LIS).into());
+
+        testing_env!(context.signer_account_id(user1).build());
+
+        // user 1 stakes 4 lis
+        contract.stake(U128(4 * ONE_LIS));
+
+        // set signer as owner
+        testing_env!(context.signer_account_id(owner).build());
+
+        contract.owner_add_to_staking_pool(U128(100 * ONE_LIS));
+
+        assert_eq!(contract.staking.total_supply, 104 * ONE_LIS);
+        assert_eq!(contract.staking.total_x_supply, 4 * ONE_LIS * 1000);
+    }
+
+    #[test]
+    #[should_panic = "Zero pool balance"]
+    fn owner_add_to_zero_pull() {
+        // create Owner
+        let owner = accounts(2);
+
+        // Init contract
+        let (mut contract, mut context) = init_test_env(Some(owner.clone()), None, None);
+
         // set signer as owner
         testing_env!(context.signer_account_id(owner).build());
 
@@ -429,6 +460,19 @@ mod tests {
 
         // Init contract
         let (mut contract, mut context) = init_test_env(Some(owner.clone()), None, None);
+
+        // create User 1
+        let user1 = accounts(0);
+
+        // register User 1 with 250 LiS
+        contract
+            .accounts
+            .insert(&user1, &Account::new(accounts(0), 250 * ONE_LIS).into());
+
+        testing_env!(context.signer_account_id(user1).build());
+
+        // user 1 stakes 4 lis
+        contract.stake(U128(4 * ONE_LIS));
 
         // set signer as owner
         testing_env!(context.signer_account_id(owner).build());
