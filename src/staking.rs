@@ -103,6 +103,7 @@ impl Contract {
 
     pub fn internal_add_pool(&mut self, account_id: AccountId, amount: u128) -> u128 {
         require!(amount > 0, "You can't add to pool zero tokens");
+        require!(self.staking.total_x_supply > 0, "Zero pool balance");
 
         let mut pool_account: Account = self
             .accounts
