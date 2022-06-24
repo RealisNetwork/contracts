@@ -21,6 +21,7 @@ migrate:
 
 .PHONY: integration-tests
 integration-tests:
+	cargo build --target wasm32-unknown-unknown --release
 	cargo test --test mod -- --test-threads=1
 
 .PHONY: create

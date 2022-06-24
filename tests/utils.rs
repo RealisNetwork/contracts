@@ -1,5 +1,11 @@
 use near_sdk::{env, json_types::U64, PublicKey};
-pub use near_sdk::{json_types::U128, serde::Serialize, serde_json, serde_json::{json, Value}, Timestamp};
+pub use near_sdk::{
+    json_types::U128,
+    serde::Serialize,
+    serde_json,
+    serde_json::{json, Value},
+    Timestamp,
+};
 use realis_near::{account::AccountInfo, lockup::LockupInfo, utils::DAY};
 use std::{collections::HashMap, str::FromStr};
 pub use workspaces::{
@@ -7,10 +13,7 @@ pub use workspaces::{
     result::CallExecutionDetails,
     Account, AccountId, Contract, Worker,
 };
-use workspaces::{
-    operations::Function,
-    types::{Gas, SecretKey},
-};
+use workspaces::{operations::Function, types::Gas};
 
 pub const WASM_FILE: &str = "./target/wasm32-unknown-unknown/release/realis_near.wasm";
 pub const ONE_LIS: u128 = 1_000_000_000_000;
