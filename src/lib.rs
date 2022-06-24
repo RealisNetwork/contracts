@@ -150,8 +150,9 @@ impl Contract {
         let res: Account = self
             .accounts
             .get(account_id)
-            .unwrap_or_else(|| Account::new(account_id.clone(), 0).into())
+            .unwrap_or_else(|| env::panic_str("Account not found."))
             .into();
+
         res.into()
     }
 }

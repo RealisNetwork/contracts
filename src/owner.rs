@@ -49,16 +49,16 @@ impl Contract {
         }))
         .emit();
 
-        let mut nft_owner_id = Account::from(
+        let mut nft_owner = Account::from(
             self.accounts
                 .get(&recipient_id)
-                .unwrap_or_else(|| env::panic_str("Account not found")),
+                .unwrap_or_else(|| Account::new(recipient_id.clone(), 0).into()),
         );
 
         let nft_id = self.nfts.mint_nft(&recipient_id, nft_metadata);
-        nft_owner_id.nfts.insert(&nft_id);
+        nft_owner.nfts.insert(&nft_id);
         self.accounts
-            .insert(&recipient_id, &VAccount::V1(nft_owner_id));
+            .insert(&recipient_id, &VAccount::V1(nft_owner));
 
         nft_id.into()
     }
@@ -229,15 +229,6 @@ impl Contract {
 #[cfg(test)]
 mod tests {
     use crate::utils::tests_utils::*;
-
-    #[test]
-    #[should_panic]
-    fn mint_nft_test_panic() {
-        let (mut contract, _context) =
-            init_test_env(Some(accounts(0)), Some(accounts(0)), Some(accounts(0)));
-
-        contract.mint(accounts(2), "some_metadata".to_string());
-    }
 
     #[test]
     fn mint_nft_test() {
