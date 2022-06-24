@@ -4,13 +4,14 @@ use crate::{
     *,
 };
 use near_sdk::{env, require, AccountId, Balance, Timestamp};
+use primitive_types::U256;
 
 pub const STARTED_COST: u128 = 1000;
 pub const DEFAULT_LOCKUP_TIME: Timestamp = 7 * DAY;
 
 struct XCost {
     pub amount: u128,
-    pub x_amount: u128
+    pub x_amount: u128,
 }
 
 impl XCost {
@@ -64,11 +65,13 @@ impl Staking {
     }
 
     pub fn convert_to_x(&self, amount: u128) -> u128 {
-        amount * self.x_cost.x_amount / self.x_cost.amount
+        (U256::from(amount) * U256::from(self.x_cost.x_amount) / U256::from(self.x_cost.amount))
+            .as_u128()
     }
 
     pub fn convert_to_amount(&self, x_amount: u128) -> u128 {
-        x_amount * self.x_cost.amount / self.x_cost.x_amount
+        (U256::from(x_amount) * U256::from(self.x_cost.amount) / U256::from(self.x_cost.x_amount))
+            .as_u128()
     }
 }
 
