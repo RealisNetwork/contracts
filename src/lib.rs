@@ -19,22 +19,22 @@ use crate::{
     utils::ONE_LIS,
 };
 
-mod account;
-mod account_manager;
-mod auction;
-mod backend_api;
-mod events;
-mod lockup;
-mod marketplace;
-mod metadata;
-mod nft;
-mod owner;
-mod public_api;
-mod staking;
-mod tokens;
-mod types;
-mod update;
-mod utils;
+pub mod account;
+pub mod account_manager;
+pub mod auction;
+pub mod backend_api;
+pub mod events;
+pub mod lockup;
+pub mod marketplace;
+pub mod metadata;
+pub mod nft;
+pub mod owner;
+pub mod public_api;
+pub mod staking;
+pub mod tokens;
+pub mod types;
+pub mod update;
+pub mod utils;
 
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
 #[serde(crate = "near_sdk::serde")]
@@ -150,8 +150,9 @@ impl Contract {
         let res: Account = self
             .accounts
             .get(account_id)
-            .unwrap_or_else(|| Account::new(account_id.clone(), 0).into())
+            .unwrap_or_else(|| env::panic_str("Account not found."))
             .into();
+
         res.into()
     }
 }

@@ -2,7 +2,7 @@ use crate::utils::DEFAULT_LOCK_LIFE_TIME;
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
     json_types::{U128, U64},
-    serde::Serialize,
+    serde::{Deserialize, Serialize},
     Timestamp,
 };
 
@@ -36,7 +36,10 @@ impl SimpleLockup {
     /// `fn get_current_timestamp` returns blocks timestamp in u64.
     ///  # Examples
     /// ```
-    /// get_current_timestamp();
+    /// use realis_near::lockup::Lockup;
+    ///
+    /// // because of the current timestamp of BLOCK is 0
+    /// assert_eq!(Lockup::get_current_timestamp(), 0);
     /// ```
     /// Function for getting timestamp of a block in millis
     pub fn get_current_timestamp() -> u64 {
@@ -46,8 +49,13 @@ impl SimpleLockup {
     /// `fn new` creates new lockup instance.
     ///  # Examples
     /// ```
-    /// let mut account = Account::new(5);
+    /// use near_sdk::test_utils::accounts;
+    /// use realis_near::account::Account;
+    /// use realis_near::lockup::Lockup;
+    ///
+    /// let mut account = Account::new(accounts(0), 5);
     /// account.lockups.insert(&Lockup::new(55, None));
+    ///
     /// ```
     /// # Arguments
     ///  * `live_time` - time in millis lockup will be lock
@@ -67,25 +75,19 @@ impl SimpleLockup {
     /// `fn is_expired` check if lockup time is expired.
     ///  # Examples
     /// ```
-    /// let collection = self.lockups.to_vec();
+    /// use realis_near::lockup::Lockup;
     ///
-    ///    let fold = collection
-    ///          .iter()
-    ///          .filter(|lock| lock.is_expired())
-    ///          .map(|lock| {
-    ///              self.lockups.remove(lock);
-    ///             lock
-    ///      })
-    ///     .fold(0, |acc, lock| acc + lock.amount);
-    ///     self.free += fold;
-    ///     fold
+    /// let lockup_not_expired = Lockup::new(55, None);
+    /// assert_eq!(lockup_not_expired.is_expired(), false);
+    /// let lockup_expired = Lockup::new(55, Some(0));
+    /// assert_eq!(lockup_expired.is_expired(), true);
     /// ```
     pub fn is_expired(&self) -> bool {
         Self::get_current_timestamp() >= self.expire_on
     }
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(crate = "near_sdk::serde")]
 pub struct LockupInfo {
     pub amount: U128,
