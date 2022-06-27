@@ -622,3 +622,56 @@ async fn transfer_get_balance_from_not_expired_lockup() {
     // Assert Dave has 0 LIS
     assert_eq!(get_balance_info(&dave, &contract, &worker).await, 0);
 }
+
+#[tokio::test]
+async fn transfer_using_hybrid_lockups() {
+    // User Initialization
+    let alice = get_alice();
+    let bob = get_bob();
+    let dave = get_dave();
+
+    // Setup contract: Alice - owner, total_supply - 3_000_000_000 LIS
+    let (contract, worker) = TestingEnvBuilder::default().build().await;
+
+    // Alice transfer to Bob 1 LIS to create accounts Bob
+    make_transfer(&alice, &bob.id(), 50 * ONE_LIS, &contract, &worker)
+        .await
+        .expect("Failed to transfer");
+
+    // Alice create lockup for bob on 50 LIS
+    create_lockup_for_account(
+        &alice,
+        &bob.id(),
+        50 * ONE_LIS,
+        Some(U64(10 * SECOND)),
+        &contract,
+        &worker,
+    )
+    .await;
+
+    // Set default staking lockup time as 10 seconds
+    set_def_staking_lockup_time(&alice, 10 * SECOND, &contract, &worker).await;
+
+    // stake as Bob  100 LiS
+    let bob_staked_x = make_stake(&bob, 50 * ONE_LIS, &contract, &worker).await;
+
+    // Bob unstake
+    make_unstake(&bob, bob_staked_x, &contract, &worker).await;
+
+    // Wait till lockups are expired
+    tokio::time::sleep(tokio::time::Duration::from_secs(12)).await;
+
+    // Bob transfer to Dave 100 LIS
+    make_transfer(&bob, &dave.id(), 100 * ONE_LIS, &contract, &worker)
+        .await
+        .expect("Failed to transfer");
+
+    // Assert Bob has 0 LIS
+    assert_eq!(get_balance_info(&bob, &contract, &worker).await, 0);
+
+    // Assert Dave has 100 LIS
+    assert_eq!(
+        get_balance_info(&dave, &contract, &worker).await,
+        100 * ONE_LIS
+    );
+}

@@ -1,4 +1,5 @@
 use crate::{
+    events::{AddToStakingPool, EventLog, EventLogVariant, StakingStake, StakingUnstake},
     lockup::{Lockup, SimpleLockup},
     utils::DAY,
     *,
@@ -80,16 +81,22 @@ impl Contract {
     pub fn internal_stake(&mut self, staker_id: AccountId, amount: u128) -> u128 {
         require!(amount > 0, "You can't stake zero tokens");
 
+        self.take_fee(staker_id.clone(), Some(amount), false);
         let mut staker_account: Account = self
             .accounts
             .get(&staker_id)
             .unwrap_or_else(|| env::panic_str("No such account"))
             .into();
-        require!(staker_account.free >= amount, "Not enough balance");
-        staker_account.free -= amount;
         let x_amount = self.staking.stake(amount);
         staker_account.x_staked += x_amount;
         self.accounts.insert(&staker_id, &staker_account.into());
+
+        EventLog::from(EventLogVariant::Stake(StakingStake {
+            staker_id: &staker_id,
+            x_amount: U128(x_amount),
+        }))
+        .emit();
+
         x_amount
     }
 
@@ -107,11 +114,17 @@ impl Contract {
         let amount = self.staking.unstake(x_amount);
         staker_account
             .lockups
-            .insert(&Lockup::Staking(SimpleLockup {
+            .insert(&Lockup::Staking(SimpleLockup::new(
                 amount,
-                expire_on: self.staking.default_lockup_time,
-            }));
+                Some(self.staking.default_lockup_time),
+            )));
         self.accounts.insert(&staker_id, &staker_account.into());
+
+        EventLog::from(EventLogVariant::Unstake(StakingUnstake {
+            staker_id: &staker_id,
+            amount: U128(amount),
+        }))
+        .emit();
         amount
     }
 
@@ -128,7 +141,26 @@ impl Contract {
         pool_account.free -= amount;
         let pool_total_supply = self.staking.add_to_pool(amount);
         self.accounts.insert(&account_id, &pool_account.into());
+
+        EventLog::from(EventLogVariant::AddToStakingPool(AddToStakingPool {
+            account_id: &account_id,
+            amount: U128(amount),
+            pool_total_supply: U128(pool_total_supply),
+        }))
+        .emit();
+
         pool_total_supply
+    }
+}
+
+#[cfg(test)]
+impl Staking {
+    pub fn get_total_supply(&self) -> Balance {
+        self.total_supply
+    }
+
+    pub fn get_total_x_supply(&self) -> Balance {
+        self.total_x_supply
     }
 }
 

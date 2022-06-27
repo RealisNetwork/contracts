@@ -32,6 +32,9 @@ pub enum EventLogVariant<'a> {
     ChangeBeneficiary(ChangeBeneficiary<'a>),
     AddBackendId(BackendId<'a>),
     RemoveBackendId(BackendId<'a>),
+    Stake(StakingStake<'a>),
+    Unstake(StakingUnstake<'a>),
+    AddToStakingPool(AddToStakingPool<'a>),
 }
 
 #[derive(Serialize, Debug)]
@@ -124,4 +127,26 @@ pub struct ChangeBeneficiary<'a> {
 #[serde(crate = "near_sdk::serde")]
 pub struct BackendId<'a> {
     pub accounts: &'a Vec<AccountId>,
+}
+
+#[derive(Serialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
+pub struct StakingStake<'a> {
+    pub staker_id: &'a AccountId,
+    pub x_amount: U128,
+}
+
+#[derive(Serialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
+pub struct StakingUnstake<'a> {
+    pub staker_id: &'a AccountId,
+    pub amount: U128,
+}
+
+#[derive(Serialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
+pub struct AddToStakingPool<'a> {
+    pub account_id: &'a AccountId,
+    pub amount: U128,
+    pub pool_total_supply: U128,
 }

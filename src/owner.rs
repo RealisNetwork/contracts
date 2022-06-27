@@ -224,6 +224,12 @@ impl Contract {
         let owner_id = env::signer_account_id();
         self.internal_add_pool(owner_id, amount.0).into()
     }
+
+    // TODO: Debug only
+    pub fn owner_set_default_lockup_time(&mut self, time: U64) {
+        self.assert_owner();
+        self.staking.default_lockup_time = time.0;
+    }
 }
 
 #[cfg(test)]
@@ -409,5 +415,93 @@ mod tests {
         testing_env!(context.signer_account_id(accounts(2)).build());
 
         contract.owner_remove_backends(vec![accounts(1), accounts(2)]);
+    }
+
+    #[test]
+    fn owner_add_to_pull() {
+        // create Owner
+        let owner = accounts(2);
+
+        // Init contract
+        let (mut contract, mut context) = init_test_env(Some(owner.clone()), None, None);
+
+        // create User 1
+        let user1 = accounts(0);
+
+        // register User 1 with 250 LiS
+        contract
+            .accounts
+            .insert(&user1, &Account::new(accounts(0), 250 * ONE_LIS).into());
+
+        testing_env!(context.signer_account_id(user1).build());
+
+        // user 1 stakes 4 lis
+        contract.stake(U128(4 * ONE_LIS));
+
+        // set signer as owner
+        testing_env!(context.signer_account_id(owner).build());
+
+        contract.owner_add_to_staking_pool(U128(100 * ONE_LIS));
+
+        assert_eq!(contract.staking.get_total_supply(), 104 * ONE_LIS);
+        assert_eq!(contract.staking.get_total_x_supply(), 4 * ONE_LIS * 1000);
+    }
+
+    #[test]
+    #[should_panic = "Zero pool balance"]
+    fn owner_add_to_zero_pull() {
+        // create Owner
+        let owner = accounts(2);
+
+        // Init contract
+        let (mut contract, mut context) = init_test_env(Some(owner.clone()), None, None);
+
+        // set signer as owner
+        testing_env!(context.signer_account_id(owner).build());
+
+        contract.owner_add_to_staking_pool(U128(100 * ONE_LIS));
+
+        assert_eq!(contract.staking.get_total_supply(), 100 * ONE_LIS);
+        assert_eq!(contract.staking.get_total_x_supply(), 0);
+    }
+
+    #[test]
+    #[should_panic = "Not enough balance"]
+    fn owner_add_to_pull_over_balance() {
+        // create Owner
+        let owner = accounts(2);
+
+        // Init contract
+        let (mut contract, mut context) = init_test_env(Some(owner.clone()), None, None);
+
+        // create User 1
+        let user1 = accounts(0);
+
+        // register User 1 with 250 LiS
+        contract
+            .accounts
+            .insert(&user1, &Account::new(accounts(0), 250 * ONE_LIS).into());
+
+        testing_env!(context.signer_account_id(user1).build());
+
+        // user 1 stakes 4 lis
+        contract.stake(U128(4 * ONE_LIS));
+
+        // set signer as owner
+        testing_env!(context.signer_account_id(owner).build());
+
+        contract.owner_add_to_staking_pool(U128(3_000_000_001 * ONE_LIS));
+    }
+
+    #[test]
+    #[should_panic = "Only owner can do this"]
+    fn owner_add_to_pull_not_owner() {
+        // Init contract
+        let (mut contract, mut context) = init_test_env(Some(accounts(1)), None, None);
+
+        // set signer as owner
+        testing_env!(context.signer_account_id(accounts(0)).build());
+
+        contract.owner_add_to_staking_pool(U128(3_000_000_000 * ONE_LIS));
     }
 }

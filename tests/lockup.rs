@@ -968,3 +968,47 @@ async fn claim_all_lockups_with_partially_expired_time() {
         61 * ONE_LIS
     );
 }
+
+#[tokio::test]
+async fn hybrid_lockups_claim() {
+    // User Initialization
+    let alice = get_alice();
+    let bob = get_bob();
+
+    // Setup contract: Alice - owner, total_supply - 3_000_000_000 LIS
+    let (contract, worker) = TestingEnvBuilder::default().build().await;
+
+    // Alice transfer to Bob 1 LIS to create accounts Bob
+    make_transfer(&alice, &bob.id(), 50 * ONE_LIS, &contract, &worker)
+        .await
+        .expect("Failed to transfer");
+
+    // Alice create lockup for bob on 50 LIS
+    create_lockup_for_account(
+        &alice,
+        &bob.id(),
+        50 * ONE_LIS,
+        Some(U64(10 * SECOND)),
+        &contract,
+        &worker,
+    )
+    .await;
+
+    // Set default staking lockup time as 10 seconds
+    set_def_staking_lockup_time(&alice, 10 * SECOND, &contract, &worker).await;
+
+    // stake as Bob  100 LiS
+    let bob_staked_x = make_stake(&bob, 50 * ONE_LIS, &contract, &worker).await;
+
+    // Bob unstake
+    make_unstake(&bob, bob_staked_x, &contract, &worker).await;
+
+    // Wait till lockups are expired
+    tokio::time::sleep(tokio::time::Duration::from_secs(12)).await;
+
+    // Bob claim lockups
+    let claimed = claim_all_lockup_for_account(&bob, &contract, &worker).await;
+
+    //Assert Bob claimed to LiS
+    assert_eq!(claimed, 100 * ONE_LIS);
+}
