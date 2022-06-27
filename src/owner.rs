@@ -18,7 +18,23 @@ impl Contract {
     /// `fn mint` could be used only by the contract owner.
     ///  # Examples
     /// ```
-    /// assert_owner();
+    /// use near_sdk::json_types::U128;
+    /// use near_sdk::test_utils::accounts;
+    /// use realis_near::Contract;
+    /// use realis_near::nft::Nft;
+    ///
+    /// let mut contract = Contract::new(
+    ///     Some(U128(3000000000)),
+    ///     Some(U128(50)),
+    ///     Some(10),
+    ///     None,
+    ///     None
+    /// );
+    /// let nft_id = contract.nfts.mint_nft(&accounts(0), "Duck".to_string());
+    /// let inserted_nft: Nft = contract.nfts.get_nft(&nft_id).into();
+    /// assert_eq!(inserted_nft.owner_id, accounts(0));
+    /// assert_eq!(inserted_nft.get_metadata(), "Duck".to_string());
+    ///
     /// ```
     /// # Arguments
     ///  * `recipient_id`- `AccountId` of future nft owner.
@@ -33,16 +49,16 @@ impl Contract {
         }))
         .emit();
 
-        let mut nft_owner_id = Account::from(
+        let mut nft_owner = Account::from(
             self.accounts
                 .get(&recipient_id)
-                .unwrap_or_else(|| env::panic_str("Account not found")),
+                .unwrap_or_else(|| Account::new(recipient_id.clone(), 0).into()),
         );
 
         let nft_id = self.nfts.mint_nft(&recipient_id, nft_metadata);
-        nft_owner_id.nfts.insert(&nft_id);
+        nft_owner.nfts.insert(&nft_id);
         self.accounts
-            .insert(&recipient_id, &VAccount::V1(nft_owner_id));
+            .insert(&recipient_id, &VAccount::V1(nft_owner));
 
         nft_id.into()
     }
@@ -213,15 +229,6 @@ impl Contract {
 #[cfg(test)]
 mod tests {
     use crate::utils::tests_utils::*;
-
-    #[test]
-    #[should_panic]
-    fn mint_nft_test_panic() {
-        let (mut contract, _context) =
-            init_test_env(Some(accounts(0)), Some(accounts(0)), Some(accounts(0)));
-
-        contract.mint(accounts(2), "some_metadata".to_string());
-    }
 
     #[test]
     fn mint_nft_test() {
