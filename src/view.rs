@@ -4,7 +4,7 @@ use near_sdk::{env, json_types::U128, serde::Serialize, AccountId};
 #[derive(Serialize, Debug)]
 #[serde(crate = "near_sdk::serde")]
 pub struct Setting {
-    pub constant_fee: u128,
+    pub constant_fee: U128,
     pub percent_fee: u8,
     // Commission in percents over transferring amount. for example, 10
     // (like 10%)
@@ -21,7 +21,7 @@ pub struct Setting {
 impl From<&Contract> for Setting {
     fn from(contract: &Contract) -> Self {
         Self {
-            constant_fee: contract.constant_fee,
+            constant_fee: U128(contract.constant_fee),
             percent_fee: contract.percent_fee,
             owner_id: contract.owner_id.clone(),
             backend_ids: contract.backend_ids.to_vec(),
@@ -39,25 +39,18 @@ impl Contract {
         from_index: Option<usize>,
         limit: Option<usize>,
     ) -> Vec<LockupInfo> {
-        match self.accounts.get(&account_id) {
-            Some(user) => {
-                let user_account: Account = user.into();
-                user_account.get_lockups(from_index, limit)
-            }
-            None => {
-                vec![]
-            }
-        }
+        self.accounts.get(&account_id).map(|user| {
+            let user_account: Account = user.into();
+            user_account.get_lockups(from_index, limit)
+        }).unwrap_or_default()
     }
 
     pub fn get_balance_info(&self, account_id: AccountId) -> U128 {
-        match self.accounts.get(&account_id) {
-            Some(user) => {
+        self.accounts.get(&account_id)
+            .map(|user| {
                 let user_account: Account = user.into();
                 U128(user_account.free)
-            }
-            None => U128(0u128),
-        }
+            }).unwrap_or_else(|| U128(0u128))
     }
 
     pub fn get_account_info(&self, account_id: &AccountId) -> AccountInfo {

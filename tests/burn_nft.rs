@@ -1,4 +1,4 @@
-pub use crate::utils::*;
+use crate::utils::*;
 
 #[tokio::test]
 async fn burn_nft() {
