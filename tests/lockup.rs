@@ -984,7 +984,15 @@ async fn hybrid_lockups_claim() {
         .expect("Failed to transfer");
 
     // Alice create lockup for bob on 50 LIS
-    create_lockup_for_account(&alice, &bob.id(), 50 * ONE_LIS, Some(U64(10 * SECOND)), &contract, &worker).await;
+    create_lockup_for_account(
+        &alice,
+        &bob.id(),
+        50 * ONE_LIS,
+        Some(U64(10 * SECOND)),
+        &contract,
+        &worker,
+    )
+    .await;
 
     // Set default staking lockup time as 10 seconds
     set_def_staking_lockup_time(&alice, 10 * SECOND, &contract, &worker).await;

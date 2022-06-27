@@ -625,7 +625,6 @@ async fn transfer_get_balance_from_not_expired_lockup() {
 
 #[tokio::test]
 async fn transfer_using_hybrid_lockups() {
-
     // User Initialization
     let alice = get_alice();
     let bob = get_bob();
@@ -640,7 +639,15 @@ async fn transfer_using_hybrid_lockups() {
         .expect("Failed to transfer");
 
     // Alice create lockup for bob on 50 LIS
-    create_lockup_for_account(&alice, &bob.id(), 50 * ONE_LIS, Some(U64(10 * SECOND)), &contract, &worker).await;
+    create_lockup_for_account(
+        &alice,
+        &bob.id(),
+        50 * ONE_LIS,
+        Some(U64(10 * SECOND)),
+        &contract,
+        &worker,
+    )
+    .await;
 
     // Set default staking lockup time as 10 seconds
     set_def_staking_lockup_time(&alice, 10 * SECOND, &contract, &worker).await;
@@ -660,15 +667,11 @@ async fn transfer_using_hybrid_lockups() {
         .expect("Failed to transfer");
 
     // Assert Bob has 0 LIS
-    assert_eq!(
-        get_balance_info(&bob, &contract, &worker).await,
-        0
-    );
+    assert_eq!(get_balance_info(&bob, &contract, &worker).await, 0);
 
     // Assert Dave has 100 LIS
     assert_eq!(
         get_balance_info(&dave, &contract, &worker).await,
         100 * ONE_LIS
     );
-    
 }

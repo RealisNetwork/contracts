@@ -1,5 +1,5 @@
 use crate::{
-    events::{EventLog, EventLogVariant, AddToStakingPool, StakingStake, StakingUnstake},
+    events::{AddToStakingPool, EventLog, EventLogVariant, StakingStake, StakingUnstake},
     lockup::{Lockup, SimpleLockup},
     utils::DAY,
     *,
