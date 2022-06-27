@@ -1,4 +1,4 @@
-use crate::{account::AccountInfo, lockup::LockupInfo, nft::Nft, Account, Contract, State};
+use crate::{account::AccountInfo, lockup::LockupInfo, nft::Nft, *};
 use near_sdk::{env, json_types::U128, serde::Serialize, AccountId};
 
 #[derive(Serialize, Debug)]
@@ -31,6 +31,7 @@ impl From<&Contract> for Setting {
     }
 }
 
+#[near_bindgen]
 impl Contract {
     pub fn lockups_info(
         &self,

@@ -1,19 +1,24 @@
-use near_sdk::{env, json_types::U64, PublicKey};
 pub use near_sdk::{
-    json_types::U128,
+    env,
+    json_types::{U128, U64},
     serde::Serialize,
     serde_json,
     serde_json::{json, Value},
-    Timestamp,
+    PublicKey, Timestamp,
 };
-use realis_near::{account::AccountInfo, lockup::LockupInfo, utils::DAY};
-use std::{collections::HashMap, str::FromStr};
+pub use realis_near::{
+    account::AccountInfo,
+    lockup::{Lockup, LockupInfo},
+    utils::DAY,
+};
+pub use std::{borrow::BorrowMut, collections::HashMap, str::FromStr};
 pub use workspaces::{
     network::{DevAccountDeployer, Testnet},
+    operations::Function,
     result::CallExecutionDetails,
+    types::Gas,
     Account, AccountId, Contract, Worker,
 };
-use workspaces::{operations::Function, types::Gas};
 
 pub const WASM_FILE: &str = "./target/wasm32-unknown-unknown/release/realis_near.wasm";
 pub const ONE_LIS: u128 = 1_000_000_000_000;
@@ -290,7 +295,7 @@ pub async fn get_balance_info_signed(
 ) -> u128 {
     signer
         .call(worker, contract.id(), "get_balance_info")
-        .args_json(serde_json::json!({
+        .args_json(json!({
             "account_id": account_id,
         }))
         .expect("Invalid input args")
@@ -311,7 +316,7 @@ pub async fn make_transfer(
 ) -> anyhow::Result<CallExecutionDetails> {
     account
         .call(&worker, contract.id(), "transfer")
-        .args_json(serde_json::json!({
+        .args_json(json!({
             "recipient_id": recipient_id,
             "amount": U128(amount)
         }))
@@ -330,7 +335,7 @@ pub async fn create_lockup_for_account(
 ) -> Timestamp {
     account
         .call(&worker, contract.id(), "create_lockup")
-        .args_json(serde_json::json!({
+        .args_json(json!({
             "recipient_id": recipient_id,
             "amount": U128(amount),
             "duration": duration
@@ -360,7 +365,7 @@ pub async fn get_lockup_info_signed(
 ) -> Vec<LockupInfo> {
     signer
         .call(&worker, contract.id(), "lockups_info")
-        .args_json(serde_json::json!({
+        .args_json(json!({
             "account_id": account_id,
         }))
         .expect("Invalid input args")
@@ -374,12 +379,12 @@ pub async fn get_lockup_info_signed(
 pub async fn claim_all_lockup_for_account(
     account: &Account,
     contract: &Contract,
-    worker: &Worker<Testnet>,
+    worker: &TestWorker,
 ) -> u128 {
     account
         .call(&worker, contract.id(), "claim_all_lockup")
         .gas(MAX_GAS)
-        .args_json(serde_json::json!({}))
+        .args_json(json!({}))
         .expect("Invalid input args")
         .transact()
         .await
@@ -392,12 +397,12 @@ pub async fn claim_all_lockup_for_account(
 pub async fn claim_lockup_for_account(
     account: &Account,
     contract: &Contract,
-    worker: &Worker<Testnet>,
+    worker: &TestWorker,
     amount: U128,
 ) -> u128 {
     account
         .call(&worker, contract.id(), "claim_lockup")
-        .args_json(serde_json::json!({ "amount": amount }))
+        .args_json(json!({ "amount": amount }))
         .expect("Invalid input args")
         .transact()
         .await
@@ -410,15 +415,15 @@ pub async fn claim_lockup_for_account(
 pub async fn refund_lockup_for_account(
     account: &Account,
     contract: &Contract,
-    worker: &Worker<Testnet>,
+    worker: &TestWorker,
     recipient_id: &AccountId,
     expire_on: u64,
 ) -> u128 {
     account
         .call(&worker, contract.id(), "refund_lockup")
-        .args_json(serde_json::json!({
+        .args_json(json!({
             "recipient_id": recipient_id,
-            "expire_on": expire_on
+            "expire_on": U64(expire_on)
         }))
         .expect("Invalid input args")
         .transact()
@@ -447,7 +452,7 @@ pub async fn create_n_lockups_for_account(
         // (in other case it will create only one lockup)
         transaction = transaction.call(
             Function::new("create_lockup")
-                .args_json(serde_json::json!({
+                .args_json(json!({
                       "recipient_id": recipient_id,
                       "amount": U128(amount),
                       "duration": U64(duration + index)
@@ -480,7 +485,7 @@ pub async fn make_backend_transfer(
 ) -> anyhow::Result<CallExecutionDetails> {
     signer
         .call(&worker, contract.id(), "backend_transfer")
-        .args_json(serde_json::json!({
+        .args_json(json!({
             "recipient_id": recipient_id,
             "amount": U128(amount)
         }))
@@ -497,7 +502,7 @@ pub async fn add_to_backends(
 ) -> anyhow::Result<CallExecutionDetails> {
     signer
         .call(&worker, contract.id(), "owner_add_backends")
-        .args_json(serde_json::json!({
+        .args_json(json!({
             "account_ids": account_ids,
         }))
         .expect("Invalid input args")

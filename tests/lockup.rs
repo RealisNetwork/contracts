@@ -1,11 +1,6 @@
-use crate::utils::*;
+pub use crate::utils::*;
 use near_sdk::json_types::{U128, U64};
-use realis_near::{
-    lockup::Lockup,
-    utils::{DAY, MINUTE, ONE_LIS, SECOND},
-};
-use std::borrow::BorrowMut;
-use workspaces::operations::{Function, Transaction};
+use realis_near::utils::{DAY, MINUTE, ONE_LIS, SECOND};
 
 #[tokio::test]
 async fn create_lockup() {
@@ -260,7 +255,7 @@ async fn user_claim_lockup() {
     tokio::time::sleep(tokio::time::Duration::from_secs(15)).await;
 
     // Bob claim 15 LIS
-    claim_lockup_for_account(&bob, &contract, &worker, U128(15)).await;
+    claim_lockup_for_account(&bob, &contract, &worker, U128(15 * ONE_LIS)).await;
 
     // Assert Bob has 2 lockup
     let bobs_lockups = get_lockup_info(&bob, &contract, &worker).await;

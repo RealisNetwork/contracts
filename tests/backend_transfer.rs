@@ -1,8 +1,5 @@
-use crate::utils::*;
-use near_sdk::{
-    json_types::{U128, U64},
-    serde_json,
-};
+pub use crate::utils::*;
+use near_sdk::{json_types::U64, serde_json};
 use realis_near::utils::{DAY, ONE_LIS, SECOND};
 
 #[tokio::test]
@@ -10,7 +7,7 @@ async fn backend_transfer_from_not_exist_account() {
     // Setup contract: Backend.root - owner/backend
     let (contract, worker) = TestingEnvBuilder::default()
         .set_signer(BackendAccount::get_root().account)
-        .set_backend(BackendAccount::get_root().id_by_pk.clone())
+        .set_backend(BackendAccount::get_user1().account.id().clone())
         .build()
         .await;
 

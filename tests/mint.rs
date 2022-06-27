@@ -1,4 +1,4 @@
-use crate::utils::*;
+pub use crate::utils::*;
 
 #[tokio::test]
 #[should_panic(expected = "Mint nft, Fail to make transaction.: \
