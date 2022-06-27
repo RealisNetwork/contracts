@@ -1,4 +1,4 @@
-pub use crate::utils::*;
+use crate::utils::*;
 use near_sdk::{
     json_types::{U128, U64},
     serde_json,
@@ -82,7 +82,6 @@ async fn regular_staking_test() {
     );
 }
 
-//TODO fix me
 #[tokio::test]
 async fn regular_staking_test_decimal_course() {
     // User Initialization

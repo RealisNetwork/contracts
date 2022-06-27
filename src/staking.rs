@@ -1,5 +1,5 @@
 use crate::{
-    events::{EventLog, EventLogVariant, StakingAddToPool, StakingStake, StakingUnstake},
+    events::{EventLog, EventLogVariant, AddToStakingPool, StakingStake, StakingUnstake},
     lockup::{Lockup, SimpleLockup},
     utils::DAY,
     *,
@@ -77,17 +77,6 @@ impl Staking {
     }
 }
 
-#[cfg(test)]
-impl Staking {
-    pub fn get_total_supply(&self) -> Balance {
-        self.total_supply
-    }
-
-    pub fn get_total_x_supply(&self) -> Balance {
-        self.total_x_supply
-    }
-}
-
 impl Contract {
     pub fn internal_stake(&mut self, staker_id: AccountId, amount: u128) -> u128 {
         require!(amount > 0, "You can't stake zero tokens");
@@ -102,7 +91,7 @@ impl Contract {
         staker_account.x_staked += x_amount;
         self.accounts.insert(&staker_id, &staker_account.into());
 
-        EventLog::from(EventLogVariant::StakingStake(StakingStake {
+        EventLog::from(EventLogVariant::Stake(StakingStake {
             staker_id: &staker_id,
             x_amount: U128(x_amount),
         }))
@@ -131,7 +120,7 @@ impl Contract {
             )));
         self.accounts.insert(&staker_id, &staker_account.into());
 
-        EventLog::from(EventLogVariant::StakingUnstake(StakingUnstake {
+        EventLog::from(EventLogVariant::Unstake(StakingUnstake {
             staker_id: &staker_id,
             amount: U128(amount),
         }))
@@ -153,7 +142,7 @@ impl Contract {
         let pool_total_supply = self.staking.add_to_pool(amount);
         self.accounts.insert(&account_id, &pool_account.into());
 
-        EventLog::from(EventLogVariant::StakingAddToPool(StakingAddToPool {
+        EventLog::from(EventLogVariant::AddToStakingPool(AddToStakingPool {
             account_id: &account_id,
             amount: U128(amount),
             pool_total_supply: U128(pool_total_supply),
@@ -161,6 +150,17 @@ impl Contract {
         .emit();
 
         pool_total_supply
+    }
+}
+
+#[cfg(test)]
+impl Staking {
+    pub fn get_total_supply(&self) -> Balance {
+        self.total_supply
+    }
+
+    pub fn get_total_x_supply(&self) -> Balance {
+        self.total_x_supply
     }
 }
 
