@@ -10,7 +10,7 @@ use primitive_types::U256;
 pub const STARTED_COST: u128 = 1000;
 pub const DEFAULT_LOCKUP_TIME: Timestamp = 7 * DAY;
 
-#[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug)]
 struct XCost {
     pub amount: u128,
     pub x_amount: u128,
@@ -179,7 +179,7 @@ mod tests {
         staking.stake(100 * ONE_LIS); // 100_000_000_000_000
         assert_eq!(staking.total_supply, 100 * ONE_LIS);
         assert_eq!(staking.total_x_supply, 100 * STARTED_COST * ONE_LIS);
-        assert_eq!(staking.x_cost, XCost::new(1, 1));
+        assert_eq!(staking.x_cost, XCost::new(1, STARTED_COST));
 
         // State: 2
         staking.add_to_pool(100 * ONE_LIS);
