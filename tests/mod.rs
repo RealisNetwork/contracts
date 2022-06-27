@@ -5,5 +5,6 @@ pub mod burn_nft;
 pub mod lockup;
 pub mod mint;
 pub mod sell_nft;
+pub mod staking;
 pub mod transfer;
 pub mod transfer_nft;
