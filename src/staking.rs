@@ -4,16 +4,28 @@ use crate::{
     *,
 };
 use near_sdk::{env, require, AccountId, Balance, Timestamp};
+use primitive_types::U256;
 
 pub const STARTED_COST: u128 = 1000;
 pub const DEFAULT_LOCKUP_TIME: Timestamp = 7 * DAY;
 
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug)]
+struct XCost {
+    pub amount: u128,
+    pub x_amount: u128,
+}
+
+impl XCost {
+    pub fn new(amount: u128, x_amount: u128) -> Self {
+        Self { amount, x_amount }
+    }
+}
+
 #[derive(BorshSerialize, BorshDeserialize)]
 pub struct Staking {
-    pub total_supply: Balance,
-    pub total_x_supply: Balance,
-    /// xLIS = x_cost * LIS default x_cost = 0.001;
-    x_cost: Balance,
+    total_supply: Balance,
+    total_x_supply: Balance,
+    x_cost: XCost,
 
     pub default_lockup_time: Timestamp,
 }
@@ -23,7 +35,7 @@ impl Default for Staking {
         Self {
             total_supply: 0,
             total_x_supply: 0,
-            x_cost: 1,
+            x_cost: XCost::new(1, STARTED_COST),
             default_lockup_time: DEFAULT_LOCKUP_TIME,
         }
     }
@@ -49,16 +61,18 @@ impl Staking {
         if self.total_x_supply == 0 {
             return self.total_supply;
         }
-        self.x_cost = self.total_supply * STARTED_COST / self.total_x_supply;
+        self.x_cost = XCost::new(self.total_supply, self.total_x_supply);
         self.total_supply
     }
 
     pub fn convert_to_x(&self, amount: u128) -> u128 {
-        amount * STARTED_COST / self.x_cost
+        (U256::from(amount) * U256::from(self.x_cost.x_amount) / U256::from(self.x_cost.amount))
+            .as_u128()
     }
 
     pub fn convert_to_amount(&self, x_amount: u128) -> u128 {
-        x_amount * self.x_cost / STARTED_COST
+        (U256::from(x_amount) * U256::from(self.x_cost.amount) / U256::from(self.x_cost.x_amount))
+            .as_u128()
     }
 }
 
@@ -122,8 +136,7 @@ impl Contract {
 mod tests {
     use super::*;
     use crate::{
-        staking::{Staking, STARTED_COST},
-        utils::tests_utils::*,
+        staking::{Staking, XCost, STARTED_COST},
         ONE_LIS,
     };
 
@@ -132,52 +145,105 @@ mod tests {
         let mut staking = Staking::default();
 
         // State: 1
-        staking.stake(100 * ONE_LIS);
+        staking.stake(100 * ONE_LIS); // 100_000_000_000_000
         assert_eq!(staking.total_supply, 100 * ONE_LIS);
         assert_eq!(staking.total_x_supply, 100 * STARTED_COST * ONE_LIS);
-        assert_eq!(staking.x_cost, 1);
+        assert_eq!(staking.x_cost, XCost::new(1, 1));
 
         // State: 2
         staking.add_to_pool(100 * ONE_LIS);
         assert_eq!(staking.total_supply, 200 * ONE_LIS);
         assert_eq!(staking.total_x_supply, 100 * STARTED_COST * ONE_LIS);
-        assert_eq!(staking.x_cost, 2);
+        assert_eq!(
+            staking.x_cost,
+            XCost::new(200 * ONE_LIS, 100 * STARTED_COST * ONE_LIS)
+        );
 
         // State: 3
         staking.stake(100 * ONE_LIS);
         assert_eq!(staking.total_supply, 300 * ONE_LIS);
         assert_eq!(staking.total_x_supply, 150 * STARTED_COST * ONE_LIS);
-        assert_eq!(staking.x_cost, 2);
+        assert_eq!(
+            staking.x_cost,
+            XCost::new(200 * ONE_LIS, 100 * STARTED_COST * ONE_LIS)
+        );
 
         // State: 4
         staking.add_to_pool(300 * ONE_LIS);
         assert_eq!(staking.total_supply, 600 * ONE_LIS);
         assert_eq!(staking.total_x_supply, 150 * STARTED_COST * ONE_LIS);
-        assert_eq!(staking.x_cost, 4);
+        assert_eq!(
+            staking.x_cost,
+            XCost::new(600 * ONE_LIS, 150 * STARTED_COST * ONE_LIS)
+        );
 
         // State: 5
         staking.stake(200 * ONE_LIS);
         assert_eq!(staking.total_supply, 800 * ONE_LIS);
         assert_eq!(staking.total_x_supply, 200 * STARTED_COST * ONE_LIS);
-        assert_eq!(staking.x_cost, 4);
+        assert_eq!(
+            staking.x_cost,
+            XCost::new(600 * ONE_LIS, 150 * STARTED_COST * ONE_LIS)
+        );
 
         // State: 6
         staking.unstake(50 * STARTED_COST * ONE_LIS);
         assert_eq!(staking.total_supply, 600 * ONE_LIS);
         assert_eq!(staking.total_x_supply, 150 * STARTED_COST * ONE_LIS);
-        assert_eq!(staking.x_cost, 4);
+        assert_eq!(
+            staking.x_cost,
+            XCost::new(600 * ONE_LIS, 150 * STARTED_COST * ONE_LIS)
+        );
 
         // State: 7
         staking.unstake(100 * STARTED_COST * ONE_LIS);
         assert_eq!(staking.total_supply, 200 * ONE_LIS);
         assert_eq!(staking.total_x_supply, 50 * STARTED_COST * ONE_LIS);
-        assert_eq!(staking.x_cost, 4);
+        assert_eq!(
+            staking.x_cost,
+            XCost::new(600 * ONE_LIS, 150 * STARTED_COST * ONE_LIS)
+        );
 
         // State: 8
         staking.unstake(50 * STARTED_COST * ONE_LIS);
         assert_eq!(staking.total_supply, 0 * ONE_LIS);
         assert_eq!(staking.total_x_supply, 0 * STARTED_COST * ONE_LIS);
-        assert_eq!(staking.x_cost, 4);
+        assert_eq!(
+            staking.x_cost,
+            XCost::new(600 * ONE_LIS, 150 * STARTED_COST * ONE_LIS)
+        );
+
+        staking.stake(25 * ONE_LIS);
+        assert_eq!(staking.total_supply, 25 * ONE_LIS);
+        assert_eq!(staking.total_x_supply, 625 * STARTED_COST * ONE_LIS / 100);
+        assert_eq!(
+            staking.x_cost,
+            XCost::new(600 * ONE_LIS, 150 * STARTED_COST * ONE_LIS)
+        );
+
+        staking.add_to_pool(100 * ONE_LIS);
+        assert_eq!(staking.total_supply, 125 * ONE_LIS);
+        assert_eq!(staking.total_x_supply, 625 * STARTED_COST * ONE_LIS / 100);
+        assert_eq!(
+            staking.x_cost,
+            XCost::new(125 * ONE_LIS, 625 * STARTED_COST * ONE_LIS / 100)
+        );
+
+        staking.stake(20 * ONE_LIS);
+        assert_eq!(staking.total_supply, 145 * ONE_LIS);
+        assert_eq!(staking.total_x_supply, 725 * STARTED_COST * ONE_LIS / 100);
+        assert_eq!(
+            staking.x_cost,
+            XCost::new(125 * ONE_LIS, 625 * STARTED_COST * ONE_LIS / 100)
+        );
+
+        staking.add_to_pool(1000 * ONE_LIS);
+        assert_eq!(staking.total_supply, 1145 * ONE_LIS);
+        assert_eq!(staking.total_x_supply, 725 * STARTED_COST * ONE_LIS / 100);
+        assert_eq!(
+            staking.x_cost,
+            XCost::new(1145 * ONE_LIS, 725 * STARTED_COST * ONE_LIS / 100)
+        );
     }
 
     #[test]

@@ -1,0 +1,6 @@
+{
+  "account_id":"backend.realis.testnet",
+  "public_key":"ed25519:hNG7pMN9x6rFwMi2kYL685XCfCFvw7FhGDTfmKawt1X",
+  "private_key":"ed25519:2XnXjGmsGKAzUd97Qhd7BjFzwdHvVy358NfNA8mfRvMcmKpY22bEdSYw4Fj3SMZzEnydk9H8jt548Ur7B4notqMB",
+  "secret_key":"ed25519:2XnXjGmsGKAzUd97Qhd7BjFzwdHvVy358NfNA8mfRvMcmKpY22bEdSYw4Fj3SMZzEnydk9H8jt548Ur7B4notqMB"
+}
