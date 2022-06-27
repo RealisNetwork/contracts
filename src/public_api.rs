@@ -335,7 +335,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic = "No such account"]
+    #[should_panic = "User not found"]
     fn stake_no_user_test() {
         // create Owner
         let owner = accounts(2);

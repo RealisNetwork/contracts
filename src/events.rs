@@ -30,6 +30,10 @@ pub enum EventLogVariant<'a> {
     NftBurn(NftBurn<'a>),
     ChangeState(ChangeState),
     ChangeBeneficiary(ChangeBeneficiary<'a>),
+    ChangeConstantFee(ChangeConstantFee<'a>),
+    ChangePercentFee(ChangePercentFee<'a>),
+    ChangeOwnerId(ChangeOwnerId<'a>),
+    ChangeDefaultLockupTime(ChangeDefaultLockupTime<'a>),
     AddBackendId(BackendId<'a>),
     RemoveBackendId(BackendId<'a>),
     Stake(StakingStake<'a>),
@@ -125,6 +129,34 @@ pub struct ChangeBeneficiary<'a> {
 
 #[derive(Serialize, Debug)]
 #[serde(crate = "near_sdk::serde")]
+pub struct ChangeOwnerId<'a> {
+    pub from: &'a AccountId,
+    pub to: &'a AccountId,
+}
+
+#[derive(Serialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
+pub struct ChangePercentFee<'a> {
+    pub from: &'a u8,
+    pub to: &'a u8,
+}
+
+#[derive(Serialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
+pub struct ChangeConstantFee<'a> {
+    pub from: &'a U128,
+    pub to: &'a U128,
+}
+
+#[derive(Serialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
+pub struct ChangeDefaultLockupTime<'a> {
+    pub from: &'a U64,
+    pub to: &'a U64,
+}
+
+#[derive(Serialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
 pub struct BackendId<'a> {
     pub accounts: &'a Vec<AccountId>,
 }
@@ -133,6 +165,7 @@ pub struct BackendId<'a> {
 #[serde(crate = "near_sdk::serde")]
 pub struct StakingStake<'a> {
     pub staker_id: &'a AccountId,
+    pub amount: U128,
     pub x_amount: U128,
 }
 
@@ -141,6 +174,7 @@ pub struct StakingStake<'a> {
 pub struct StakingUnstake<'a> {
     pub staker_id: &'a AccountId,
     pub amount: U128,
+    pub x_amount: U128,
 }
 
 #[derive(Serialize, Debug)]
