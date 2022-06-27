@@ -147,7 +147,7 @@ mod tests {
         staking.stake(100 * ONE_LIS); // 100_000_000_000_000
         assert_eq!(staking.total_supply, 100 * ONE_LIS);
         assert_eq!(staking.total_x_supply, 100 * STARTED_COST * ONE_LIS);
-        assert_eq!(staking.x_cost, XCost::new(1, 1));
+        assert_eq!(staking.x_cost, XCost::new(1, 1000));
 
         // State: 2
         staking.add_to_pool(100 * ONE_LIS);
