@@ -55,7 +55,7 @@ impl Contract {
                 let user_account: Account = user.into();
                 U128(user_account.free)
             })
-            .unwrap_or_else(|| U128(0u128))
+            .unwrap_or(U128(0u128))
     }
 
     pub fn get_account_info(&self, account_id: &AccountId) -> AccountInfo {

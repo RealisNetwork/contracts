@@ -9,7 +9,7 @@ use primitive_types::U256;
 pub const STARTED_COST: u128 = 1000;
 pub const DEFAULT_LOCKUP_TIME: Timestamp = 7 * DAY;
 
-#[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug)]
 struct XCost {
     pub amount: u128,
     pub x_amount: u128,
