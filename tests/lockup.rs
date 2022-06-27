@@ -1,8 +1,8 @@
 use crate::utils::*;
-use near_sdk::json_types::U64;
+use near_sdk::json_types::{U128, U64};
 use realis_near::{
     lockup::Lockup,
-    utils::{DAY, MINUTE, SECOND},
+    utils::{DAY, MINUTE, ONE_LIS, SECOND},
 };
 use std::borrow::BorrowMut;
 use workspaces::operations::{Function, Transaction};

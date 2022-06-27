@@ -1,7 +1,6 @@
-
 use crate::utils::*;
 use near_sdk::json_types::U64;
-use realis_near::utils::{DAY, SECOND};
+use realis_near::utils::{DAY, ONE_LIS, SECOND};
 
 #[tokio::test]
 async fn transfer_from_not_exist_account() {

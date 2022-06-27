@@ -1,5 +1,6 @@
 extern crate core;
 
+use near_sdk::collections::UnorderedSet;
 pub use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
     collections::LookupMap,
@@ -9,7 +10,6 @@ pub use near_sdk::{
     serde::{Deserialize, Serialize},
     AccountId, BorshStorageKey, PublicKey,
 };
-use near_sdk::collections::UnorderedSet;
 
 use crate::{
     account::{Account, VAccount},

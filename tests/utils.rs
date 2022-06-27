@@ -15,7 +15,6 @@ pub use workspaces::{
 };
 use workspaces::{operations::Function, types::Gas};
 
-
 pub const WASM_FILE: &str = "./target/wasm32-unknown-unknown/release/realis_near.wasm";
 pub const ONE_LIS: u128 = 1_000_000_000_000;
 pub const MAX_GAS: Gas = 300_000_000_000_000;
