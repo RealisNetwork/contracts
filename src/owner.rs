@@ -210,7 +210,7 @@ impl Contract {
     ) {
         self.assert_owner();
 
-        constant_fee.map(|constant_fee| {
+        if let Some(constant_fee) = constant_fee {
             require!(
                 self.constant_fee != constant_fee.0,
                 "Constant fee can't be the same"
@@ -221,22 +221,22 @@ impl Contract {
             }))
             .emit();
             self.constant_fee = constant_fee.0;
-        });
+        }
 
-        percent_fee.map(|percent_fee| {
+        if let Some(percent_fee) = percent_fee {
             require!(
                 self.percent_fee != percent_fee,
                 "Percent fee can't be the same"
             );
             EventLog::from(EventLogVariant::ChangePercentFee(ChangePercentFee {
-                from: &self.percent_fee,
-                to: &percent_fee,
+                from: self.percent_fee,
+                to: percent_fee,
             }))
             .emit();
             self.percent_fee = percent_fee;
-        });
+        }
 
-        owner_id.map(|owner_id| {
+        if let Some(owner_id) = owner_id {
             require!(self.owner_id != owner_id, "Owner id can't be the same");
             EventLog::from(EventLogVariant::ChangeOwnerId(ChangeOwnerId {
                 from: &self.owner_id.clone(),
@@ -244,9 +244,9 @@ impl Contract {
             }))
             .emit();
             self.owner_id = owner_id;
-        });
+        }
 
-        beneficiary_id.map(|beneficiary_id| {
+        if let Some(beneficiary_id) = beneficiary_id {
             require!(
                 self.beneficiary_id != beneficiary_id,
                 "Beneficiary can't be the same"
@@ -257,9 +257,9 @@ impl Contract {
             }))
             .emit();
             self.beneficiary_id = beneficiary_id;
-        });
+        }
 
-        state.map(|state| {
+        if let Some(state) = state {
             require!(self.state != state, "State can't be the same");
             EventLog::from(EventLogVariant::ChangeState(ChangeState {
                 from: self.state.clone(),
@@ -267,9 +267,9 @@ impl Contract {
             }))
             .emit();
             self.state = state;
-        });
+        }
 
-        default_lockup_time.map(|default_lockup_time| {
+        if let Some(default_lockup_time) = default_lockup_time {
             require!(
                 self.staking.default_lockup_time != default_lockup_time.0,
                 "Lockup time can't be the same"
@@ -282,13 +282,13 @@ impl Contract {
             ))
             .emit();
             self.staking.default_lockup_time = default_lockup_time.0;
-        });
+        };
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{utils::tests_utils::*, State::Running};
+    use crate::utils::tests_utils::*;
     use near_sdk::json_types::U64;
 
     #[test]

@@ -31,7 +31,7 @@ pub enum EventLogVariant<'a> {
     ChangeState(ChangeState),
     ChangeBeneficiary(ChangeBeneficiary<'a>),
     ChangeConstantFee(ChangeConstantFee<'a>),
-    ChangePercentFee(ChangePercentFee<'a>),
+    ChangePercentFee(ChangePercentFee),
     ChangeOwnerId(ChangeOwnerId<'a>),
     ChangeDefaultLockupTime(ChangeDefaultLockupTime<'a>),
     AddBackendId(BackendId<'a>),
@@ -136,9 +136,9 @@ pub struct ChangeOwnerId<'a> {
 
 #[derive(Serialize, Debug)]
 #[serde(crate = "near_sdk::serde")]
-pub struct ChangePercentFee<'a> {
-    pub from: &'a u8,
-    pub to: &'a u8,
+pub struct ChangePercentFee {
+    pub from: u8,
+    pub to: u8,
 }
 
 #[derive(Serialize, Debug)]

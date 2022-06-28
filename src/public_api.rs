@@ -298,8 +298,6 @@ mod tests {
             .accounts
             .insert(&user1, &Account::new(accounts(0), 250 * ONE_LIS).into());
 
-        let account: Account = contract.accounts.get(&user1).unwrap().into();
-
         // set signer as User 1
         testing_env!(context.signer_account_id(user1.clone()).build());
 
@@ -325,8 +323,6 @@ mod tests {
         contract
             .accounts
             .insert(&user1, &Account::new(accounts(0), 250 * ONE_LIS).into());
-
-        let account: Account = contract.accounts.get(&user1).unwrap().into();
 
         // set signer as User 1
         testing_env!(context.signer_account_id(user1.clone()).build());
