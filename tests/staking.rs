@@ -268,7 +268,6 @@ async fn staking_not_expired_lockup_test() {
 ExecutionError(\"Smart contract panicked: User not found\")")]
 async fn staking_account_not_exist_test() {
     // User Initialization
-    get_alice();
     let bob = get_bob();
 
     // Setup contract: Alice - owner, total_supply - 3_000_000_000 LIS
