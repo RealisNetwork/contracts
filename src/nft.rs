@@ -335,14 +335,6 @@ impl NftManager {
 }
 
 impl Contract {
-    pub fn get_nft_info(&self, nft_id: U128) -> Nft {
-        self.nfts.get_nft(&nft_id.0).into()
-    }
-
-    pub fn get_nft_price(&self, nft_id: U128) -> U128 {
-        self.internal_get_nft_marketplace_info(nft_id.0).into()
-    }
-
     /// Burns NFT
     pub fn internal_burn_nft(&mut self, target_id: AccountId, nft_id: u128) {
         self.nfts.burn_nft(&nft_id, target_id.clone());

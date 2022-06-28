@@ -13,6 +13,6 @@ hex = "0.4.3"
 primitive-types = "0.7.0"
 
 [dev-dependencies]
-workspaces = { git = "https://github.com/near/workspaces-rs", package = "workspaces" }
+workspaces = { version = "0.3.0", git = "https://github.com/near/workspaces-rs" }
 anyhow = "1.0.57"
 tokio =  "1.19.2"
