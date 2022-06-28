@@ -126,19 +126,3 @@ impl Default for Contract {
         Self::new(None, None, None, None, None)
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use crate::utils::tests_utils::*;
-
-    #[test]
-    fn info_get_balance_test() {
-        // Indexes are default
-        let (mut contract, _context) = init_test_env(None, None, None);
-        let account: Account = Account::new(accounts(0), 250 * ONE_LIS);
-        let account_id = accounts(0);
-
-        contract.accounts.insert(&account_id, &account.into());
-        assert_eq!(contract.get_balance_info(account_id).0, 250 * ONE_LIS);
-    }
-}

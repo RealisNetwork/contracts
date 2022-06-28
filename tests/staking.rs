@@ -268,7 +268,6 @@ async fn staking_not_expired_lockup_test() {
 ExecutionError(\"Smart contract panicked: User not found\")")]
 async fn staking_account_not_exist_test() {
     // User Initialization
-    let alice = get_alice();
     let bob = get_bob();
 
     // Setup contract: Alice - owner, total_supply - 3_000_000_000 LIS
@@ -335,7 +334,6 @@ ExecutionError(\"Smart contract panicked: Zero pool balance\")")]
 async fn add_to_empty_pool() {
     // User Initialization
     let alice = get_alice();
-    let bob = get_bob();
 
     // Setup contract: Alice - owner, total_supply - 3_000_000_000 LIS
     let (contract, worker) = TestingEnvBuilder::default().build().await;
@@ -373,7 +371,7 @@ async fn staking_from_unstaked_lockup() {
     tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
 
     // Bob stakes 200LIS
-    // make_stake(&bob, 200 * ONE_LIS, &contract, &worker).await;
+    make_stake(&bob, 200 * ONE_LIS, &contract, &worker).await;
 
     // Assert Bob's balance == 0
     assert_eq!(get_balance_info(&bob, &contract, &worker).await, 0);

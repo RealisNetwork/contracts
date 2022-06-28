@@ -93,6 +93,7 @@ impl Contract {
 
         EventLog::from(EventLogVariant::Stake(StakingStake {
             staker_id: &staker_id,
+            amount: U128(amount),
             x_amount: U128(x_amount),
         }))
         .emit();
@@ -123,6 +124,7 @@ impl Contract {
         EventLog::from(EventLogVariant::Unstake(StakingUnstake {
             staker_id: &staker_id,
             amount: U128(amount),
+            x_amount: U128(x_amount),
         }))
         .emit();
         amount
