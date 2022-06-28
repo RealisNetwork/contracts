@@ -581,9 +581,9 @@ pub async fn set_def_staking_lockup_time(
     worker: &TestWorker,
 ) -> CallExecutionDetails {
     signer
-        .call(&worker, contract.id(), "owner_set_default_lockup_time")
+        .call(&worker, contract.id(), "owner_contract_setting")
         .args_json(serde_json::json!({
-            "time": U64(time),
+            "default_lockup_time": U64(time),
         }))
         .expect("Invalid input args")
         .transact()
