@@ -229,7 +229,7 @@ impl Contract {
             .unwrap_or_else(|| panic_str("Account not found"))
             .into();
 
-        require!(buyer_account.free >= price, "Not enough money.");
+        require!(buyer_account.get_balance() >= price, "Not enough money.");
         if let Some(last_bid) = self.nfts.make_bid(&account_id, &nft_id, price) {
             let mut last_buyer_account: Account = self
                 .accounts
@@ -237,11 +237,11 @@ impl Contract {
                 .unwrap_or_else(|| panic_str("Account not found"))
                 .into();
 
-            last_buyer_account.free += last_bid.get_price();
+            last_buyer_account.increase_balance(last_bid.get_price());
             self.accounts
                 .insert(&last_bid.account_id, &last_buyer_account.into());
         }
-        buyer_account.free -= price;
+        buyer_account.decrease_balance(price);
         self.accounts.insert(&account_id, &buyer_account.into());
     }
 
@@ -261,7 +261,7 @@ impl Contract {
                 .get(deal_data.get_owner_id())
                 .unwrap_or_else(|| panic_str("Account not found"))
                 .into();
-            nft_owner.free += the_winner.price;
+            nft_owner.increase_balance(the_winner.price);
 
             self.accounts
                 .insert(deal_data.get_owner_id(), &nft_owner.into());
@@ -341,7 +341,7 @@ mod tests {
 
         contract.make_bid(0, 20, accounts(3));
         let ac: Account = contract.accounts.get(&accounts(3)).unwrap().into();
-        assert_eq!(ac.free, 980);
+        assert_eq!(ac.get_balance(), 980);
     }
 
     #[test]
@@ -353,8 +353,8 @@ mod tests {
         contract.make_bid(0, 50, accounts(5));
         let ac: Account = contract.accounts.get(&accounts(3)).unwrap().into();
         let ac2: Account = contract.accounts.get(&accounts(5)).unwrap().into();
-        assert_eq!(ac.free, 1000);
-        assert_eq!(ac2.free, 950);
+        assert_eq!(ac.get_balance(), 1000);
+        assert_eq!(ac2.get_balance(), 950);
     }
 
     #[test]
@@ -368,7 +368,7 @@ mod tests {
         contract.make_bid(0, 50, accounts(5));
 
         let buyer: Account = contract.accounts.get(&accounts(5)).unwrap().into();
-        assert_eq!(buyer.free, 950);
+        assert_eq!(buyer.get_balance(), 950);
 
         context.block_timestamp(10);
         testing_env!(context.context);
@@ -378,9 +378,9 @@ mod tests {
         assert!(nft.is_owner(&accounts(5)));
 
         let owner: Account = contract.accounts.get(&accounts(1)).unwrap().into();
-        assert_eq!(owner.free, 1050);
+        assert_eq!(owner.get_balance(), 1050);
 
         let participant: Account = contract.accounts.get(&accounts(4)).unwrap().into();
-        assert_eq!(participant.free, 1000);
+        assert_eq!(participant.get_balance(), 1000);
     }
 }

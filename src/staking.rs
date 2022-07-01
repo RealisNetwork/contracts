@@ -139,8 +139,7 @@ impl Contract {
             .get(&account_id)
             .unwrap_or_else(|| env::panic_str("No such account"))
             .into();
-        require!(pool_account.free >= amount, "Not enough balance");
-        pool_account.free -= amount;
+        pool_account.decrease_balance(amount);
         let pool_total_supply = self.staking.add_to_pool(amount);
         self.accounts.insert(&account_id, &pool_account.into());
 

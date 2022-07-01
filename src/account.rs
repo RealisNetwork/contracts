@@ -1,5 +1,5 @@
 use crate::{
-    events::{EventLog, EventLogVariant, LockupClaimed},
+    events::{EventLog, EventLogVariant, IncreaseBalance, LockupClaimed},
     lockup::{Lockup, LockupInfo},
     Deserialize, NftId, Serialize, StorageKey,
 };
@@ -8,7 +8,7 @@ use near_sdk::{
     collections::UnorderedSet,
     env,
     json_types::U128,
-    AccountId, Balance,
+    require, AccountId, Balance,
 };
 
 #[derive(BorshSerialize, BorshDeserialize)]
@@ -26,7 +26,7 @@ impl From<VAccount> for Account {
 
 #[derive(BorshSerialize, BorshDeserialize, Debug)]
 pub struct Account {
-    pub free: Balance,
+    free: Balance,
     pub x_staked: Balance,
     pub lockups: UnorderedSet<Lockup>,
     pub nfts: UnorderedSet<NftId>,
@@ -41,6 +41,26 @@ impl Account {
             lockups: UnorderedSet::new(StorageKey::AccountLockup { hash: hash.clone() }),
             nfts: UnorderedSet::new(StorageKey::AccountNftId { hash }),
         }
+    }
+
+    pub fn get_balance(&self) -> Balance {
+        self.free
+    }
+
+    pub fn increase_balance(&mut self, amount: Balance) -> &mut Account {
+        self.free += amount;
+        EventLog::from(EventLogVariant::IncreaseBalance(IncreaseBalance {
+            amount: &U128(amount),
+        }))
+        .emit();
+        self
+    }
+
+    pub fn decrease_balance(&mut self, amount: Balance) -> &mut Account {
+        require!(self.free >= amount, "Not enough balance");
+        self.free -= amount;
+        // TODO: emit event
+        self
     }
 
     pub fn claim_all_lockups(&mut self, account_id: AccountId) -> u128 {
@@ -62,9 +82,9 @@ impl Account {
             .fold(0, |acc, lockup| {
                 acc + lockup.get_amount().unwrap_or_default()
             });
-        self.free += fold;
-
         EventLog::from(EventLogVariant::LockupClaimed(events)).emit();
+
+        self.increase_balance(fold);
 
         fold
     }
@@ -75,7 +95,10 @@ impl Account {
             .iter()
             .find(|lockup| lockup.get_amount().unwrap_or_default() == amount && lockup.is_expired())
             .unwrap_or_else(|| env::panic_str("No such lockup"));
-        self.free += lockup.get_amount().unwrap_or_default();
+        if lockup.get_amount().is_none() {
+            return 0;
+        }
+        self.increase_balance(lockup.get_amount().unwrap());
         self.lockups.remove(&lockup);
 
         EventLog::from(EventLogVariant::LockupClaimed(vec![LockupClaimed {
@@ -129,7 +152,7 @@ pub struct AccountInfo {
 impl From<Account> for AccountInfo {
     fn from(account: Account) -> Self {
         AccountInfo {
-            free: U128(account.free),
+            free: account.get_balance().into(),
             x_staked: U128(account.x_staked),
             lockups: account.get_lockups(None, None),
             nfts: account.get_nfts(),

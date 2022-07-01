@@ -101,6 +101,7 @@ impl Contract {
 #[cfg(test)]
 mod tests {
     use crate::{lockup::Lockup, nft::Nft, utils::tests_utils::*};
+    use near_sdk::require;
 
     #[test]
     #[should_panic = "Contract is paused"]
@@ -126,8 +127,8 @@ mod tests {
 
         let account_1: Account = contract.accounts.get(&accounts(1)).unwrap().into();
         let account_2: Account = contract.accounts.get(&accounts(2)).unwrap().into();
-        assert_eq!(account_1.free, 25);
-        assert_eq!(account_2.free, 35);
+        assert_eq!(account_1.get_balance(), 25);
+        assert_eq!(account_2.get_balance(), 35);
     }
 
     #[test]
@@ -233,7 +234,7 @@ mod tests {
 
         contract.claim_all_lockup();
         let res_owner_account: Account = contract.accounts.get(&owner).unwrap().into();
-        assert_eq!(res_owner_account.free, 16);
+        assert_eq!(res_owner_account.get_balance(), 16);
     }
 
     #[test]
@@ -268,7 +269,7 @@ mod tests {
             .build());
         contract.claim_lockup(U128(5));
         let res_owner_account: Account = contract.accounts.get(&owner).unwrap().into();
-        assert_eq!(res_owner_account.free, 55);
+        assert_eq!(res_owner_account.get_balance(), 55);
     }
 
     #[test]
@@ -382,19 +383,26 @@ mod tests {
         testing_env!(context.signer_account_id(user1.clone()).build());
 
         let user1_staked = contract.stake(U128(100 * ONE_LIS));
+        let user_account: Account = contract.accounts.get(&user1).unwrap().into();
+        assert_eq!(user_account.get_balance(), 150 * ONE_LIS);
 
         // Unstake tokens
         contract.unstake(user1_staked);
 
-        // Wait till lockups are expired
-        testing_env!(context.block_timestamp(9999999999999999).build());
+        let user_account: Account = contract.accounts.get(&user1).unwrap().into();
+        assert!(!user_account.lockups.is_empty());
 
-        // claim loockup for staiking for User 1
+        // Wait till lockups are expired
+        testing_env!(context.block_timestamp(99999999999999999).build());
+
+        // claim lockup for staking for User 1
         contract.claim_all_lockup();
+        let user_account: Account = contract.accounts.get(&user1).unwrap().into();
+        assert!(user_account.lockups.is_empty());
 
         // Assert user1 balance == 250
-        let account: Account = contract.accounts.get(&user1).unwrap().into();
-        assert_eq!(account.free, 250 * ONE_LIS);
+        let user_account: Account = contract.accounts.get(&user1).unwrap().into();
+        assert_eq!(user_account.get_balance(), 250 * ONE_LIS);
     }
 
     #[test]

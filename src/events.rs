@@ -36,6 +36,7 @@ pub enum EventLogVariant<'a> {
     ChangeDefaultLockupTime(ChangeDefaultLockupTime<'a>),
     AddBackendId(BackendId<'a>),
     RemoveBackendId(BackendId<'a>),
+    IncreaseBalance(IncreaseBalance<'a>),
     Stake(StakingStake<'a>),
     Unstake(StakingUnstake<'a>),
     AddToStakingPool(AddToStakingPool<'a>),
@@ -159,6 +160,12 @@ pub struct ChangeDefaultLockupTime<'a> {
 #[serde(crate = "near_sdk::serde")]
 pub struct BackendId<'a> {
     pub accounts: &'a Vec<AccountId>,
+}
+
+#[derive(Serialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
+pub struct IncreaseBalance<'a> {
+    pub amount: &'a U128,
 }
 
 #[derive(Serialize, Debug)]

@@ -136,8 +136,8 @@ mod tests {
         let account_2: Account = contract.accounts.get(&accounts(2)).unwrap().into();
         let owner_acc: Account = contract.accounts.get(&owner).unwrap().into();
 
-        assert_eq!(owner_acc.free, 2999999980 * ONE_LIS);
-        assert_eq!(account_2.free, 30 * ONE_LIS);
+        assert_eq!(owner_acc.get_balance(), 2999999980 * ONE_LIS);
+        assert_eq!(account_2.get_balance(), 30 * ONE_LIS);
     }
 
     #[test]
@@ -310,7 +310,7 @@ mod tests {
 
         contract.backend_claim_all_lockup();
         let res_owner_account: Account = contract.accounts.get(&owner).unwrap().into();
-        assert_eq!(res_owner_account.free, 10);
+        assert_eq!(res_owner_account.get_balance(), 10);
     }
     #[test]
     #[should_panic = "Not allowed"]
@@ -372,7 +372,7 @@ mod tests {
             .build());
         contract.backend_claim_lockup(U128(5));
         let res_owner_account: Account = contract.accounts.get(&owner).unwrap().into();
-        assert_eq!(res_owner_account.free, 55);
+        assert_eq!(res_owner_account.get_balance(), 55);
     }
 
     #[test]
