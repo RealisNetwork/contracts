@@ -143,8 +143,8 @@ impl Contract {
         // Check if user has enough tokens to pay fee, if no, rollback transaction
         require!(sender_account.free >= charge, "Can't pay some fees");
 
-        sender_account.free -= charge;
-        let free = sender_account.free;
+        sender_account.decrease_balance(charge);
+        let free = sender_account.get_balance();
         self.accounts.insert(&sender, &sender_account.into());
 
         // Try get beneficiary account
@@ -154,7 +154,7 @@ impl Contract {
             .unwrap_or_else(|| Account::new(self.beneficiary_id.clone(), 0).into())
             .into();
         // Increase beneficiary balance
-        beneficiary_account.free += fee;
+        beneficiary_account.increase_balance(fee);
         self.accounts
             .insert(&self.beneficiary_id, &beneficiary_account.into());
 

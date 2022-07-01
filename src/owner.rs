@@ -104,10 +104,7 @@ impl Contract {
             .get(&self.owner_id)
             .unwrap_or_else(|| env::panic_str("No such account"))
             .into();
-        owner_account.free = owner_account
-            .free
-            .checked_sub(amount.0)
-            .unwrap_or_else(|| env::panic_str("Not enough balance"));
+        owner_account.decrease_balance(amount.0);
         self.accounts.insert(&self.owner_id, &owner_account.into());
 
         let mut recipient_account: Account = self

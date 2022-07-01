@@ -85,8 +85,7 @@ impl Contract {
             .get(&staker_id)
             .unwrap_or_else(|| env::panic_str("No such account"))
             .into();
-        require!(staker_account.free >= amount, "Not enough balance");
-        staker_account.free -= amount;
+        staker_account.decrease_balance(amount);
         let x_amount = self.staking.stake(amount);
         staker_account.x_staked += x_amount;
         self.accounts.insert(&staker_id, &staker_account.into());

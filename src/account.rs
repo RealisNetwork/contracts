@@ -62,7 +62,7 @@ impl Account {
             .fold(0, |acc, lockup| {
                 acc + lockup.get_amount().unwrap_or_default()
             });
-        self.free += fold;
+        self.increase_balance(fold);
 
         EventLog::from(EventLogVariant::LockupClaimed(events)).emit();
 
@@ -75,7 +75,10 @@ impl Account {
             .iter()
             .find(|lockup| lockup.get_amount().unwrap_or_default() == amount && lockup.is_expired())
             .unwrap_or_else(|| env::panic_str("No such lockup"));
-        self.free += lockup.get_amount().unwrap_or_default();
+        if lockup.get_amount().is_none() {
+            return 0;
+        }
+        self.increase_balance(lockup.get_amount().unwrap());
         self.lockups.remove(&lockup);
 
         EventLog::from(EventLogVariant::LockupClaimed(vec![LockupClaimed {
@@ -129,7 +132,7 @@ pub struct AccountInfo {
 impl From<Account> for AccountInfo {
     fn from(account: Account) -> Self {
         AccountInfo {
-            free: U128(account.free),
+            free: account.get_balance().into(),
             x_staked: U128(account.x_staked),
             lockups: account.get_lockups(None, None),
             nfts: account.get_nfts(),

@@ -140,7 +140,7 @@ impl Contract {
         match self.accounts.get(&account_id) {
             Some(user) => {
                 let user_account: Account = user.into();
-                U128(user_account.free)
+                user_account.get_balance().into()
             }
             None => U128(0u128),
         }
