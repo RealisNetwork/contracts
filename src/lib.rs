@@ -1,8 +1,9 @@
 extern crate core;
 
-use near_sdk::{
+use near_sdk::collections::UnorderedSet;
+pub use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
-    collections::{LookupMap, LookupSet},
+    collections::LookupMap,
     env,
     json_types::U128,
     near_bindgen,
@@ -11,8 +12,7 @@ use near_sdk::{
 };
 
 use crate::{
-    account::{Account, AccountInfo, VAccount},
-    lockup::LockupInfo,
+    account::{Account, VAccount},
     nft::NftManager,
     staking::Staking,
     types::NftId,
@@ -35,6 +35,7 @@ pub mod tokens;
 pub mod types;
 pub mod update;
 pub mod utils;
+pub mod view;
 
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
 #[serde(crate = "near_sdk::serde")]
@@ -55,7 +56,7 @@ pub struct Contract {
     // Owner of the contract. Example, `Realis.near` or `Volvo.near`
     pub owner_id: AccountId,
     // Allowed user from backend, with admin permission.
-    pub backend_ids: LookupSet<AccountId>,
+    pub backend_ids: UnorderedSet<AccountId>,
     // Fee collector.
     pub beneficiary_id: AccountId,
     // State of contract.
@@ -102,7 +103,7 @@ impl Contract {
             .into(),
         );
 
-        let mut backend_ids = LookupSet::new(StorageKey::BackendIds);
+        let mut backend_ids = UnorderedSet::new(StorageKey::BackendIds);
         backend_ids.insert(&backend_id.unwrap_or_else(|| owner_id.clone()));
 
         Self {
