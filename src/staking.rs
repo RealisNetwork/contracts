@@ -9,7 +9,7 @@ use primitive_types::U256;
 pub const STARTED_COST: u128 = 1000;
 pub const DEFAULT_LOCKUP_TIME: Timestamp = 7 * DAY;
 
-#[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug)]
 struct XCost {
     pub amount: u128,
     pub x_amount: u128,
@@ -123,8 +123,7 @@ impl Contract {
             .get(&account_id)
             .unwrap_or_else(|| env::panic_str("No such account"))
             .into();
-        require!(pool_account.free >= amount, "Not enough balance");
-        pool_account.free -= amount;
+        pool_account.decrease_balance(amount);
         let pool_total_supply = self.staking.add_to_pool(amount);
         self.accounts.insert(&account_id, &pool_account.into());
         pool_total_supply

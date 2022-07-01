@@ -32,6 +32,7 @@ pub enum EventLogVariant<'a> {
     ChangeBeneficiary(ChangeBeneficiary<'a>),
     AddBackendId(BackendId<'a>),
     RemoveBackendId(BackendId<'a>),
+    IncreaseBalance(IncreaseBalance<'a>),
 }
 
 #[derive(Serialize, Debug)]
@@ -124,4 +125,10 @@ pub struct ChangeBeneficiary<'a> {
 #[serde(crate = "near_sdk::serde")]
 pub struct BackendId<'a> {
     pub accounts: &'a Vec<AccountId>,
+}
+
+#[derive(Serialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
+pub struct IncreaseBalance<'a> {
+    pub amount: &'a U128,
 }

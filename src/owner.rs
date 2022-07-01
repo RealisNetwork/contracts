@@ -156,7 +156,7 @@ impl Contract {
             .get(&self.owner_id)
             .unwrap_or_else(|| env::panic_str("No such account"))
             .into();
-        owner_account.free += lockup.amount;
+        owner_account.increase_balance(lockup.amount);
         self.accounts.insert(&self.owner_id, &owner_account.into());
 
         EventLog::from(EventLogVariant::LockupRefund(LockupRefund {

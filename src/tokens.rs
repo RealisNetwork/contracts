@@ -42,19 +42,19 @@ impl Contract {
     /// balance of amount.
     pub fn internal_transfer(
         &mut self,
-        sender: AccountId,
+        sender_id: AccountId,
         recipient_id: AccountId,
         amount: u128,
         is_fee_required: bool,
     ) -> u128 {
         require!(amount > 0, "You can't transfer 0 tokens");
         require!(
-            sender != recipient_id,
+            sender_id != recipient_id,
             "You can't transfer tokens to yourself"
         );
 
         // Charge fee and amount
-        let sender_balance_left = self.take_fee(sender, Some(amount), is_fee_required);
+        let sender_balance_left = self.take_fee(sender_id, Some(amount), is_fee_required);
         // Try to get recipient
         let mut recipient_account: Account = self
             .accounts
@@ -63,7 +63,7 @@ impl Contract {
             .into();
 
         // Increase recipient balance
-        recipient_account.free += amount;
+        recipient_account.increase_balance(amount);
         self.accounts
             .insert(&recipient_id, &recipient_account.into());
 
@@ -130,18 +130,21 @@ impl Contract {
             .into();
 
         // Check if user have enough tokens to pay for transaction and to send
-        if sender_account.free < charge {
+        if sender_account.get_balance() < charge {
             sender_account.claim_all_lockups(sender.clone());
         }
 
         // Check if user have enough tokens to send
         require!(
-            sender_account.free >= amount.unwrap_or_default(),
+            sender_account.get_balance() >= amount.unwrap_or_default(),
             "Not enough balance"
         );
 
         // Check if user has enough tokens to pay fee, if no, rollback transaction
-        require!(sender_account.free >= charge, "Can't pay some fees");
+        require!(
+            sender_account.get_balance() >= charge,
+            "Can't pay some fees"
+        );
 
         sender_account.decrease_balance(charge);
         let free = sender_account.get_balance();

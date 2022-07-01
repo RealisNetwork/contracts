@@ -1,5 +1,5 @@
 use crate::{
-    events::{EventLog, EventLogVariant, LockupClaimed},
+    events::{EventLog, EventLogVariant, IncreaseBalance, LockupClaimed},
     lockup::Lockup,
     Deserialize, LockupInfo, NftId, Serialize, StorageKey,
 };
@@ -8,7 +8,7 @@ use near_sdk::{
     collections::UnorderedSet,
     env,
     json_types::U128,
-    AccountId, Balance,
+    require, AccountId, Balance,
 };
 
 #[derive(BorshSerialize, BorshDeserialize)]
@@ -26,7 +26,7 @@ impl From<VAccount> for Account {
 
 #[derive(BorshSerialize, BorshDeserialize, Debug)]
 pub struct Account {
-    pub free: Balance,
+    free: Balance,
     pub x_staked: Balance,
     pub lockups: UnorderedSet<Lockup>,
     pub nfts: UnorderedSet<NftId>,
@@ -41,6 +41,26 @@ impl Account {
             lockups: UnorderedSet::new(StorageKey::AccountLockup { hash: hash.clone() }),
             nfts: UnorderedSet::new(StorageKey::AccountNftId { hash }),
         }
+    }
+
+    pub fn get_balance(&self) -> Balance {
+        self.free
+    }
+
+    pub fn increase_balance(&mut self, amount: Balance) -> &mut Account {
+        self.free += amount;
+        EventLog::from(EventLogVariant::IncreaseBalance(IncreaseBalance {
+            amount: &U128(amount),
+        }))
+        .emit();
+        self
+    }
+
+    pub fn decrease_balance(&mut self, amount: Balance) -> &mut Account {
+        require!(self.free >= amount, "Not enough balance");
+        self.free -= amount;
+        // TODO: emit event
+        self
     }
 
     pub fn claim_all_lockups(&mut self, account_id: AccountId) -> u128 {

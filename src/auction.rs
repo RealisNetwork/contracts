@@ -229,7 +229,7 @@ impl Contract {
             .unwrap_or_else(|| panic_str("Account not found"))
             .into();
 
-        require!(buyer_account.free >= price, "Not enough money.");
+        require!(buyer_account.get_balance() >= price, "Not enough money.");
         if let Some(last_bid) = self.nfts.make_bid(&account_id, &nft_id, price) {
             let mut last_buyer_account: Account = self
                 .accounts
