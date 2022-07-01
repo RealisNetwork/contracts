@@ -394,7 +394,7 @@ mod tests {
 
         // Assert user1 balance == 250
         let account: Account = contract.accounts.get(&user1).unwrap().into();
-        assert_eq!(account.free, 250 * ONE_LIS);
+        assert_eq!(account.get_balance(), 250 * ONE_LIS);
     }
 
     #[test]
