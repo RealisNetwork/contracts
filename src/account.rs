@@ -82,9 +82,9 @@ impl Account {
             .fold(0, |acc, lockup| {
                 acc + lockup.get_amount().unwrap_or_default()
             });
-        self.increase_balance(fold);
-
         EventLog::from(EventLogVariant::LockupClaimed(events)).emit();
+
+        self.increase_balance(fold);
 
         fold
     }

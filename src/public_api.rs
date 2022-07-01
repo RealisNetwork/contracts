@@ -382,6 +382,8 @@ mod tests {
         testing_env!(context.signer_account_id(user1.clone()).build());
 
         let user1_staked = contract.stake(U128(100 * ONE_LIS));
+        let user_account: Account = contract.accounts.get(&user1).unwrap().into();
+        assert_eq!(user_account.get_balance(), 150 * ONE_LIS);
 
         // Unstake tokens
         contract.unstake(user1_staked);
@@ -393,8 +395,8 @@ mod tests {
         contract.claim_all_lockup();
 
         // Assert user1 balance == 250
-        let account: Account = contract.accounts.get(&user1).unwrap().into();
-        assert_eq!(account.get_balance(), 250 * ONE_LIS);
+        let user_account: Account = contract.accounts.get(&user1).unwrap().into();
+        assert_eq!(user_account.get_balance(), 250 * ONE_LIS);
     }
 
     #[test]
