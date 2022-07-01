@@ -101,6 +101,7 @@ impl Contract {
 #[cfg(test)]
 mod tests {
     use crate::{lockup::Lockup, nft::Nft, utils::tests_utils::*};
+    use near_sdk::require;
 
     #[test]
     #[should_panic = "Contract is paused"]
@@ -388,11 +389,16 @@ mod tests {
         // Unstake tokens
         contract.unstake(user1_staked);
 
-        // Wait till lockups are expired
-        testing_env!(context.block_timestamp(9999999999999999).build());
+        let user_account: Account = contract.accounts.get(&user1).unwrap().into();
+        assert!(!user_account.lockups.is_empty());
 
-        // claim loockup for staiking for User 1
+        // Wait till lockups are expired
+        testing_env!(context.block_timestamp(99999999999999999).build());
+
+        // claim lockup for staking for User 1
         contract.claim_all_lockup();
+        let user_account: Account = contract.accounts.get(&user1).unwrap().into();
+        assert!(user_account.lockups.is_empty());
 
         // Assert user1 balance == 250
         let user_account: Account = contract.accounts.get(&user1).unwrap().into();
