@@ -39,23 +39,25 @@ impl Contract {
         from_index: Option<usize>,
         limit: Option<usize>,
     ) -> Vec<LockupInfo> {
-        self.accounts
-            .get(&account_id)
-            .map(|user| {
+        match self.accounts.get(&account_id) {
+            Some(user) => {
                 let user_account: Account = user.into();
                 user_account.get_lockups(from_index, limit)
-            })
-            .unwrap_or_default()
+            }
+            None => {
+                vec![]
+            }
+        }
     }
 
     pub fn get_balance_info(&self, account_id: AccountId) -> U128 {
-        self.accounts
-            .get(&account_id)
-            .map(|user| {
+        match self.accounts.get(&account_id) {
+            Some(user) => {
                 let user_account: Account = user.into();
-                U128(user_account.free)
-            })
-            .unwrap_or(U128(0u128))
+                user_account.get_balance().into()
+            }
+            None => U128(0u128),
+        }
     }
 
     pub fn get_account_info(&self, account_id: &AccountId) -> AccountInfo {
