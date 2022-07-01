@@ -131,8 +131,8 @@ mod tests {
 
         let account_1: Account = contract.accounts.get(&accounts(1)).unwrap().into();
         let account_2: Account = contract.accounts.get(&accounts(2)).unwrap().into();
-        assert_eq!(account_1.free, 25);
-        assert_eq!(account_2.free, 35);
+        assert_eq!(account_1.get_balance(), 25);
+        assert_eq!(account_2.get_balance(), 35);
     }
 
     #[test]
@@ -238,7 +238,7 @@ mod tests {
 
         contract.claim_all_lockup();
         let res_owner_account: Account = contract.accounts.get(&owner).unwrap().into();
-        assert_eq!(res_owner_account.free, 16);
+        assert_eq!(res_owner_account.get_balance(), 16);
     }
 
     #[test]
@@ -273,7 +273,7 @@ mod tests {
             .build());
         contract.claim_lockup(U128(5));
         let res_owner_account: Account = contract.accounts.get(&owner).unwrap().into();
-        assert_eq!(res_owner_account.free, 55);
+        assert_eq!(res_owner_account.get_balance(), 55);
     }
 
     #[test]

@@ -193,11 +193,11 @@ pub mod tests {
             .get(&contract.beneficiary_id.clone())
             .unwrap()
             .into();
-        assert_eq!(account.free, 3000000002 * ONE_LIS);
+        assert_eq!(account.get_balance(), 3000000002 * ONE_LIS);
         let account: Account = contract.accounts.get(&sender_id).unwrap().into();
-        assert_eq!(account.free, 228 * ONE_LIS);
+        assert_eq!(account.get_balance(), 228 * ONE_LIS);
         let account: Account = contract.accounts.get(&receiver_id).unwrap().into();
-        assert_eq!(account.free, 29 * ONE_LIS);
+        assert_eq!(account.get_balance(), 29 * ONE_LIS);
     }
 
     #[test]
@@ -241,11 +241,11 @@ pub mod tests {
             .get(&contract.beneficiary_id.clone())
             .unwrap()
             .into();
-        assert_eq!(account.free, 3000000000 * ONE_LIS);
+        assert_eq!(account.get_balance(), 3000000000 * ONE_LIS);
         let account: Account = contract.accounts.get(&sender_id).unwrap().into();
-        assert_eq!(account.free, 230 * ONE_LIS);
+        assert_eq!(account.get_balance(), 230 * ONE_LIS);
         let account: Account = contract.accounts.get(&receiver_id).unwrap().into();
-        assert_eq!(account.free, 29 * ONE_LIS);
+        assert_eq!(account.get_balance(), 29 * ONE_LIS);
     }
 
     #[test]
@@ -261,7 +261,7 @@ pub mod tests {
         contract.take_fee(sender_id.clone(), None, false);
 
         let account: Account = contract.accounts.get(&sender_id).unwrap().into();
-        assert_eq!(account.free, 250 * ONE_LIS);
+        assert_eq!(account.get_balance(), 250 * ONE_LIS);
     }
 
     #[test]
@@ -302,11 +302,11 @@ pub mod tests {
             .get(&contract.beneficiary_id.clone())
             .unwrap()
             .into();
-        assert_eq!(account.free, 0 * ONE_LIS);
+        assert_eq!(account.get_balance(), 0 * ONE_LIS);
         let account: Account = contract.accounts.get(&sender_id).unwrap().into();
-        assert_eq!(account.free, 250 * ONE_LIS);
+        assert_eq!(account.get_balance(), 250 * ONE_LIS);
         let account: Account = contract.accounts.get(&receiver_id).unwrap().into();
-        assert_eq!(account.free, 9 * ONE_LIS);
+        assert_eq!(account.get_balance(), 9 * ONE_LIS);
     }
 
     #[test]
@@ -331,11 +331,11 @@ pub mod tests {
             .unwrap()
             .into();
 
-        assert_eq!(account.free, 0 * ONE_LIS);
+        assert_eq!(account.get_balance(), 0 * ONE_LIS);
         let account: Account = contract.accounts.get(&sender_id).unwrap().into();
-        assert_eq!(account.free, 250 * ONE_LIS);
+        assert_eq!(account.get_balance(), 250 * ONE_LIS);
         let account: Account = contract.accounts.get(&receiver_id).unwrap().into();
-        assert_eq!(account.free, 9 * ONE_LIS);
+        assert_eq!(account.get_balance(), 9 * ONE_LIS);
     }
 
     #[test]
@@ -568,7 +568,7 @@ pub mod tests {
             .unwrap()
             .into();
 
-        assert_eq!(account.free, 30000000025 * ONE_LIS);
+        assert_eq!(account.get_balance(), 30000000025 * ONE_LIS);
         let account: Account = contract.accounts.get(&sender_id).unwrap().into();
         assert_eq!(account.get_balance(), 0 * ONE_LIS);
         let account: Account = contract.accounts.get(&receiver_id).unwrap().into();

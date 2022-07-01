@@ -341,7 +341,7 @@ mod tests {
 
         contract.make_bid(0, 20, accounts(3));
         let ac: Account = contract.accounts.get(&accounts(3)).unwrap().into();
-        assert_eq!(ac.free, 980);
+        assert_eq!(ac.get_balance(), 980);
     }
 
     #[test]
@@ -353,8 +353,8 @@ mod tests {
         contract.make_bid(0, 50, accounts(5));
         let ac: Account = contract.accounts.get(&accounts(3)).unwrap().into();
         let ac2: Account = contract.accounts.get(&accounts(5)).unwrap().into();
-        assert_eq!(ac.free, 1000);
-        assert_eq!(ac2.free, 950);
+        assert_eq!(ac.get_balance(), 1000);
+        assert_eq!(ac2.get_balance(), 950);
     }
 
     #[test]
@@ -368,7 +368,7 @@ mod tests {
         contract.make_bid(0, 50, accounts(5));
 
         let buyer: Account = contract.accounts.get(&accounts(5)).unwrap().into();
-        assert_eq!(buyer.free, 950);
+        assert_eq!(buyer.get_balance(), 950);
 
         context.block_timestamp(10);
         testing_env!(context.context);
@@ -378,9 +378,9 @@ mod tests {
         assert!(nft.is_owner(&accounts(5)));
 
         let owner: Account = contract.accounts.get(&accounts(1)).unwrap().into();
-        assert_eq!(owner.free, 1050);
+        assert_eq!(owner.get_balance(), 1050);
 
         let participant: Account = contract.accounts.get(&accounts(4)).unwrap().into();
-        assert_eq!(participant.free, 1000);
+        assert_eq!(participant.get_balance(), 1000);
     }
 }

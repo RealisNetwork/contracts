@@ -154,8 +154,8 @@ mod tests {
 
         let nft: Nft = contract.nfts.get_nft(&0).into();
 
-        assert_eq!(new_own.free, 0);
-        assert_eq!(prev_own.free, 2000);
+        assert_eq!(new_own.get_balance(), 0);
+        assert_eq!(prev_own.get_balance(), 2000);
         assert_eq!(nft.owner_id, accounts(3));
     }
 
