@@ -49,10 +49,12 @@ impl Account {
 
     pub fn increase_balance(&mut self, amount: Balance) -> &mut Account {
         self.free += amount;
-        EventLog::from(EventLogVariant::IncreaseBalance(IncreaseBalance {
-            amount: &U128(amount),
-        }))
-        .emit();
+        if amount > 0 {
+            EventLog::from(EventLogVariant::IncreaseBalance(IncreaseBalance {
+                amount: &U128(amount),
+            }))
+            .emit();
+        }
         self
     }
 
