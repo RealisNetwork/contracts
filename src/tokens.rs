@@ -63,7 +63,7 @@ impl Contract {
             .into();
 
         // Increase recipient balance
-        recipient_account.increase_balance(amount);
+        recipient_account.increase_balance(&recipient_id, amount);
         self.accounts
             .insert(&recipient_id, &recipient_account.into());
 
@@ -157,7 +157,7 @@ impl Contract {
             .unwrap_or_else(|| Account::new(self.beneficiary_id.clone(), 0).into())
             .into();
         // Increase beneficiary balance
-        beneficiary_account.increase_balance(fee);
+        beneficiary_account.increase_balance(&self.beneficiary_id, fee);
         self.accounts
             .insert(&self.beneficiary_id, &beneficiary_account.into());
 
