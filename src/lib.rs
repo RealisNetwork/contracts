@@ -1,8 +1,8 @@
 extern crate core;
 
-pub use near_sdk;
 use near_sdk::collections::UnorderedSet;
 pub use near_sdk::{
+    self,
     borsh::{self, BorshDeserialize, BorshSerialize},
     collections::LookupMap,
     env,
