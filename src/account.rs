@@ -47,10 +47,11 @@ impl Account {
         self.free
     }
 
-    pub fn increase_balance(&mut self, amount: Balance) -> &mut Account {
+    pub fn increase_balance(&mut self, account_id: &AccountId, amount: Balance) -> &mut Account {
         self.free += amount;
         if amount > 0 {
             EventLog::from(EventLogVariant::IncreaseBalance(IncreaseBalance {
+                account_id,
                 amount: &U128(amount),
             }))
             .emit();
@@ -86,7 +87,7 @@ impl Account {
             });
         EventLog::from(EventLogVariant::LockupClaimed(events)).emit();
 
-        self.increase_balance(fold);
+        self.increase_balance(&account_id, fold);
 
         fold
     }
@@ -100,7 +101,7 @@ impl Account {
         if lockup.get_amount().is_none() {
             return 0;
         }
-        self.increase_balance(lockup.get_amount().unwrap());
+        self.increase_balance(&account_id, lockup.get_amount().unwrap());
         self.lockups.remove(&lockup);
 
         EventLog::from(EventLogVariant::LockupClaimed(vec![LockupClaimed {

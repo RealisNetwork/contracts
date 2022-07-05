@@ -96,7 +96,7 @@ impl Contract {
             .unwrap_or_else(|| panic_str("Account not found"))
             .into();
 
-        nft_owner_account.increase_balance(price);
+        nft_owner_account.increase_balance(&nft.owner_id, price);
         buyer_account.decrease_balance(price);
 
         self.accounts

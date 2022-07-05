@@ -237,7 +237,7 @@ impl Contract {
                 .unwrap_or_else(|| panic_str("Account not found"))
                 .into();
 
-            last_buyer_account.increase_balance(last_bid.get_price());
+            last_buyer_account.increase_balance(last_bid.get_owner(), last_bid.get_price());
             self.accounts
                 .insert(&last_bid.account_id, &last_buyer_account.into());
         }
@@ -261,7 +261,7 @@ impl Contract {
                 .get(deal_data.get_owner_id())
                 .unwrap_or_else(|| panic_str("Account not found"))
                 .into();
-            nft_owner.increase_balance(the_winner.price);
+            nft_owner.increase_balance(deal_data.get_owner_id(), the_winner.price);
 
             self.accounts
                 .insert(deal_data.get_owner_id(), &nft_owner.into());

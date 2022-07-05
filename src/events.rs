@@ -165,6 +165,7 @@ pub struct BackendId<'a> {
 #[derive(Serialize, Debug)]
 #[serde(crate = "near_sdk::serde")]
 pub struct IncreaseBalance<'a> {
+    pub account_id: &'a AccountId,
     pub amount: &'a U128,
 }
 
