@@ -51,8 +51,8 @@ impl Account {
         self.free += amount;
         if amount > 0 {
             EventLog::from(EventLogVariant::IncreaseBalance(IncreaseBalance {
-                account_id,
-                amount: &U128(amount),
+                account_id: account_id.clone(),
+                amount: U128(amount),
             }))
             .emit();
         }

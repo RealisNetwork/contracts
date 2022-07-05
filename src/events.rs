@@ -4,7 +4,7 @@ use crate::State;
 use near_sdk::{
     env,
     json_types::{U128, U64},
-    serde::{Serialize, Deserialize},
+    serde::{Deserialize, Serialize},
     serde_json, AccountId,
 };
 
@@ -36,7 +36,7 @@ pub enum EventLogVariant<'a> {
     ChangeDefaultLockupTime(ChangeDefaultLockupTime<'a>),
     AddBackendId(BackendId<'a>),
     RemoveBackendId(BackendId<'a>),
-    IncreaseBalance(IncreaseBalance<'a>),
+    IncreaseBalance(IncreaseBalance),
     Stake(StakingStake<'a>),
     Unstake(StakingUnstake<'a>),
     AddToStakingPool(AddToStakingPool<'a>),
@@ -164,9 +164,9 @@ pub struct BackendId<'a> {
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(crate = "near_sdk::serde")]
-pub struct IncreaseBalance<'a> {
-    pub account_id: &'a AccountId,
-    pub amount: &'a U128,
+pub struct IncreaseBalance {
+    pub account_id: AccountId,
+    pub amount: U128,
 }
 
 #[derive(Serialize, Debug)]
