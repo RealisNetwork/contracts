@@ -4,7 +4,7 @@ use crate::State;
 use near_sdk::{
     env,
     json_types::{U128, U64},
-    serde::Serialize,
+    serde::{Serialize, Deserialize},
     serde_json, AccountId,
 };
 
@@ -162,7 +162,7 @@ pub struct BackendId<'a> {
     pub accounts: &'a Vec<AccountId>,
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(crate = "near_sdk::serde")]
 pub struct IncreaseBalance<'a> {
     pub account_id: &'a AccountId,
