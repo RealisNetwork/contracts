@@ -1,6 +1,9 @@
 use crate::{Contract, ContractExt};
 use near_sdk::{env, near_bindgen};
 
+#[cfg(feature = "dev")]
+use near_sdk::{json_types::Base64VecU8, AccountId};
+
 #[near_bindgen]
 impl Contract {
     #[private]
@@ -18,6 +21,19 @@ impl Contract {
             state: old_contract.state,
             registered_accounts: old_contract.registered_accounts,
             staking: old_contract.staking,
+        }
+    }
+
+    #[cfg(feature = "dev")]
+    #[private]
+    #[init(ignore_state)]
+    pub fn clean(keys: Vec<Base64VecU8>, owner_id: AccountId) -> Self {
+        for key in keys.iter() {
+            env::storage_remove(&key.0);
+        }
+        Self {
+            owner_id,
+            ..Default::default()
         }
     }
 }
