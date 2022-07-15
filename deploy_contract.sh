@@ -1,0 +1,1 @@
+/Users/glebprotasov/deploy_contract.sh
