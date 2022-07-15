@@ -12,10 +12,8 @@ then
            --initFunction "new" \
            --initArgs '{"total_supply": "3000000000","constant_fee":"12", "percent_fee": 10, "beneficiary_id": "'$OWNER_ID'","backend_id": "'$OWNER_ID'"}' \
            --initGas 300000000000000
-
   else echo "Redeploy contract."
   echo y | near deploy --wasmFile ./target/wasm32-unknown-unknown/release/realis_near.wasm  --accountId $OWNER_ID
-
 fi
 
 
