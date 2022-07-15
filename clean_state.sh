@@ -1,1 +1,0 @@
-contracts/clean_state.sh
