@@ -16,3 +16,7 @@ primitive-types = "0.7.0"
 workspaces = { version = "0.3.0", git = "https://github.com/near/workspaces-rs" }
 anyhow = "1.0.57"
 tokio =  "1.19.2"
+
+[features]
+default = []
+dev = []
