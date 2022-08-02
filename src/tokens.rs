@@ -163,6 +163,49 @@ impl Contract {
 
         free
     }
+
+    /// `fn internal_burn_tokens` burn own tokens from user balance,
+    /// returns sender balance left
+    /// # Examples
+    /// ```
+    /// use near_sdk::json_types::U128;
+    /// use realis_near::Contract;
+    /// use near_sdk::test_utils::accounts;
+    /// use realis_near::account::Account;
+    ///
+    /// let sender_id = accounts(0);
+    /// let sender_account = Account::new(sender_id.clone(), 30);
+    /// let mut contract = Contract::new(
+    ///     Some(U128(3000000000)),
+    ///     Some(U128(50)),
+    ///     Some(10),
+    ///     None,
+    ///     None
+    /// );
+    /// contract.accounts.insert(&sender_id, &sender_account.into());
+    /// let sender_balance_left = contract.internal_burn_tokens(sender_id, 10);
+    /// assert_eq!(sender_balance_left, 20);
+    /// ```
+    /// # Arguments
+    ///  * `sender` - `AccountId` of user who burns tokens
+    ///  * `amount` - The amount of tokens to be burned
+    /// This function checks if amount > 0 (if no it would panic),
+    /// if sender exists - decreases sender balance for amount
+    /// else - it would panic
+    pub fn internal_burn_tokens(&mut self, sender_id: &AccountId, amount: u128) -> u128 {
+        require!(amount > 0, "Wrong amount");
+
+        let mut sender_account: Account = self
+            .accounts
+            .get(sender_id)
+            .unwrap_or_else(|| env::panic_str("Account not found"))
+            .into();
+
+        let balance = sender_account.decrease_balance(amount).get_balance();
+        self.accounts.insert(sender_id, &sender_account.into());
+
+        balance
+    }
 }
 
 #[cfg(test)]
