@@ -10,6 +10,12 @@ impl Contract {
             .into()
     }
 
+    pub fn burn_tokens(&mut self, amount: U128) -> U128 {
+        self.assert_running();
+        let sender_id = env::signer_account_id();
+        self.internal_burn_tokens(&sender_id, amount.0).into()
+    }
+
     pub fn burn_nft(&mut self, nft_id: U128) {
         self.assert_running();
         let target_account_id = env::signer_account_id();
