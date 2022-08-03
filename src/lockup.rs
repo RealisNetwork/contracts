@@ -10,18 +10,23 @@ use near_sdk::{
 pub enum Lockup {
     GooglePlayBuy(SimpleLockup),
     Staking(SimpleLockup),
+    Vesting(SimpleLockup),
 }
 
 impl Lockup {
     pub fn is_expired(&self) -> bool {
         match self {
-            Self::GooglePlayBuy(lockup) | Self::Staking(lockup) => lockup.is_expired(),
+            Self::GooglePlayBuy(lockup) | Self::Staking(lockup) | Self::Vesting(lockup) => {
+                lockup.is_expired()
+            }
         }
     }
 
     pub fn get_amount(&self) -> Option<u128> {
         match self {
-            Self::GooglePlayBuy(lockup) | Self::Staking(lockup) => Some(lockup.amount),
+            Self::GooglePlayBuy(lockup) | Self::Staking(lockup) | Self::Vesting(lockup) => {
+                Some(lockup.amount)
+            }
         }
     }
 }
@@ -108,6 +113,11 @@ impl From<Lockup> for LockupInfo {
                 amount: U128(lockup.amount),
                 expire_on: lockup.expire_on.into(),
                 lockup_type: "Staking".to_string(),
+            },
+            Lockup::Vesting(lockup) => LockupInfo {
+                amount: U128(lockup.amount),
+                expire_on: lockup.expire_on.into(),
+                lockup_type: "Vesting".to_string(),
             },
         }
     }
