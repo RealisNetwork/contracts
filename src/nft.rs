@@ -11,7 +11,7 @@ use near_sdk::{
 
 use crate::{
     auction::{Auction, Bid, DealData},
-    events::{EventLog, EventLogVariant, NftBurn},
+    events::{EventLog, EventLogVariant, NftBurn, NftTransfer},
     marketplace::Marketplace,
     Account, Contract, NftId, StorageKey,
 };
@@ -354,6 +354,8 @@ impl Contract {
         recipient_id: AccountId,
         nft_id: u128,
     ) {
+        self.nfts
+            .transfer_nft(&env::signer_account_id(), &recipient_id.clone(), &nft_id);
         let mut sender_account: Account = self
             .accounts
             .get(&sender_id)
@@ -373,7 +375,12 @@ impl Contract {
         self.accounts
             .insert(&recipient_id, &recipient_account.into());
 
-        self.nfts.transfer_nft(&sender_id, &recipient_id, &nft_id);
+        EventLog::from(EventLogVariant::NftTransferred(NftTransfer {
+            sender_id: &sender_id,
+            recipient_id: &recipient_id,
+            nft_id: U128(nft_id),
+        }))
+        .emit();
     }
 }
 
