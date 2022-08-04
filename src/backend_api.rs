@@ -15,7 +15,14 @@ impl Contract {
         .into()
     }
 
-    pub fn backend_burn(&mut self, nft_id: U128) -> U128 {
+    pub fn backend_burn_tokens(&mut self, amount: U128) -> U128 {
+        self.assert_running();
+        self.assert_backend();
+        let sender_id = self.resolve_account(env::signer_account_pk());
+        self.internal_burn_tokens(&sender_id, amount.0).into()
+    }
+
+    pub fn backend_burn_nft(&mut self, nft_id: U128) -> U128 {
         self.assert_running();
         self.assert_backend();
         let sender_id = self.resolve_account(env::signer_account_pk());
@@ -146,7 +153,7 @@ mod tests {
         let (mut contract, _context) = init_test_env(None, None, None);
 
         contract.state = State::Paused;
-        contract.backend_burn(U128(1));
+        contract.backend_burn_nft(U128(1));
     }
 
     #[test]
@@ -155,7 +162,7 @@ mod tests {
         let (mut contract, mut context) = init_test_env(None, None, Some(accounts(1)));
 
         testing_env!(context.predecessor_account_id(accounts(2)).build());
-        contract.backend_burn(U128(1));
+        contract.backend_burn_nft(U128(1));
     }
 
     #[test]
@@ -172,7 +179,7 @@ mod tests {
             .signer_account_pk(owner_pk)
             .build());
 
-        contract.backend_burn(U128(1));
+        contract.backend_burn_nft(U128(1));
     }
 
     #[test]
@@ -192,7 +199,7 @@ mod tests {
 
         assert_eq!(contract.nfts.nft_count(), 1);
         assert_eq!(owner_account.nfts.len(), 1);
-        contract.burn(U128(nft_id.0));
+        contract.burn_nft(U128(nft_id.0));
         let owner_account: Account = contract.accounts.get(&owner).unwrap().into();
         assert_eq!(contract.nfts.nft_count(), 0);
         assert_eq!(owner_account.nfts.len(), 0);
