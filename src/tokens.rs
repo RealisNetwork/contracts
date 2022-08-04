@@ -11,9 +11,26 @@ impl Contract {
     /// returns sender balance left
     /// # Examples
     /// ```
+    /// use near_sdk::json_types::U128;
+    /// use realis_near::Contract;
+    /// use near_sdk::test_utils::accounts;
+    /// use realis_near::account::Account;
+    ///
     /// let sender_id = accounts(0);
+    /// let sender_account = Account::new(sender_id.clone(), 30);
     /// let receiver_id = accounts(1);
-    /// contract.internal_transfer(sender_id.clone(), receiver_id.clone(), 20 * ONE_LIS, false);
+    /// let mut contract = Contract::new(
+    ///     Some(U128(3000000000)),
+    ///     Some(U128(50)),
+    ///     Some(10),
+    ///     None,
+    ///     None
+    /// );
+    /// contract.accounts.insert(&sender_id, &sender_account.into());
+    /// let sender_balance_left = contract.internal_transfer(sender_id, receiver_id, 20 , false);
+    /// let reciever_account: Account = contract.accounts.get(&accounts(1)).unwrap().into();
+    /// assert_eq!(reciever_account.free, 20);
+    /// assert_eq!(sender_balance_left, 10);
     /// ```
     /// # Arguments
     ///  * `sender` - `AccountId` of transferring user
@@ -28,14 +45,14 @@ impl Contract {
     /// balance of amount.
     pub fn internal_transfer(
         &mut self,
-        sender: AccountId,
+        sender_id: AccountId,
         recipient_id: AccountId,
         amount: u128,
         is_fee_required: bool,
     ) -> u128 {
         require!(amount > 0, "You can't transfer 0 tokens");
         require!(
-            sender != recipient_id,
+            sender_id != recipient_id,
             "You can't transfer tokens to yourself"
         );
 
@@ -49,7 +66,7 @@ impl Contract {
             .into();
 
         // Increase recipient balance
-        recipient_account.free += amount;
+        recipient_account.increase_balance(&recipient_id, amount);
         self.accounts
             .insert(&recipient_id, &recipient_account.into());
 
@@ -66,7 +83,23 @@ impl Contract {
     /// `fn take_fee` used to take users money and fee, returns sender balance left
     /// # Examples
     /// ```
-    ///  let sender_balance_left = self.take_fee(sender, Some(amount), false);
+    /// use near_sdk::json_types::U128;
+    /// use near_sdk::test_utils::accounts;
+    /// use realis_near::account::Account;
+    /// use realis_near::Contract;
+    /// let sender_id = accounts(0);
+    ///
+    /// let sender_account = Account::new(sender_id.clone(), 30);
+    /// let mut contract = Contract::new(
+    ///     Some(U128(3000000000)),
+    ///     Some(U128(50)),
+    ///     Some(10),
+    ///     None,
+    ///     None
+    /// );
+    /// contract.accounts.insert(&sender_id, &sender_account.into());
+    /// let sender_balance_left = contract.take_fee(sender_id, Some(15), false);
+    /// assert_eq!(sender_balance_left, 15);
     /// ```
     /// # Arguments
     ///  * `sender` - `AccountId` of transferring user
@@ -107,21 +140,24 @@ impl Contract {
             .into();
 
         // Check if user have enough tokens to pay for transaction and to send
-        if sender_account.free < charge {
+        if sender_account.get_balance() < charge {
             sender_account.claim_all_lockups(sender.clone());
         }
 
         // Check if user have enough tokens to send
         require!(
-            sender_account.free >= amount.unwrap_or_default(),
+            sender_account.get_balance() >= amount.unwrap_or_default(),
             "Not enough balance"
         );
 
         // Check if user has enough tokens to pay fee, if no, rollback transaction
-        require!(sender_account.free >= charge, "Can't pay some fees");
+        require!(
+            sender_account.get_balance() >= charge,
+            "Can't pay some fees"
+        );
 
-        sender_account.free -= charge;
-        let free = sender_account.free;
+        sender_account.decrease_balance(charge);
+        let free = sender_account.get_balance();
         self.accounts.insert(&sender, &sender_account.into());
 
         // Try get beneficiary account
@@ -131,18 +167,61 @@ impl Contract {
             .unwrap_or_else(|| Account::new(self.beneficiary_id.clone(), 0).into())
             .into();
         // Increase beneficiary balance
-        beneficiary_account.free += fee;
+        beneficiary_account.increase_balance(&self.beneficiary_id, fee);
         self.accounts
             .insert(&self.beneficiary_id, &beneficiary_account.into());
 
         free
+    }
+
+    /// `fn internal_burn_tokens` burn own tokens from user balance,
+    /// returns sender balance left
+    /// # Examples
+    /// ```
+    /// use near_sdk::json_types::U128;
+    /// use realis_near::Contract;
+    /// use near_sdk::test_utils::accounts;
+    /// use realis_near::account::Account;
+    ///
+    /// let sender_id = accounts(0);
+    /// let sender_account = Account::new(sender_id.clone(), 30);
+    /// let mut contract = Contract::new(
+    ///     Some(U128(3000000000)),
+    ///     Some(U128(50)),
+    ///     Some(10),
+    ///     None,
+    ///     None
+    /// );
+    /// contract.accounts.insert(&sender_id, &sender_account.into());
+    /// let sender_balance_left = contract.internal_burn_tokens(sender_id, 10);
+    /// assert_eq!(sender_balance_left, 20);
+    /// ```
+    /// # Arguments
+    ///  * `sender` - `AccountId` of user who burns tokens
+    ///  * `amount` - The amount of tokens to be burned
+    /// This function checks if amount > 0 (if no it would panic),
+    /// if sender exists - decreases sender balance for amount
+    /// else - it would panic
+    pub fn internal_burn_tokens(&mut self, sender_id: &AccountId, amount: u128) -> u128 {
+        require!(amount > 0, "Wrong amount");
+
+        let mut sender_account: Account = self
+            .accounts
+            .get(sender_id)
+            .unwrap_or_else(|| env::panic_str("Account not found"))
+            .into();
+
+        let balance = sender_account.decrease_balance(amount).get_balance();
+        self.accounts.insert(sender_id, &sender_account.into());
+
+        balance
     }
 }
 
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use crate::utils::tests_utils::*;
+    use crate::{lockup::Lockup, utils::tests_utils::*};
 
     #[test]
     fn transfer() {
@@ -167,11 +246,11 @@ pub mod tests {
             .get(&contract.beneficiary_id.clone())
             .unwrap()
             .into();
-        assert_eq!(account.free, 3000000002 * ONE_LIS);
+        assert_eq!(account.get_balance(), 3000000002 * ONE_LIS);
         let account: Account = contract.accounts.get(&sender_id).unwrap().into();
-        assert_eq!(account.free, 228 * ONE_LIS);
+        assert_eq!(account.get_balance(), 228 * ONE_LIS);
         let account: Account = contract.accounts.get(&receiver_id).unwrap().into();
-        assert_eq!(account.free, 29 * ONE_LIS);
+        assert_eq!(account.get_balance(), 29 * ONE_LIS);
     }
 
     #[test]
@@ -215,11 +294,11 @@ pub mod tests {
             .get(&contract.beneficiary_id.clone())
             .unwrap()
             .into();
-        assert_eq!(account.free, 3000000000 * ONE_LIS);
+        assert_eq!(account.get_balance(), 3000000000 * ONE_LIS);
         let account: Account = contract.accounts.get(&sender_id).unwrap().into();
-        assert_eq!(account.free, 230 * ONE_LIS);
+        assert_eq!(account.get_balance(), 230 * ONE_LIS);
         let account: Account = contract.accounts.get(&receiver_id).unwrap().into();
-        assert_eq!(account.free, 29 * ONE_LIS);
+        assert_eq!(account.get_balance(), 29 * ONE_LIS);
     }
 
     #[test]
@@ -235,7 +314,7 @@ pub mod tests {
         contract.take_fee(sender_id.clone(), None, false);
 
         let account: Account = contract.accounts.get(&sender_id).unwrap().into();
-        assert_eq!(account.free, 250 * ONE_LIS);
+        assert_eq!(account.get_balance(), 250 * ONE_LIS);
     }
 
     #[test]
@@ -276,11 +355,11 @@ pub mod tests {
             .get(&contract.beneficiary_id.clone())
             .unwrap()
             .into();
-        assert_eq!(account.free, 0 * ONE_LIS);
+        assert_eq!(account.get_balance(), 0 * ONE_LIS);
         let account: Account = contract.accounts.get(&sender_id).unwrap().into();
-        assert_eq!(account.free, 250 * ONE_LIS);
+        assert_eq!(account.get_balance(), 250 * ONE_LIS);
         let account: Account = contract.accounts.get(&receiver_id).unwrap().into();
-        assert_eq!(account.free, 9 * ONE_LIS);
+        assert_eq!(account.get_balance(), 9 * ONE_LIS);
     }
 
     #[test]
@@ -305,11 +384,11 @@ pub mod tests {
             .unwrap()
             .into();
 
-        assert_eq!(account.free, 0 * ONE_LIS);
+        assert_eq!(account.get_balance(), 0 * ONE_LIS);
         let account: Account = contract.accounts.get(&sender_id).unwrap().into();
-        assert_eq!(account.free, 250 * ONE_LIS);
+        assert_eq!(account.get_balance(), 250 * ONE_LIS);
         let account: Account = contract.accounts.get(&receiver_id).unwrap().into();
-        assert_eq!(account.free, 9 * ONE_LIS);
+        assert_eq!(account.get_balance(), 9 * ONE_LIS);
     }
 
     #[test]
@@ -337,11 +416,11 @@ pub mod tests {
             .unwrap()
             .into(); // TRY SEND INVALID BALANCE
 
-        assert_eq!(account.free, 0 * ONE_LIS);
+        assert_eq!(account.get_balance(), 0 * ONE_LIS);
         let account: Account = contract.accounts.get(&sender_id).unwrap().into();
-        assert_eq!(account.free, 250 * ONE_LIS);
+        assert_eq!(account.get_balance(), 250 * ONE_LIS);
         let account: Account = contract.accounts.get(&receiver_id).unwrap().into();
-        assert_eq!(account.free, 9 * ONE_LIS);
+        assert_eq!(account.get_balance(), 9 * ONE_LIS);
     }
 
     #[test]
@@ -365,11 +444,11 @@ pub mod tests {
             .unwrap()
             .into();
 
-        assert_eq!(account.free, 3000000002 * ONE_LIS);
+        assert_eq!(account.get_balance(), 3000000002 * ONE_LIS);
         let account: Account = contract.accounts.get(&sender_id).unwrap().into();
-        assert_eq!(account.free, 228 * ONE_LIS);
+        assert_eq!(account.get_balance(), 228 * ONE_LIS);
         let account: Account = contract.accounts.get(&receiver_id).unwrap().into();
-        assert_eq!(account.free, 20 * ONE_LIS);
+        assert_eq!(account.get_balance(), 20 * ONE_LIS);
     }
 
     #[test]
@@ -381,10 +460,12 @@ pub mod tests {
 
         let mut account_sender: Account = Account::new(accounts(0), 250 * ONE_LIS).into();
 
-        account_sender.lockups.insert(&Lockup {
-            amount: 36 * ONE_LIS,
-            expire_on: 1654762489,
-        });
+        account_sender
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup {
+                amount: 36 * ONE_LIS,
+                expire_on: 1654762489,
+            }));
 
         contract.accounts.insert(&sender_id, &account_sender.into());
 
@@ -408,11 +489,11 @@ pub mod tests {
             .unwrap()
             .into();
 
-        assert_eq!(account.free, 3000000026 * ONE_LIS);
+        assert_eq!(account.get_balance(), 3000000026 * ONE_LIS);
         let account: Account = contract.accounts.get(&sender_id).unwrap().into();
-        assert_eq!(account.free, 0);
+        assert_eq!(account.get_balance(), 0);
         let account: Account = contract.accounts.get(&receiver_id).unwrap().into();
-        assert_eq!(account.free, 269 * ONE_LIS);
+        assert_eq!(account.get_balance(), 269 * ONE_LIS);
     }
 
     #[test]
@@ -424,25 +505,33 @@ pub mod tests {
 
         let mut account_sender: Account = Account::new(accounts(0), 250 * ONE_LIS).into();
 
-        account_sender.lockups.insert(&Lockup {
-            amount: 10 * ONE_LIS,
-            expire_on: 1654867011023,
-        });
+        account_sender
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup {
+                amount: 10 * ONE_LIS,
+                expire_on: 1654867011023,
+            }));
 
-        account_sender.lockups.insert(&Lockup {
-            amount: 17 * ONE_LIS,
-            expire_on: 1654867011023,
-        });
+        account_sender
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup {
+                amount: 17 * ONE_LIS,
+                expire_on: 1654867011023,
+            }));
 
-        account_sender.lockups.insert(&Lockup {
-            amount: 14 * ONE_LIS,
-            expire_on: 1654867011023,
-        });
+        account_sender
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup {
+                amount: 14 * ONE_LIS,
+                expire_on: 1654867011023,
+            }));
 
-        account_sender.lockups.insert(&Lockup {
-            amount: 4 * ONE_LIS,
-            expire_on: u64::MAX,
-        });
+        account_sender
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup {
+                amount: 4 * ONE_LIS,
+                expire_on: u64::MAX,
+            }));
 
         contract.accounts.insert(&sender_id, &account_sender.into());
 
@@ -470,11 +559,11 @@ pub mod tests {
             .unwrap()
             .into();
 
-        assert_eq!(account.free, 3000000026 * ONE_LIS);
+        assert_eq!(account.get_balance(), 3000000026 * ONE_LIS);
         let account: Account = contract.accounts.get(&sender_id).unwrap().into();
-        assert_eq!(account.free, 5 * ONE_LIS);
+        assert_eq!(account.get_balance(), 5 * ONE_LIS);
         let account: Account = contract.accounts.get(&receiver_id).unwrap().into();
-        assert_eq!(account.free, 269 * ONE_LIS);
+        assert_eq!(account.get_balance(), 269 * ONE_LIS);
     }
 
     #[test]
@@ -487,25 +576,33 @@ pub mod tests {
 
         let mut account_sender: Account = Account::new(accounts(0), 250 * ONE_LIS).into();
 
-        account_sender.lockups.insert(&Lockup {
-            amount: 10 * ONE_LIS,
-            expire_on: 1654762489,
-        });
+        account_sender
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup {
+                amount: 10 * ONE_LIS,
+                expire_on: 1654762489,
+            }));
 
-        account_sender.lockups.insert(&Lockup {
-            amount: 12 * ONE_LIS,
-            expire_on: u64::MAX,
-        });
+        account_sender
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup {
+                amount: 12 * ONE_LIS,
+                expire_on: u64::MAX,
+            }));
 
-        account_sender.lockups.insert(&Lockup {
-            amount: 4 * ONE_LIS,
-            expire_on: 1654762489,
-        });
+        account_sender
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup {
+                amount: 4 * ONE_LIS,
+                expire_on: 1654762489,
+            }));
 
-        account_sender.lockups.insert(&Lockup {
-            amount: 4 * ONE_LIS,
-            expire_on: u64::MAX,
-        });
+        account_sender
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup {
+                amount: 4 * ONE_LIS,
+                expire_on: u64::MAX,
+            }));
 
         contract.accounts.insert(&sender_id, &account_sender.into());
 
@@ -524,10 +621,10 @@ pub mod tests {
             .unwrap()
             .into();
 
-        assert_eq!(account.free, 30000000025 * ONE_LIS);
+        assert_eq!(account.get_balance(), 30000000025 * ONE_LIS);
         let account: Account = contract.accounts.get(&sender_id).unwrap().into();
-        assert_eq!(account.free, 0 * ONE_LIS);
+        assert_eq!(account.get_balance(), 0 * ONE_LIS);
         let account: Account = contract.accounts.get(&receiver_id).unwrap().into();
-        assert_eq!(account.free, 260 * ONE_LIS);
+        assert_eq!(account.get_balance(), 260 * ONE_LIS);
     }
 }

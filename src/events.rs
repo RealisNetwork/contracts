@@ -4,7 +4,7 @@ use crate::State;
 use near_sdk::{
     env,
     json_types::{U128, U64},
-    serde::Serialize,
+    serde::{Deserialize, Serialize},
     serde_json, AccountId,
 };
 
@@ -32,8 +32,16 @@ pub enum EventLogVariant<'a> {
     NftBurn(NftBurn<'a>),
     ChangeState(ChangeState),
     ChangeBeneficiary(ChangeBeneficiary<'a>),
+    ChangeConstantFee(ChangeConstantFee<'a>),
+    ChangePercentFee(ChangePercentFee),
+    ChangeOwnerId(ChangeOwnerId<'a>),
+    ChangeDefaultLockupTime(ChangeDefaultLockupTime<'a>),
     AddBackendId(BackendId<'a>),
     RemoveBackendId(BackendId<'a>),
+    IncreaseBalance(IncreaseBalance),
+    Stake(StakingStake<'a>),
+    Unstake(StakingUnstake<'a>),
+    AddToStakingPool(AddToStakingPool<'a>),
 }
 
 #[derive(Serialize, Debug)]
@@ -140,6 +148,65 @@ pub struct ChangeBeneficiary<'a> {
 
 #[derive(Serialize, Debug)]
 #[serde(crate = "near_sdk::serde")]
+pub struct ChangeOwnerId<'a> {
+    pub from: &'a AccountId,
+    pub to: &'a AccountId,
+}
+
+#[derive(Serialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
+pub struct ChangePercentFee {
+    pub from: u8,
+    pub to: u8,
+}
+
+#[derive(Serialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
+pub struct ChangeConstantFee<'a> {
+    pub from: &'a U128,
+    pub to: &'a U128,
+}
+
+#[derive(Serialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
+pub struct ChangeDefaultLockupTime<'a> {
+    pub from: &'a U64,
+    pub to: &'a U64,
+}
+
+#[derive(Serialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
 pub struct BackendId<'a> {
     pub accounts: &'a Vec<AccountId>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
+pub struct IncreaseBalance {
+    pub account_id: AccountId,
+    pub amount: U128,
+}
+
+#[derive(Serialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
+pub struct StakingStake<'a> {
+    pub staker_id: &'a AccountId,
+    pub amount: U128,
+    pub x_amount: U128,
+}
+
+#[derive(Serialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
+pub struct StakingUnstake<'a> {
+    pub staker_id: &'a AccountId,
+    pub amount: U128,
+    pub x_amount: U128,
+}
+
+#[derive(Serialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
+pub struct AddToStakingPool<'a> {
+    pub account_id: &'a AccountId,
+    pub amount: U128,
+    pub pool_total_supply: U128,
 }

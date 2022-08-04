@@ -10,7 +10,13 @@ impl Contract {
             .into()
     }
 
-    pub fn burn(&mut self, nft_id: U128) {
+    pub fn burn_tokens(&mut self, amount: U128) -> U128 {
+        self.assert_running();
+        let sender_id = env::signer_account_id();
+        self.internal_burn_tokens(&sender_id, amount.0).into()
+    }
+
+    pub fn burn_nft(&mut self, nft_id: U128) {
         self.assert_running();
         let target_account_id = env::signer_account_id();
         self.internal_burn_nft(target_account_id, nft_id.0);
@@ -82,13 +88,26 @@ impl Contract {
         U128(total_claimed)
     }
 
+    pub fn stake(&mut self, amount: U128) -> U128 {
+        self.assert_running();
+        let staker_id = env::signer_account_id();
+        self.internal_stake(staker_id, amount.0).into()
+    }
+
+    pub fn unstake(&mut self, x_amount: U128) -> U128 {
+        self.assert_running();
+        let staker_id = env::signer_account_id();
+        self.internal_unstake(staker_id, x_amount.0).into()
+    }
+
     // TODO: delegate nft
     // Discuss general structure of delegation
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{nft::Nft, utils::tests_utils::*};
+    use crate::{lockup::Lockup, nft::Nft, utils::tests_utils::*};
+    use near_sdk::require;
 
     #[test]
     #[should_panic = "Contract is paused"]
@@ -114,8 +133,8 @@ mod tests {
 
         let account_1: Account = contract.accounts.get(&accounts(1)).unwrap().into();
         let account_2: Account = contract.accounts.get(&accounts(2)).unwrap().into();
-        assert_eq!(account_1.free, 25);
-        assert_eq!(account_2.free, 35);
+        assert_eq!(account_1.get_balance(), 25);
+        assert_eq!(account_2.get_balance(), 35);
     }
 
     #[test]
@@ -124,7 +143,7 @@ mod tests {
         let (mut contract, _context) = init_test_env(None, None, None);
 
         contract.state = State::Paused;
-        contract.burn(U128(1));
+        contract.burn_nft(U128(1));
     }
 
     #[test]
@@ -135,7 +154,7 @@ mod tests {
         let owner_account: Account = contract.accounts.get(&owner).unwrap().into();
         assert_eq!(contract.nfts.nft_count(), 1);
         assert_eq!(owner_account.nfts.len(), 1);
-        contract.burn(U128(nft_id.0));
+        contract.burn_nft(U128(nft_id.0));
         let owner_account: Account = contract.accounts.get(&owner).unwrap().into();
         assert_eq!(contract.nfts.nft_count(), 0);
         assert_eq!(owner_account.nfts.len(), 0);
@@ -146,7 +165,7 @@ mod tests {
     fn burn_nft_test_not_exists() {
         let owner = accounts(0);
         let (mut contract, _context) = init_test_env(Some(owner.clone()), None, None);
-        contract.burn(U128(1));
+        contract.burn_nft(U128(1));
     }
 
     #[test]
@@ -206,8 +225,12 @@ mod tests {
             init_test_env(Some(owner.clone()), None, Some(owner.clone()));
 
         let mut owner_account = Account::new(accounts(0), 5);
-        owner_account.lockups.insert(&Lockup::new(5, None));
-        owner_account.lockups.insert(&Lockup::new(6, None));
+        owner_account
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup::new(5, None)));
+        owner_account
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup::new(6, None)));
         contract.accounts.insert(&owner, &owner_account.into());
 
         testing_env!(context
@@ -217,7 +240,7 @@ mod tests {
 
         contract.claim_all_lockup();
         let res_owner_account: Account = contract.accounts.get(&owner).unwrap().into();
-        assert_eq!(res_owner_account.free, 16);
+        assert_eq!(res_owner_account.get_balance(), 16);
     }
 
     #[test]
@@ -227,18 +250,24 @@ mod tests {
             init_test_env(Some(owner.clone()), None, Some(owner.clone()));
 
         let mut owner_account = Account::new(accounts(0), 50);
-        owner_account.lockups.insert(&Lockup {
-            amount: 5,
-            expire_on: 0,
-        });
-        owner_account.lockups.insert(&Lockup {
-            amount: 5,
-            expire_on: 0,
-        });
-        owner_account.lockups.insert(&Lockup {
-            amount: 5,
-            expire_on: 3,
-        });
+        owner_account
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup {
+                amount: 5,
+                expire_on: 0,
+            }));
+        owner_account
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup {
+                amount: 5,
+                expire_on: 0,
+            }));
+        owner_account
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup {
+                amount: 5,
+                expire_on: 3,
+            }));
         contract.accounts.insert(&owner, &owner_account.into());
         testing_env!(context
             .signer_account_id(accounts(0))
@@ -246,7 +275,7 @@ mod tests {
             .build());
         contract.claim_lockup(U128(5));
         let res_owner_account: Account = contract.accounts.get(&owner).unwrap().into();
-        assert_eq!(res_owner_account.free, 55);
+        assert_eq!(res_owner_account.get_balance(), 55);
     }
 
     #[test]
@@ -258,5 +287,197 @@ mod tests {
         contract.state = State::Paused;
 
         contract.claim_lockup(U128(1));
+    }
+
+    #[test]
+    fn stake_test() {
+        // create Owner
+        let owner = accounts(2);
+
+        // Init contract
+        let (mut contract, mut context) = init_test_env(Some(owner.clone()), None, None);
+
+        // create User 1
+        let user1 = accounts(0);
+
+        // register User 1 with 250 LiS
+        contract
+            .accounts
+            .insert(&user1, &Account::new(accounts(0), 250 * ONE_LIS).into());
+
+        // set signer as User 1
+        testing_env!(context.signer_account_id(user1.clone()).build());
+
+        contract.stake(U128(250));
+
+        // Assert total supply is amount of staked tokens
+        assert_eq!(contract.staking.get_total_supply(), 250);
+    }
+
+    #[test]
+    #[should_panic = "Not enough balance"]
+    fn stake_over_balance() {
+        // create Owner
+        let owner = accounts(2);
+
+        // Init contract
+        let (mut contract, mut context) = init_test_env(Some(owner.clone()), None, None);
+
+        // create User 1
+        let user1 = accounts(0);
+
+        // register User 1 with 250 LiS
+        contract
+            .accounts
+            .insert(&user1, &Account::new(accounts(0), 250 * ONE_LIS).into());
+
+        // set signer as User 1
+        testing_env!(context.signer_account_id(user1.clone()).build());
+
+        contract.stake(U128(251 * ONE_LIS));
+    }
+
+    #[test]
+    #[should_panic = "User not found"]
+    fn stake_no_user_test() {
+        // create Owner
+        let owner = accounts(2);
+
+        // Init contract
+        let (mut contract, mut context) = init_test_env(Some(owner.clone()), None, None);
+
+        // set signer as User 1
+        testing_env!(context.signer_account_id(accounts(0)).build());
+
+        contract.stake(U128(251 * ONE_LIS));
+    }
+
+    #[test]
+    #[should_panic = "Contract is paused"]
+    fn stake_paused_test() {
+        // create Owner
+        let owner = accounts(2);
+
+        // Init contract
+        let (mut contract, mut context) = init_test_env(Some(owner.clone()), None, None);
+
+        contract.state = State::Paused;
+
+        // set signer as User 1
+        testing_env!(context.signer_account_id(accounts(0)).build());
+
+        contract.stake(U128(251 * ONE_LIS));
+    }
+
+    #[test]
+    fn unstake_test() {
+        // create Owner
+        let owner = accounts(2);
+
+        // Init contract
+        let (mut contract, mut context) = init_test_env(Some(owner.clone()), None, None);
+
+        // create User 1
+        let user1 = accounts(0);
+
+        // register User 1 with 250 LiS
+        contract
+            .accounts
+            .insert(&user1, &Account::new(accounts(0), 250 * ONE_LIS).into());
+
+        // set signer as User 1
+        testing_env!(context.signer_account_id(user1.clone()).build());
+
+        let user1_staked = contract.stake(U128(100 * ONE_LIS));
+        let user_account: Account = contract.accounts.get(&user1).unwrap().into();
+        assert_eq!(user_account.get_balance(), 150 * ONE_LIS);
+
+        // Unstake tokens
+        contract.unstake(user1_staked);
+
+        let user_account: Account = contract.accounts.get(&user1).unwrap().into();
+        assert!(!user_account.lockups.is_empty());
+
+        // Wait till lockups are expired
+        testing_env!(context.block_timestamp(99999999999999999).build());
+
+        // claim lockup for staking for User 1
+        contract.claim_all_lockup();
+        let user_account: Account = contract.accounts.get(&user1).unwrap().into();
+        assert!(user_account.lockups.is_empty());
+
+        // Assert user1 balance == 250
+        let user_account: Account = contract.accounts.get(&user1).unwrap().into();
+        assert_eq!(user_account.get_balance(), 250 * ONE_LIS);
+    }
+
+    #[test]
+    #[should_panic = "Contract is paused"]
+    fn unstake_contract_paused() {
+        // create Owner
+        let owner = accounts(2);
+
+        // Init contract
+        let (mut contract, mut context) = init_test_env(Some(owner.clone()), None, None);
+
+        // create User 1
+        let user1 = accounts(0);
+
+        // register User 1 with 250 LiS
+        contract
+            .accounts
+            .insert(&user1, &Account::new(accounts(0), 250 * ONE_LIS).into());
+
+        // set signer as User 1
+        testing_env!(context.signer_account_id(user1.clone()).build());
+
+        let user1_staked = contract.stake(U128(100 * ONE_LIS));
+
+        contract.state = State::Paused;
+
+        // Unstake tokens
+        contract.unstake(user1_staked);
+    }
+
+    #[test]
+    #[should_panic = "Not enough x balance"]
+    fn unstake_over_staked_test() {
+        // create Owner
+        let owner = accounts(2);
+
+        // Init contract
+        let (mut contract, mut context) = init_test_env(Some(owner.clone()), None, None);
+
+        // create User 1
+        let user1 = accounts(0);
+
+        // register User 1 with 250 LiS
+        contract
+            .accounts
+            .insert(&user1, &Account::new(accounts(0), 250 * ONE_LIS).into());
+
+        // set signer as User 1
+        testing_env!(context.signer_account_id(user1.clone()).build());
+
+        let user1_staked = contract.stake(U128(100 * ONE_LIS));
+
+        // Unstake tokens
+        contract.unstake(U128(user1_staked.0 + 10));
+    }
+
+    #[test]
+    #[should_panic = "No such account"]
+    fn unstake_no_user_test() {
+        // create Owner
+        let owner = accounts(2);
+
+        // Init contract
+        let (mut contract, mut context) = init_test_env(Some(owner.clone()), None, None);
+
+        // set signer as User 1
+        testing_env!(context.signer_account_id(accounts(0)).build());
+
+        // Unstake tokens
+        contract.unstake(U128(9));
     }
 }

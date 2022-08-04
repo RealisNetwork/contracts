@@ -79,7 +79,7 @@ impl Contract {
         let nft: Nft = self.nfts.get_nft(&nft_id).into();
 
         require!(
-            buyer_account.free
+            buyer_account.get_balance()
                 >= self
                     .nfts
                     .get_marketplace_nft_map()
@@ -96,8 +96,8 @@ impl Contract {
             .unwrap_or_else(|| panic_str("Account not found"))
             .into();
 
-        nft_owner_account.free += price;
-        buyer_account.free -= price;
+        nft_owner_account.increase_balance(&nft.owner_id, price);
+        buyer_account.decrease_balance(price);
 
         self.accounts
             .insert(&nft.owner_id, &nft_owner_account.into());
@@ -154,8 +154,8 @@ mod tests {
 
         let nft: Nft = contract.nfts.get_nft(&0).into();
 
-        assert_eq!(new_own.free, 0);
-        assert_eq!(prev_own.free, 2000);
+        assert_eq!(new_own.get_balance(), 0);
+        assert_eq!(prev_own.get_balance(), 2000);
         assert_eq!(nft.owner_id, accounts(3));
     }
 

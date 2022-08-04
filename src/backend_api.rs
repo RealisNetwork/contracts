@@ -15,7 +15,14 @@ impl Contract {
         .into()
     }
 
-    pub fn backend_burn(&mut self, nft_id: U128) {
+    pub fn backend_burn_tokens(&mut self, amount: U128) -> U128 {
+        self.assert_running();
+        self.assert_backend();
+        let sender_id = self.resolve_account(env::signer_account_pk());
+        self.internal_burn_tokens(&sender_id, amount.0).into()
+    }
+
+    pub fn backend_burn_nft(&mut self, nft_id: U128) {
         self.assert_running();
         self.assert_backend();
         let sender_id = self.resolve_account(env::signer_account_pk());
@@ -95,7 +102,7 @@ impl Contract {
 
 #[cfg(test)]
 mod tests {
-    use crate::{nft::Nft, utils::tests_utils::*};
+    use crate::{lockup::Lockup, nft::Nft, utils::tests_utils::*};
 
     #[test]
     #[should_panic = "Contract is paused"]
@@ -136,8 +143,8 @@ mod tests {
         let account_2: Account = contract.accounts.get(&accounts(2)).unwrap().into();
         let owner_acc: Account = contract.accounts.get(&owner).unwrap().into();
 
-        assert_eq!(owner_acc.free, 2999999980 * ONE_LIS);
-        assert_eq!(account_2.free, 30 * ONE_LIS);
+        assert_eq!(owner_acc.get_balance(), 2999999980 * ONE_LIS);
+        assert_eq!(account_2.get_balance(), 30 * ONE_LIS);
     }
 
     #[test]
@@ -146,7 +153,7 @@ mod tests {
         let (mut contract, _context) = init_test_env(None, None, None);
 
         contract.state = State::Paused;
-        contract.backend_burn(U128(1));
+        contract.backend_burn_nft(U128(1));
     }
 
     #[test]
@@ -155,7 +162,7 @@ mod tests {
         let (mut contract, mut context) = init_test_env(None, None, Some(accounts(1)));
 
         testing_env!(context.predecessor_account_id(accounts(2)).build());
-        contract.backend_burn(U128(1));
+        contract.backend_burn_nft(U128(1));
     }
 
     #[test]
@@ -172,7 +179,7 @@ mod tests {
             .signer_account_pk(owner_pk)
             .build());
 
-        contract.backend_burn(U128(1));
+        contract.backend_burn_nft(U128(1));
     }
 
     #[test]
@@ -192,7 +199,7 @@ mod tests {
 
         assert_eq!(contract.nfts.nft_count(), 1);
         assert_eq!(owner_account.nfts.len(), 1);
-        contract.burn(U128(nft_id.0));
+        contract.burn_nft(U128(nft_id.0));
         let owner_account: Account = contract.accounts.get(&owner).unwrap().into();
         assert_eq!(contract.nfts.nft_count(), 0);
         assert_eq!(owner_account.nfts.len(), 0);
@@ -296,7 +303,9 @@ mod tests {
             init_test_env(Some(owner.clone()), None, Some(owner.clone()));
 
         let mut owner_account = Account::new(accounts(1), 5);
-        owner_account.lockups.insert(&Lockup::new(5, None));
+        owner_account
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup::new(5, None)));
         contract.accounts.insert(&owner, &owner_account.into());
         contract.registered_accounts.insert(&owner_pk, &owner);
 
@@ -308,7 +317,7 @@ mod tests {
 
         contract.backend_claim_all_lockup();
         let res_owner_account: Account = contract.accounts.get(&owner).unwrap().into();
-        assert_eq!(res_owner_account.free, 10);
+        assert_eq!(res_owner_account.get_balance(), 10);
     }
     #[test]
     #[should_panic = "Not allowed"]
@@ -327,7 +336,9 @@ mod tests {
             .build());
 
         let mut owner_account = Account::new(owner.clone(), 5);
-        owner_account.lockups.insert(&Lockup::new(5, None));
+        owner_account
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup::new(5, None)));
         contract.accounts.insert(&owner, &owner_account.into());
         contract.backend_claim_all_lockup();
     }
@@ -342,18 +353,24 @@ mod tests {
         contract.registered_accounts.insert(&owner_pk, &owner);
 
         let mut owner_account = Account::new(owner.clone(), 50);
-        owner_account.lockups.insert(&Lockup {
-            amount: 5,
-            expire_on: 10,
-        });
-        owner_account.lockups.insert(&Lockup {
-            amount: 5,
-            expire_on: 2,
-        });
-        owner_account.lockups.insert(&Lockup {
-            amount: 5,
-            expire_on: 3,
-        });
+        owner_account
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup {
+                amount: 5,
+                expire_on: 10,
+            }));
+        owner_account
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup {
+                amount: 5,
+                expire_on: 2,
+            }));
+        owner_account
+            .lockups
+            .insert(&Lockup::GooglePlayBuy(SimpleLockup {
+                amount: 5,
+                expire_on: 3,
+            }));
         contract.accounts.insert(&owner, &owner_account.into());
         testing_env!(context
             .signer_account_id(owner.clone())
@@ -362,7 +379,7 @@ mod tests {
             .build());
         contract.backend_claim_lockup(U128(5));
         let res_owner_account: Account = contract.accounts.get(&owner).unwrap().into();
-        assert_eq!(res_owner_account.free, 55);
+        assert_eq!(res_owner_account.get_balance(), 55);
     }
 
     #[test]
