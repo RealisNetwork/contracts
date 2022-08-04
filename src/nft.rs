@@ -355,7 +355,7 @@ impl Contract {
         nft_id: u128,
     ) {
         self.nfts
-            .transfer_nft(env::signer_account_id(), recipient_id.clone(), &nft_id);
+            .transfer_nft(&env::signer_account_id(), &recipient_id.clone(), &nft_id);
         let mut sender_account: Account = self
             .accounts
             .get(&sender_id)

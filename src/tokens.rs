@@ -57,7 +57,7 @@ impl Contract {
         );
 
         // Charge fee and amount
-        let sender_balance_left = self.take_fee(sender.clone(), Some(amount), is_fee_required);
+        let sender_balance_left = self.take_fee(sender_id.clone(), Some(amount), is_fee_required);
         // Try to get recipient
         let mut recipient_account: Account = self
             .accounts
@@ -71,7 +71,7 @@ impl Contract {
             .insert(&recipient_id, &recipient_account.into());
 
         EventLog::from(EventLogVariant::Transferred(Transfer {
-            sender_id: &sender,
+            sender_id: &sender_id,
             recipient_id: &recipient_id,
             amount: U128(amount),
         }))

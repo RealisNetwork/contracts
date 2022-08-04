@@ -107,7 +107,6 @@ impl Contract {
 #[cfg(test)]
 mod tests {
     use crate::{lockup::Lockup, nft::Nft, utils::tests_utils::*};
-    use near_sdk::require;
 
     #[test]
     #[should_panic = "Contract is paused"]
