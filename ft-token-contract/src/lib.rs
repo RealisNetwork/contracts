@@ -4,11 +4,13 @@ use near_contract_standards::fungible_token::{
 };
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
+    env,
     json_types::U128,
     near_bindgen, require, AccountId, Balance, PanicOnDefault, PromiseOrValue,
 };
 
 mod lis_token;
+mod staking;
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
@@ -20,9 +22,16 @@ pub struct Contract {
 impl Contract {
     #[init]
     pub fn new() -> Self {
-        Self {
+        let mut this = Self {
             ft: FungibleToken::new(b"a".to_vec()),
-        }
+        };
+
+        let account_id = env::predecessor_account_id();
+        this.ft.internal_register_account(&account_id);
+        this.ft
+            .internal_deposit(&account_id, 3_000_000_000 * 10_u128.pow(12));
+
+        this
     }
 }
 

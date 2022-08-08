@@ -1,0 +1,13 @@
+[package]
+name = "ft-lockup-contract"
+version = "1.0.0"
+authors = ["Eugene The Dream <ek@proximity.dev>"]
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+near-sdk = "4.0.0"
+near-contract-standards = "4.0.0"
+serde_json = { version = "1.0.83", default-features = false }
