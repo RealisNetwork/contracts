@@ -10,7 +10,6 @@ use near_sdk::{
 };
 
 mod lis_token;
-mod staking;
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]

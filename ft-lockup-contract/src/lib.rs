@@ -2,7 +2,7 @@ use near_contract_standards::fungible_token::receiver::FungibleTokenReceiver;
 use near_sdk::{
     assert_one_yocto,
     borsh::{self, maybestd::collections::HashSet, BorshDeserialize, BorshSerialize},
-    collections::{LookupMap, UnorderedSet},
+    collections::{LookupMap, UnorderedMap, UnorderedSet},
     env,
     json_types::{U128, U64},
     near_bindgen, require,
@@ -12,6 +12,7 @@ use near_sdk::{
 
 pub mod ft_token_receiver;
 pub mod lockup;
+pub mod view;
 
 use crate::lockup::*;
 
@@ -27,7 +28,7 @@ pub struct Contract {
     /// Account IDs that can create new lockups.
     pub deposit_whitelist: UnorderedSet<AccountId>,
     /// All lockups
-    pub lockups: LookupMap<LockupIndex, Lockup>,
+    pub lockups: UnorderedMap<LockupIndex, Lockup>,
     /// Lockups indexes by AccountId
     pub account_lockups: LookupMap<AccountId, HashSet<LockupIndex>>,
 
@@ -46,11 +47,11 @@ impl Contract {
     #[init]
     pub fn new(token_account_id: AccountId, deposit_whitelist: Vec<AccountId>) -> Self {
         let mut deposit_whitelist_set = UnorderedSet::new(StorageKey::DepositWhitelist);
-        deposit_whitelist_set.extend(deposit_whitelist.into_iter().map(|a| a.into()));
+        deposit_whitelist_set.extend(deposit_whitelist.into_iter());
         Self {
-            lockups: LookupMap::new(StorageKey::Lockups),
+            lockups: UnorderedMap::new(StorageKey::Lockups),
             account_lockups: LookupMap::new(StorageKey::AccountLockups),
-            token_account_id: token_account_id,
+            token_account_id,
             deposit_whitelist: deposit_whitelist_set,
             index: 0,
         }
@@ -83,7 +84,7 @@ impl Contract {
 
 impl Contract {
     pub fn next_index(&mut self) -> LockupIndex {
-        while self.lockups.contains_key(&self.index) {
+        while self.lockups.keys().any(|key| key == self.index) {
             self.index += 1;
         }
         self.index
