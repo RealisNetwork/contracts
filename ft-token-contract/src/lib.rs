@@ -33,6 +33,10 @@ impl Contract {
 
         this
     }
+
+    pub fn register(&mut self, account_id: AccountId) {
+        self.ft.internal_register_account(&account_id);
+    }
 }
 
 near_contract_standards::impl_fungible_token_core!(Contract, ft);
