@@ -16,8 +16,8 @@ pub mod lockup;
 use crate::lockup::*;
 
 pub type LockupIndex = u32;
-pub const GAS_FOR_CLAIM_CALLBACK: Gas = Gas(20_000_000_000_000);
-pub const GAS_FOR_FT_TRANSFER: Gas = Gas(15_000_000_000_000);
+pub const GAS_FOR_CLAIM_CALLBACK: Gas = Gas(10_000_000_000_000);
+pub const GAS_FOR_FT_TRANSFER: Gas = Gas(25_000_000_000_000);
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
@@ -56,6 +56,7 @@ impl Contract {
         }
     }
 
+    #[payable]
     pub fn claim(&mut self, index: LockupIndex) -> Promise {
         assert_one_yocto();
         let account_id = env::predecessor_account_id();
