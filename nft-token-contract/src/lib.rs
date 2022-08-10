@@ -29,6 +29,7 @@ impl Contract {
     }
 
     // TODO: move to separete file, maybe
+    #[payable]
     pub fn nft_mint(
         &mut self,
         token_id: TokenId,
