@@ -2,6 +2,7 @@
 members = [
     "ft-token-contract",
     "ft-lockup-contract",
+    "nft-token-contract",
 ]
 
 [profile.release]
