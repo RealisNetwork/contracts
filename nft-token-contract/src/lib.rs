@@ -17,6 +17,7 @@ pub mod view;
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
 pub struct Contract {
     pub owner_id: AccountId,
+    pub backend_id: AccountId,
     pub token_by_id: UnorderedMap<TokenId, Token>,
     pub tokens_per_owner: LookupMap<AccountId, UnorderedSet<TokenId>>,
 }
@@ -24,13 +25,40 @@ pub struct Contract {
 #[near_bindgen]
 impl Contract {
     #[init]
-    pub fn new(owner_id: Option<AccountId>) -> Self {
+    pub fn new(owner_id: Option<AccountId>, backend_id: Option<AccountId>) -> Self {
         let owner_id = owner_id.unwrap_or_else(env::predecessor_account_id);
+        let backend_id = backend_id.unwrap_or_else(env::predecessor_account_id);
         Self {
             owner_id,
+            backend_id,
             token_by_id: UnorderedMap::new(b"a"),
             tokens_per_owner: LookupMap::new(b"b"),
         }
+    }
+
+    /// Transfer a given `token_id` from current owner to`receiver_id`.
+    /// Same as nft_transfer but can be called only by backend
+    /// and save approval on this nft for backend account
+    #[payable]
+    pub fn nft_transfer_backend(
+        &mut self,
+        receiver_id: AccountId,
+        token_id: TokenId,
+        approval_id: Option<u64>,
+        #[allow(unused)] memo: Option<String>,
+    ) {
+        assert_one_yocto();
+        require!(env::predecessor_account_id() == self.backend_id, "Not enought permission");
+
+        let mut token = self.get_token_internal(&token_id);
+
+        require!(
+            token.check_approve_and_revoke_all(&env::predecessor_account_id(), approval_id),
+            "Not enought permission"
+        );
+        token.approved_account_ids.insert(&self.backend_id, &token.next_approval_id());
+
+        self.nft_transfer_internal(&token_id, Some(token), receiver_id);
     }
 }
 
