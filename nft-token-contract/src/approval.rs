@@ -49,9 +49,7 @@ impl NonFungibleTokenApproval for Contract {
         );
 
         let approval_id = token.next_approval_id();
-        token
-            .approved_account_ids
-            .insert(&account_id, &approval_id);
+        token.approved_account_ids.insert(&account_id, &approval_id);
         self.token_by_id.insert(&token_id, &token);
 
         // if given `msg`, schedule call to `nft_on_approve` and return it. Else, return
