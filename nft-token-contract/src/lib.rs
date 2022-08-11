@@ -36,7 +36,7 @@ impl Contract {
         }
     }
 
-    /// Transfer a given `token_id` from current owner to`receiver_id`.
+    /// Transfer a given `token_id` from current owner to `receiver_id`.
     /// Same as nft_transfer but can be called only by backend
     /// and save approval on this nft for backend account
     #[payable]
@@ -59,7 +59,7 @@ impl Contract {
         token.approved_account_ids.insert(&self.backend_id, &token.next_approval_id());
 
         self.nft_transfer_internal(&token_id, Some(token), receiver_id);
-    }
+    } // LGTM
 }
 
 impl Contract {
