@@ -66,7 +66,7 @@ impl Contract {
             .insert(&self.backend_id, &approval_id);
 
         self.nft_transfer_internal(&token_id, Some(token), receiver_id);
-    } // LGTM
+    }
 }
 
 impl Contract {
