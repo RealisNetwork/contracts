@@ -1,5 +1,6 @@
 use near_contract_standards::non_fungible_token::TokenId;
 use near_sdk::{
+    assert_one_yocto,
     borsh::{self, BorshDeserialize, BorshSerialize},
     collections::{LookupMap, UnorderedMap, UnorderedSet},
     env, near_bindgen, require, AccountId, PanicOnDefault,
@@ -48,7 +49,10 @@ impl Contract {
         #[allow(unused)] memo: Option<String>,
     ) {
         assert_one_yocto();
-        require!(env::predecessor_account_id() == self.backend_id, "Not enought permission");
+        require!(
+            env::predecessor_account_id() == self.backend_id,
+            "Not enought permission"
+        );
 
         let mut token = self.get_token_internal(&token_id);
 
@@ -56,7 +60,10 @@ impl Contract {
             token.check_approve_and_revoke_all(&env::predecessor_account_id(), approval_id),
             "Not enought permission"
         );
-        token.approved_account_ids.insert(&self.backend_id, &token.next_approval_id());
+        let approval_id = token.next_approval_id();
+        token
+            .approved_account_ids
+            .insert(&self.backend_id, &approval_id);
 
         self.nft_transfer_internal(&token_id, Some(token), receiver_id);
     } // LGTM
