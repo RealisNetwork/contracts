@@ -34,27 +34,11 @@ impl Contract {
     }
 }
 
-<<<<<<< HEAD
 impl Contract {
     fn get_token_internal(&self, token_id: &TokenId) -> Token {
         self.token_by_id
             .get(token_id)
             .unwrap_or_else(|| env::panic_str("Token not found"))
-=======
-    // TODO: move to separete file, maybe
-    #[payable]
-    pub fn nft_mint(
-        &mut self,
-        token_id: TokenId,
-        account_id: AccountId,
-        metadata: Option<TokenMetadata>,
-    ) {
-        require!(
-            env::predecessor_account_id() == self.nft.owner_id,
-            "Not enough permission"
-        );
-        self.nft.internal_mint(token_id, account_id, metadata);
->>>>>>> f564a48607e5ee0e9c57ea4a9bf0c324a5d0614e
     }
 
     fn nft_transfer_internal(
