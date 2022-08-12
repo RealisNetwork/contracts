@@ -1,4 +1,8 @@
-use near_contract_standards::non_fungible_token::{metadata::TokenMetadata, TokenId};
+use near_contract_standards::non_fungible_token::{
+    events::{NftBurn, NftMint, NftTransfer},
+    metadata::TokenMetadata,
+    TokenId,
+};
 use near_sdk::{
     assert_one_yocto,
     borsh::{self, BorshDeserialize, BorshSerialize},
@@ -47,7 +51,7 @@ impl Contract {
     }
 
     #[payable]
-    pub fn mint(
+    pub fn nft_mint(
         &mut self,
         token_id: TokenId,
         owner_id: AccountId,
@@ -61,7 +65,7 @@ impl Contract {
         );
 
         let token = Token {
-            token_id,
+            token_id: token_id.clone(),
             owner_id: owner_id.clone(),
             metadata: LazyOption::new(
                 StorageKey::TokenMetadata {
@@ -79,11 +83,17 @@ impl Contract {
         let mut tokens_per_owner = self.get_tokens_per_owner_internal(&token.owner_id);
         tokens_per_owner.insert(&token.token_id);
         self.tokens_per_owner.insert(&owner_id, &tokens_per_owner);
-        // TODO: emit event
+
+        NftMint {
+            owner_id: &owner_id,
+            token_ids: &[&token_id],
+            memo: None,
+        }
+        .emit();
     }
 
     #[payable]
-    pub fn burn(&mut self, token_id: TokenId) {
+    pub fn nft_burn(&mut self, token_id: TokenId) {
         assert_one_yocto();
         let owner_id = env::predecessor_account_id();
         let token = self
@@ -94,9 +104,16 @@ impl Contract {
 
         self.token_by_id.remove(&token_id);
         let mut tokens_per_owner = self.get_tokens_per_owner_internal(&token.owner_id);
-        tokens_per_owner.remove(&token_id); 
+        tokens_per_owner.remove(&token_id);
         self.tokens_per_owner.insert(&owner_id, &tokens_per_owner);
-        // TODO: emit event
+        
+        NftBurn {
+            owner_id: &owner_id,
+            token_ids: &[&token_id],
+            authorized_id: None,
+            memo: None,
+        }
+        .emit();
     }
 
     /// Transfer a given `token_id` from current owner to `receiver_id`.
@@ -153,7 +170,7 @@ impl Contract {
         receiver_id: AccountId,
     ) {
         let mut token = token.unwrap_or_else(|| self.get_token_internal(token_id));
-
+        let old_owner_id = token.owner_id.clone();
         let mut tokens_per_owner = self
             .tokens_per_owner
             .get(&token.owner_id)
@@ -170,6 +187,14 @@ impl Contract {
             .insert(&token.owner_id, &tokens_per_owner);
 
         self.token_by_id.insert(token_id, &token);
-        // TODO: emit event
+
+        NftTransfer {
+            old_owner_id: &old_owner_id,
+            new_owner_id: &token.owner_id,
+            token_ids: &[token_id],
+            authorized_id: None,
+            memo: None,
+        }
+        .emit();
     }
 }
