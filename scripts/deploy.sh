@@ -33,7 +33,7 @@ then
         --initialBalance 160
 fi
 
-# TODO: Check root for enought balance for deploy and transfer near
+# TODO: Check root for enough balance for deploy and transfer near
 
 # Creating account for token contracts if not exists
 if [[ $(near state $TOKEN_CONTRACT_ID) == *"not found"* ]];
