@@ -2,10 +2,11 @@ use crate::*;
 use near_contract_standards::non_fungible_token::{
     enumeration::NonFungibleTokenEnumeration, Token,
 };
-use near_sdk::{json_types::U128, AccountId};
+use near_sdk::{json_types::U128, AccountId, near_bindgen};
 
 const NFT_VIEW_LIMIT: u64 = 50;
 
+#[near_bindgen]
 impl NonFungibleTokenEnumeration for Contract {
     /// Returns the total supply of non-fungible tokens as a string representing
     /// an unsigned 128-bit integer to avoid JSON number limit of 2^53.

@@ -75,8 +75,6 @@ else
     echo "Updating contract"
     echo y | near deploy --accountId $TOKEN_CONTRACT_ID \
         --wasmFile ./target/wasm32-unknown-unknown/release/ft_token_contract.wasm \
-        --initFunction "migrate" \
-        --initArgs '{}' \
         --initGas 300000000000000
 fi
 
@@ -87,14 +85,12 @@ then
     near deploy --accountId $LOCKUP_CONTRACT_ID \
         --wasmFile ./target/wasm32-unknown-unknown/release/ft_lockup_contract.wasm \
         --initFunction "new" \
-        --initArgs '{"token_account_id": '$TOKEN_CONTRACT_ID', "deposit_whitelist": ["'$OWNER_ID'"]"}' \
+        --initArgs '{"token_account_id": "'$TOKEN_CONTRACT_ID'", "deposit_whitelist": ["'$OWNER_ID'"]}' \
         --initGas 300000000000000
 else
     echo "Updating contract"
     echo y | near deploy --accountId $LOCKUP_CONTRACT_ID \
         --wasmFile ./target/wasm32-unknown-unknown/release/ft_lockup_contract.wasm \
-        --initFunction "migrate" \
-        --initArgs '{}' \
         --initGas 300000000000000
 fi
 
@@ -105,13 +101,11 @@ then
     near deploy --accountId $NFT_CONTRACT_ID \
         --wasmFile ./target/wasm32-unknown-unknown/release/nft_token_contract.wasm \
         --initFunction "new" \
-        --initArgs '{"owner_id": '$OWNER_ID'}' \
+        --initArgs '{"owner_id": "'$OWNER_ID'"}' \
         --initGas 300000000000000
 else
     echo "Updating contract"
     echo y | near deploy --accountId $NFT_CONTRACT_ID \
         --wasmFile ./target/wasm32-unknown-unknown/release/nft_token_contract.wasm \
-        --initFunction "migrate" \
-        --initArgs '{}' \
         --initGas 300000000000000
 fi
