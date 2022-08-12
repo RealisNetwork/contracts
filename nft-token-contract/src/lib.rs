@@ -1,18 +1,27 @@
-use near_contract_standards::non_fungible_token::TokenId;
+use near_contract_standards::non_fungible_token::{metadata::TokenMetadata, TokenId};
 use near_sdk::{
     assert_one_yocto,
     borsh::{self, BorshDeserialize, BorshSerialize},
-    collections::{LookupMap, UnorderedMap, UnorderedSet},
-    env, near_bindgen, require, AccountId, PanicOnDefault,
+    collections::{LazyOption, LookupMap, UnorderedMap, UnorderedSet},
+    env, near_bindgen, require, AccountId, BorshStorageKey, PanicOnDefault,
 };
 use token::Token;
 
 pub mod approval;
-pub mod core;
+pub mod nft_core;
 pub mod receiver;
 pub mod resolver;
 pub mod token;
 pub mod view;
+
+#[derive(BorshStorageKey, BorshDeserialize, BorshSerialize)]
+pub enum StorageKey {
+    TokenById,
+    TokensPerOwner,
+    AccountTokens { hash: Vec<u8> },
+    TokenMetadata { hash: Vec<u8> },
+    TokenApprovals { hash: Vec<u8> },
+}
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
@@ -32,9 +41,62 @@ impl Contract {
         Self {
             owner_id,
             backend_id,
-            token_by_id: UnorderedMap::new(b"a"),
-            tokens_per_owner: LookupMap::new(b"b"),
+            token_by_id: UnorderedMap::new(StorageKey::TokenById),
+            tokens_per_owner: LookupMap::new(StorageKey::TokensPerOwner),
         }
+    }
+
+    #[payable]
+    pub fn mint(
+        &mut self,
+        token_id: TokenId,
+        owner_id: AccountId,
+        metadata: Option<TokenMetadata>,
+    ) {
+        assert_one_yocto();
+        require!(env::predecessor_account_id() == self.owner_id);
+        require!(
+            self.token_by_id.get(&token_id).is_none(),
+            "Token with such id exists"
+        );
+
+        let token = Token {
+            token_id,
+            owner_id: owner_id.clone(),
+            metadata: LazyOption::new(
+                StorageKey::TokenMetadata {
+                    hash: env::sha256(owner_id.as_bytes()),
+                },
+                metadata.as_ref(),
+            ),
+            approved_account_ids: UnorderedMap::new(StorageKey::TokenApprovals {
+                hash: env::sha256(owner_id.as_bytes()),
+            }),
+            next_approval_id: 0,
+        };
+
+        self.token_by_id.insert(&token.token_id, &token);
+        let mut tokens_per_owner = self.get_tokens_per_owner_internal(&token.owner_id);
+        tokens_per_owner.insert(&token.token_id);
+        self.tokens_per_owner.insert(&owner_id, &tokens_per_owner);
+        // TODO: emit event
+    }
+
+    #[payable]
+    pub fn burn(&mut self, token_id: TokenId) {
+        assert_one_yocto();
+        let owner_id = env::predecessor_account_id();
+        let token = self
+            .token_by_id
+            .get(&token_id)
+            .unwrap_or_else(|| env::panic_str("No such token"));
+        require!(token.owner_id == owner_id, "Not enough permission");
+
+        self.token_by_id.remove(&token_id);
+        let mut tokens_per_owner = self.get_tokens_per_owner_internal(&token.owner_id);
+        tokens_per_owner.remove(&token_id); 
+        self.tokens_per_owner.insert(&owner_id, &tokens_per_owner);
+        // TODO: emit event
     }
 
     /// Transfer a given `token_id` from current owner to `receiver_id`.
@@ -70,6 +132,14 @@ impl Contract {
 }
 
 impl Contract {
+    fn get_tokens_per_owner_internal(&self, account_id: &AccountId) -> UnorderedSet<TokenId> {
+        self.tokens_per_owner.get(account_id).unwrap_or_else(|| {
+            UnorderedSet::new(StorageKey::AccountTokens {
+                hash: env::sha256(account_id.as_bytes()),
+            })
+        })
+    }
+
     fn get_token_internal(&self, token_id: &TokenId) -> Token {
         self.token_by_id
             .get(token_id)
@@ -94,14 +164,12 @@ impl Contract {
 
         token.owner_id = receiver_id;
 
-        let mut tokens_per_owner = self
-            .tokens_per_owner
-            .get(&token.owner_id)
-            .unwrap_or_else(|| UnorderedSet::new(env::sha256(token.owner_id.as_bytes())));
+        let mut tokens_per_owner = self.get_tokens_per_owner_internal(&token.owner_id);
         tokens_per_owner.insert(token_id);
         self.tokens_per_owner
             .insert(&token.owner_id, &tokens_per_owner);
 
         self.token_by_id.insert(token_id, &token);
+        // TODO: emit event
     }
 }
