@@ -99,4 +99,9 @@ mod tests {
     fn nft_resolve_transfer_revert_on_promise_return_true() {
         todo!()
     }
+
+    #[test]
+    fn nft_resolve() {
+        todo!()
+    }
 }
