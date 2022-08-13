@@ -146,7 +146,6 @@ impl NonFungibleTokenApproval for Contract {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     #[test]
@@ -201,4 +200,4 @@ mod tests {
     fn nft_revoke_all() {
         todo!()
     }
-} 
+}

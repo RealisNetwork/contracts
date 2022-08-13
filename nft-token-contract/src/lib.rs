@@ -64,7 +64,10 @@ impl Contract {
         metadata: Option<TokenMetadata>,
     ) {
         assert_one_yocto();
-        require!(env::predecessor_account_id() == self.owner_id, "Predecessor must be contract owner");
+        require!(
+            env::predecessor_account_id() == self.owner_id,
+            "Predecessor must be contract owner"
+        );
         require!(
             self.token_by_id.get(&token_id).is_none(),
             "Token with such id exists"
@@ -106,13 +109,16 @@ impl Contract {
             .token_by_id
             .get(&token_id)
             .unwrap_or_else(|| env::panic_str("No such token"));
-        require!(token.owner_id == owner_id, "Predecessor must be token owner");
+        require!(
+            token.owner_id == owner_id,
+            "Predecessor must be token owner"
+        );
 
         self.token_by_id.remove(&token_id);
         let mut tokens_per_owner = self.get_tokens_per_owner_internal(&token.owner_id);
         tokens_per_owner.remove(&token_id);
         self.tokens_per_owner.insert(&owner_id, &tokens_per_owner);
-        
+
         NftBurn {
             owner_id: &owner_id,
             token_ids: &[&token_id],
