@@ -45,7 +45,7 @@ impl NonFungibleTokenCore for Contract {
             "Not enought permission"
         );
 
-        self.nft_transfer_internal(&token_id, Some(token), receiver_id);
+        self.nft_transfer_internal(&token_id, Some(token), receiver_id, true);
     }
 
     /// Transfer token and call a method on a receiver contract. A successful
@@ -99,7 +99,7 @@ impl NonFungibleTokenCore for Contract {
             token.check_approve_and_revoke_all(&env::predecessor_account_id(), approval_id),
             "Not enought permission"
         );
-        self.nft_transfer_internal(&token_id, Some(token), receiver_id.clone());
+        self.nft_transfer_internal(&token_id, Some(token), receiver_id.clone(), true);
 
         ext_nft_receiver::ext(receiver_id.clone())
             .with_static_gas(env::prepaid_gas() - GAS_FOR_NFT_TRANSFER_CALL)
@@ -129,10 +129,13 @@ impl NonFungibleTokenCore for Contract {
 #[cfg(test)]
 mod tests {
     use crate::*;
-    use near_contract_standards::non_fungible_token::{approval::NonFungibleTokenApproval, core::NonFungibleTokenCore, enumeration::NonFungibleTokenEnumeration};
+    use near_contract_standards::non_fungible_token::{
+        approval::NonFungibleTokenApproval, core::NonFungibleTokenCore,
+        enumeration::NonFungibleTokenEnumeration,
+    };
     use near_sdk::{
-        test_utils::{accounts, VMContextBuilder},
         json_types::U128,
+        test_utils::{accounts, VMContextBuilder},
         testing_env, ONE_YOCTO,
     };
 
