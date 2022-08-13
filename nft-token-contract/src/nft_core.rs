@@ -125,3 +125,48 @@ impl NonFungibleTokenCore for Contract {
         self.token_by_id.get(&token_id).map(|token| token.into())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn nft_transfer_assert_one_yocto() {
+        todo!()
+    }
+
+    #[test]
+    #[should_panic = "Not enought permission"]
+    fn nft_transfer_panic_if_called_not_by_owner_or_approved_account() {
+        todo!()
+    }
+
+    #[test]
+    fn nft_transfer_nullify_approved_accounts_after_transfer() {
+        todo!()
+    }
+
+    #[test]
+    fn nft_transfer() {
+        todo!()
+    }
+
+     #[test]
+    fn nft_transfer_call_assert_one_yocto() {
+        todo!()
+    }
+
+    #[test]
+    #[should_panic = "Not enought permission"]
+    fn nft_transfer_call_panic_if_called_not_by_owner_or_approved_account() {
+        todo!()
+    }
+
+    #[test]
+    fn nft_transfer_call_nullify_approved_accounts_after_transfer() {
+        todo!()
+    }
+
+    #[test]
+    fn nft_transfer_call() {
+        todo!()
+    }
+}
