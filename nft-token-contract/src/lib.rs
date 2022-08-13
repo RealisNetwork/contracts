@@ -152,11 +152,13 @@ impl Contract {
             "Not enought permission"
         );
         let approval_id = token.next_approval_id();
+        self.nft_transfer_internal(&token_id, Some(token), receiver_id);
+
+        let mut token = self.get_token_internal(&token_id);
         token
             .approved_account_ids
             .insert(&self.backend_id, &approval_id);
-
-        self.nft_transfer_internal(&token_id, Some(token), receiver_id);
+        self.token_by_id.insert(&token_id, &token);
     }
 }
 
@@ -192,6 +194,7 @@ impl Contract {
             .insert(&token.owner_id, &tokens_per_owner);
 
         token.owner_id = receiver_id;
+        token.approved_account_ids.clear();
 
         let mut tokens_per_owner = self.get_tokens_per_owner_internal(&token.owner_id);
         tokens_per_owner.insert(token_id);

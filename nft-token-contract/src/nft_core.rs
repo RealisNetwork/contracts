@@ -128,45 +128,157 @@ impl NonFungibleTokenCore for Contract {
 
 #[cfg(test)]
 mod tests {
+    use crate::*;
+    use near_contract_standards::non_fungible_token::{approval::NonFungibleTokenApproval, core::NonFungibleTokenCore, enumeration::NonFungibleTokenEnumeration};
+    use near_sdk::{
+        test_utils::{accounts, VMContextBuilder},
+        json_types::U128,
+        testing_env, ONE_YOCTO,
+    };
+
     #[test]
+    #[should_panic = "Requires attached deposit of exactly 1 yoctoNEAR"]
     fn nft_transfer_assert_one_yocto() {
-        todo!()
+        let mut contract = Contract::default();
+        let context = VMContextBuilder::new().attached_deposit(0).build();
+
+        testing_env!(context);
+        contract.nft_transfer(accounts(0), "test".into(), None, None);
     }
 
     #[test]
     #[should_panic = "Not enought permission"]
     fn nft_transfer_panic_if_called_not_by_owner_or_approved_account() {
-        todo!()
+        let mut contract = Contract::new(Some(accounts(0)), None);
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(0))
+            .build();
+        testing_env!(context);
+        contract.nft_mint("test".into(), accounts(0), None);
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(1))
+            .build();
+
+        testing_env!(context);
+        contract.nft_transfer(accounts(0), "test".into(), None, None);
     }
 
     #[test]
     fn nft_transfer_nullify_approved_accounts_after_transfer() {
-        todo!()
+        let mut contract = Contract::new(Some(accounts(0)), None);
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(0))
+            .build();
+        testing_env!(context);
+        contract.nft_mint("test".into(), accounts(0), None);
+        contract.nft_approve("test".into(), accounts(1), None);
+        contract.nft_transfer(accounts(2), "test".into(), None, None);
+
+        let option_token = contract.nft_token("test".into());
+        assert!(option_token.is_some());
+        let token = option_token.unwrap();
+        assert!(token.approved_account_ids.unwrap().is_empty());
     }
 
     #[test]
     fn nft_transfer() {
-        todo!()
+        let mut contract = Contract::new(Some(accounts(0)), None);
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(0))
+            .build();
+        testing_env!(context);
+        contract.nft_mint("test".into(), accounts(0), None);
+        contract.nft_transfer(accounts(2), "test".into(), None, None);
+
+        assert_eq!(contract.nft_total_supply(), U128(1));
+        assert_eq!(contract.nft_supply_for_owner(accounts(2)), U128(1));
+        let option_token = contract.nft_token("test".into());
+        assert!(option_token.is_some());
+        let token = option_token.unwrap();
+        assert_eq!(token.token_id, "test");
+        assert_eq!(token.owner_id, accounts(2));
+        assert!(token.metadata.is_none());
+        assert!(token.approved_account_ids.unwrap().is_empty())
     }
 
     #[test]
+    #[should_panic = "Requires attached deposit of exactly 1 yoctoNEAR"]
     fn nft_transfer_call_assert_one_yocto() {
-        todo!()
+        let mut contract = Contract::default();
+        let context = VMContextBuilder::new().attached_deposit(0).build();
+
+        testing_env!(context);
+        contract.nft_transfer_call(accounts(0), "test".into(), None, None, "".into());
     }
 
     #[test]
     #[should_panic = "Not enought permission"]
     fn nft_transfer_call_panic_if_called_not_by_owner_or_approved_account() {
-        todo!()
+        let mut contract = Contract::new(Some(accounts(0)), None);
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(0))
+            .build();
+        testing_env!(context);
+        contract.nft_mint("test".into(), accounts(0), None);
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(1))
+            .build();
+
+        testing_env!(context);
+        contract.nft_transfer_call(accounts(0), "test".into(), None, None, "".into());
     }
 
     #[test]
     fn nft_transfer_call_nullify_approved_accounts_after_transfer() {
-        todo!()
+        let mut contract = Contract::new(Some(accounts(0)), None);
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(0))
+            .build();
+        testing_env!(context);
+        contract.nft_mint("test".into(), accounts(0), None);
+        contract.nft_approve("test".into(), accounts(1), None);
+        contract.nft_transfer_call(accounts(2), "test".into(), None, None, "".into());
+
+        let option_token = contract.nft_token("test".into());
+        assert!(option_token.is_some());
+        let token = option_token.unwrap();
+        assert!(token.approved_account_ids.unwrap().is_empty());
     }
 
     #[test]
     fn nft_transfer_call() {
-        todo!()
+        let mut contract = Contract::new(Some(accounts(0)), None);
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(0))
+            .build();
+        testing_env!(context);
+        contract.nft_mint("test".into(), accounts(0), None);
+        contract.nft_transfer_call(accounts(2), "test".into(), None, None, "".into());
+
+        assert_eq!(contract.nft_total_supply(), U128(1));
+        assert_eq!(contract.nft_supply_for_owner(accounts(2)), U128(1));
+        let option_token = contract.nft_token("test".into());
+        assert!(option_token.is_some());
+        let token = option_token.unwrap();
+        assert_eq!(token.token_id, "test");
+        assert_eq!(token.owner_id, accounts(2));
+        assert!(token.metadata.is_none());
+        assert!(token.approved_account_ids.unwrap().is_empty());
     }
 }
