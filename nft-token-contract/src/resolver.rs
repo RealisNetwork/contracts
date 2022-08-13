@@ -82,3 +82,21 @@ impl NonFungibleTokenResolver for Contract {
         false
     }
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn nft_resolve_transfer_can_call_only_contract() {
+        todo!()
+    }
+
+    #[test]
+    fn nft_resolve_transfer_revert_on_promise_failur() {
+        todo!()
+    }
+
+    #[test]
+    fn nft_resolve_transfer_revert_on_promise_return_true() {
+        todo!()
+    }
+}
