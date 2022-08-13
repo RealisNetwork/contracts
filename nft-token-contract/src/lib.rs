@@ -58,7 +58,7 @@ impl Contract {
         metadata: Option<TokenMetadata>,
     ) {
         assert_one_yocto();
-        require!(env::predecessor_account_id() == self.owner_id);
+        require!(env::predecessor_account_id() == self.owner_id, "Predecessor must be contract owner");
         require!(
             self.token_by_id.get(&token_id).is_none(),
             "Token with such id exists"
@@ -100,7 +100,7 @@ impl Contract {
             .token_by_id
             .get(&token_id)
             .unwrap_or_else(|| env::panic_str("No such token"));
-        require!(token.owner_id == owner_id, "Not enough permission");
+        require!(token.owner_id == owner_id, "Predecessor must be token owner");
 
         self.token_by_id.remove(&token_id);
         let mut tokens_per_owner = self.get_tokens_per_owner_internal(&token.owner_id);
@@ -130,7 +130,7 @@ impl Contract {
         assert_one_yocto();
         require!(
             env::predecessor_account_id() == self.backend_id,
-            "Not enought permission"
+            "Predecessor must be backend account"
         );
 
         let mut token = self.get_token_internal(&token_id);
@@ -196,5 +196,68 @@ impl Contract {
             memo: None,
         }
         .emit();
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn nft_mint_assert_one_yocto() {
+        todo!()
+    }
+
+    #[test]
+    #[should_panic = "Predecessor must be contract owner"]
+    fn nft_mint_should_panic_if_called_not_by_contract_owner() {
+        todo!()
+    }
+
+    #[test]
+    #[should_panic = "Token with such id exists"]
+    fn nft_mint_shoul_panic_if_mint_token_with_same_token_id() {
+        todo!()
+    }
+
+    #[test]
+    fn nft_mint() {
+        todo!()
+    }
+
+    #[test]
+    fn nft_burn_assert_one_yocto() {
+        todo!()
+    }
+
+    #[test]
+    #[should_panic = "Predecessor must be token owner"]
+    fn nft_burn_should_panic_if_called_not_by_token_owner() {
+        todo!()
+    }
+
+    #[test]
+    fn nft_burn() {
+        todo!()
+    }
+
+    #[test]
+    fn nft_transfer_backend_assert_one_yocto() {
+        todo!()
+    }
+
+    #[test]
+    #[should_panic = "Predecessor must be backend account"]
+    fn nft_transfer_backend_should_panic_if_called_not_by_backend_account() {
+        todo!()
+    }
+
+    #[test]
+    #[should_panic = "Not enought permission"]
+    fn nft_transfer_backend_should_panic_if_backend_account_not_approved() {
+        todo!()
+    }
+
+    #[test]
+    fn nft_transfer_backend() {
+        todo!()
     }
 }
