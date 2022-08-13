@@ -145,3 +145,60 @@ impl NonFungibleTokenApproval for Contract {
             .is_approved(&approved_account_id, approval_id)
     }
 }
+
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn nft_approve_assert_one_yocto() {
+        todo!()
+    }
+
+    #[test]
+    #[should_panic = "Predecessor must be token owner"]
+    fn nft_approve_should_panic_if_called_not_by_owner() {
+        todo!()
+    }
+
+    #[test]
+    fn nft_approve_call_on_approve_if_message_provided() {
+        todo!()
+    }
+
+    #[test]
+    fn nft_approve() {
+        todo!()
+    }
+
+    #[test]
+    fn nft_revoke_assert_one_yocto() {
+        todo!()
+    }
+
+    #[test]
+    #[should_panic = "Predecessor must be token owner"]
+    fn nft_revoke_should_panic_if_called_not_by_owner() {
+        todo!()
+    }
+
+    #[test]
+    fn nft_revoke() {
+        todo!()
+    }
+
+    #[test]
+    fn nft_revoke_all_assert_one_yocto() {
+        todo!()
+    }
+
+    #[test]
+    #[should_panic = "Predecessor must be token owner"]
+    fn nft_revoke_all_should_panic_if_called_not_by_owner() {
+        todo!()
+    }
+
+    #[test]
+    fn nft_revoke_all() {
+        todo!()
+    }
+} 
