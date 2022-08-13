@@ -402,5 +402,18 @@ mod tests {
 
         testing_env!(context);
         contract.nft_transfer_backend(accounts(2), "test".into(), None, None);
+
+        assert_eq!(contract.nft_total_supply(), U128(1));
+        assert_eq!(contract.nft_supply_for_owner(accounts(2)), U128(1));
+        let option_token = contract.nft_get_token("test".into());
+        assert!(option_token.is_some());
+        let token = option_token.unwrap();
+        assert_eq!(token.token_id, "test");
+        assert_eq!(token.owner_id, accounts(2));
+        assert!(token.metadata.is_none());
+        assert!(token
+            .approved_account_ids
+            .unwrap()
+            .contains_key(&accounts(1)))
     }
 }
