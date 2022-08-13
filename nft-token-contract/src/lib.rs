@@ -281,19 +281,52 @@ mod tests {
     }
 
     #[test]
+    #[should_panic = "Requires attached deposit of exactly 1 yoctoNEAR"]
     fn nft_burn_assert_one_yocto() {
-        todo!()
+        let mut contract = Contract::default();
+        let context = VMContextBuilder::new().attached_deposit(0).build();
+
+        testing_env!(context);
+        contract.nft_burn("test".into());
     }
 
     #[test]
     #[should_panic = "Predecessor must be token owner"]
     fn nft_burn_should_panic_if_called_not_by_token_owner() {
-        todo!()
+        let mut contract = Contract::new(Some(accounts(0)), None);
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(0))
+            .build();
+        testing_env!(context);
+        contract.nft_mint("test".into(), accounts(0), None);
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(1))
+            .build();
+
+        testing_env!(context);
+        contract.nft_burn("test".into());
     }
 
     #[test]
     fn nft_burn() {
-        todo!()
+        let mut contract = Contract::new(Some(accounts(0)), None);
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(0))
+            .build();
+
+        testing_env!(context);
+        contract.nft_mint("test".into(), accounts(0), None);
+        contract.nft_burn("test".into());
+
+        assert_eq!(contract.nft_total_supply(), U128(0));
+        assert_eq!(contract.nft_supply_for_owner(accounts(0)), U128(0));
+        let option_token = contract.nft_get_token("test".into());
+        assert!(option_token.is_none());
     }
 
     #[test]
