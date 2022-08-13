@@ -7,7 +7,7 @@ use near_sdk::{
     assert_one_yocto,
     borsh::{self, BorshDeserialize, BorshSerialize},
     collections::{LazyOption, LookupMap, UnorderedMap, UnorderedSet},
-    env, near_bindgen, require, AccountId, BorshStorageKey, PanicOnDefault,
+    env, near_bindgen, require, AccountId, BorshStorageKey,
 };
 use token::Token;
 
@@ -28,12 +28,18 @@ pub enum StorageKey {
 }
 
 #[near_bindgen]
-#[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
+#[derive(BorshDeserialize, BorshSerialize)]
 pub struct Contract {
     pub owner_id: AccountId,
     pub backend_id: AccountId,
     pub token_by_id: UnorderedMap<TokenId, Token>,
     pub tokens_per_owner: LookupMap<AccountId, UnorderedSet<TokenId>>,
+}
+
+impl Default for Contract {
+    fn default() -> Self {
+        Self::new(None, None)
+    }
 }
 
 #[near_bindgen]
