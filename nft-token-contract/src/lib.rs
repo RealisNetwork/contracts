@@ -214,7 +214,9 @@ impl Contract {
 #[cfg(test)]
 mod tests {
     use crate::*;
-    use near_contract_standards::non_fungible_token::enumeration::NonFungibleTokenEnumeration;
+    use near_contract_standards::non_fungible_token::{
+        approval::NonFungibleTokenApproval, enumeration::NonFungibleTokenEnumeration,
+    };
     use near_sdk::{
         json_types::U128,
         test_utils::{accounts, VMContextBuilder},
@@ -330,24 +332,75 @@ mod tests {
     }
 
     #[test]
+    #[should_panic = "Requires attached deposit of exactly 1 yoctoNEAR"]
     fn nft_transfer_backend_assert_one_yocto() {
-        todo!()
+        let mut contract = Contract::default();
+        let context = VMContextBuilder::new().attached_deposit(0).build();
+
+        testing_env!(context);
+        contract.nft_transfer_backend(accounts(0), "test".into(), None, None);
     }
 
     #[test]
     #[should_panic = "Predecessor must be backend account"]
     fn nft_transfer_backend_should_panic_if_called_not_by_backend_account() {
-        todo!()
+        let mut contract = Contract::new(Some(accounts(0)), Some(accounts(1)));
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(0))
+            .build();
+        testing_env!(context);
+        contract.nft_mint("test".into(), accounts(0), None);
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(0))
+            .build();
+
+        testing_env!(context);
+        contract.nft_transfer_backend(accounts(2), "test".into(), None, None);
     }
 
     #[test]
     #[should_panic = "Not enought permission"]
     fn nft_transfer_backend_should_panic_if_backend_account_not_approved() {
-        todo!()
+        let mut contract = Contract::new(Some(accounts(0)), Some(accounts(1)));
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(0))
+            .build();
+        testing_env!(context);
+        contract.nft_mint("test".into(), accounts(0), None);
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(1))
+            .build();
+
+        testing_env!(context);
+        contract.nft_transfer_backend(accounts(2), "test".into(), None, None);
     }
 
     #[test]
     fn nft_transfer_backend() {
-        todo!()
+        let mut contract = Contract::new(Some(accounts(0)), Some(accounts(1)));
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(0))
+            .build();
+        testing_env!(context);
+        contract.nft_mint("test".into(), accounts(0), None);
+        contract.nft_approve("test".into(), accounts(1), None);
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(1))
+            .build();
+
+        testing_env!(context);
+        contract.nft_transfer_backend(accounts(2), "test".into(), None, None);
     }
 }
