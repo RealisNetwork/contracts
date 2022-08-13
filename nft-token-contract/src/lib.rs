@@ -215,7 +215,8 @@ impl Contract {
 mod tests {
     use crate::*;
     use near_contract_standards::non_fungible_token::{
-        approval::NonFungibleTokenApproval, enumeration::NonFungibleTokenEnumeration,
+        approval::NonFungibleTokenApproval, core::NonFungibleTokenCore,
+        enumeration::NonFungibleTokenEnumeration,
     };
     use near_sdk::{
         json_types::U128,
@@ -273,7 +274,7 @@ mod tests {
 
         assert_eq!(contract.nft_total_supply(), U128(1));
         assert_eq!(contract.nft_supply_for_owner(accounts(1)), U128(1));
-        let option_token = contract.nft_get_token("test".into());
+        let option_token = contract.nft_token("test".into());
         assert!(option_token.is_some());
         let token = option_token.unwrap();
         assert_eq!(token.token_id, "test");
@@ -327,7 +328,7 @@ mod tests {
 
         assert_eq!(contract.nft_total_supply(), U128(0));
         assert_eq!(contract.nft_supply_for_owner(accounts(0)), U128(0));
-        let option_token = contract.nft_get_token("test".into());
+        let option_token = contract.nft_token("test".into());
         assert!(option_token.is_none());
     }
 
@@ -405,7 +406,7 @@ mod tests {
 
         assert_eq!(contract.nft_total_supply(), U128(1));
         assert_eq!(contract.nft_supply_for_owner(accounts(2)), U128(1));
-        let option_token = contract.nft_get_token("test".into());
+        let option_token = contract.nft_token("test".into());
         assert!(option_token.is_some());
         let token = option_token.unwrap();
         assert_eq!(token.token_id, "test");

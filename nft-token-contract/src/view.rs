@@ -75,10 +75,3 @@ impl NonFungibleTokenEnumeration for Contract {
             .unwrap_or_default()
     }
 }
-
-#[near_bindgen]
-impl Contract {
-    pub fn nft_get_token(&self, token_id: TokenId) -> Option<Token> {
-        self.token_by_id.get(&token_id).map(|token| token.into())
-    }
-}
