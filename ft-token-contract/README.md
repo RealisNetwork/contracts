@@ -37,7 +37,7 @@ Transfer tokens from one user to other user.
 
 ### Transfer call
 
-Same as `Transfer` with gas requirements and initiating receiver's call and the callback
+Same as `Transfer` with gas requirements and initiating receiver's call and the callback.
 
 ```rust
     /// Token transfer with initiating receiver's call and the callback. Transfer `amount` from caller of the method to `receiver_id` with prepaired gas limitation.
@@ -66,6 +66,15 @@ Burn tokens from account & total supply contract.
     /// Requirements: 
     /// * Amount must be positive number.
     pub fn ft_burn(&mut self, amount: U128)
+```
+
+### Register 
+
+Register new account. 
+
+```rust 
+    /// Register new account on contract
+    pub fn register(&mut self, account_id: AccountId)
 ```
 
 ## View methods

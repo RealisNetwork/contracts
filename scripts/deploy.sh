@@ -2,7 +2,8 @@
 
 export NEAR_ENV=testnet #mainnet
 export OWNER_ID="realis.testnet"
-export ROOT_CONTRACT_ID="dev.$OWNER_ID"
+export BACKEND_ID="backend.$OWNER_ID"
+export ROOT_CONTRACT_ID="testnet.$OWNER_ID"
 export TOKEN_CONTRACT_ID="lis.$ROOT_CONTRACT_ID"
 export LOCKUP_CONTRACT_ID="lis-lockup.$ROOT_CONTRACT_ID"
 export NFT_CONTRACT_ID="nft.$ROOT_CONTRACT_ID"
@@ -23,6 +24,17 @@ then
     echo "Installing near cli"
     npm install -g near-cli
 fi
+
+# Creating root account for contracts if not exists
+if [[ $(near state $BACKEND_ID) == *"not found"* ]];
+then
+    echo "Creating account for contract"
+    near create-account $ROOT_CONTRACT_ID \
+        --masterAccount $OWNER_ID \
+        --initialBalance 200
+fi
+
+# TODO: Check backend for enough balance and transfer near
 
 # Creating root account for contracts if not exists
 if [[ $(near state $ROOT_CONTRACT_ID) == *"not found"* ]];
@@ -101,7 +113,7 @@ then
     near deploy --accountId $NFT_CONTRACT_ID \
         --wasmFile ./target/wasm32-unknown-unknown/release/nft_token_contract.wasm \
         --initFunction "new" \
-        --initArgs '{"owner_id": "'$OWNER_ID'"}' \
+        --initArgs '{"owner_id": "'$OWNER_ID'", "backend_id": "'$BACKEND_ID'"}' \
         --initGas 300000000000000
 else
     echo "Updating contract"
