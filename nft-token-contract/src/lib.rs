@@ -56,6 +56,11 @@ impl Contract {
         }
     }
 
+    /// Simple burn. Create token with a given `token_id` for `owner_id`.
+    ///
+    /// Requirements
+    /// * Caller of the method must attach a deposit of 1 yoctoⓃ for security purposes
+    /// * Contract MUST panic if called by someone other than `contract.owner_id`
     #[payable]
     pub fn nft_mint(
         &mut self,
@@ -106,17 +111,23 @@ impl Contract {
         .emit();
     }
 
+    /// Simple burn. Remove a given `token_id` from current owner.
+    ///
+    /// Requirements
+    /// * Caller of the method must attach a deposit of 1 yoctoⓃ for security purposes
+    /// * Contract MUST panic if called by someone other than token owner or
+    ///  one of the approved accounts
     #[payable]
-    pub fn nft_burn(&mut self, token_id: TokenId) {
+    pub fn nft_burn(&mut self, token_id: TokenId, approval_id: Option<u64>) {
         assert_one_yocto();
         let owner_id = env::predecessor_account_id();
-        let token = self
+        let mut token = self
             .token_by_id
             .get(&token_id)
             .unwrap_or_else(|| env::panic_str("No such token"));
         require!(
-            token.owner_id == owner_id,
-            "Predecessor must be token owner"
+            token.check_approve_and_revoke_all(&env::predecessor_account_id(), approval_id),
+            "Not enough permission"
         );
 
         self.token_by_id.remove(&token_id);
@@ -136,6 +147,11 @@ impl Contract {
     /// Transfer a given `token_id` from current owner to `receiver_id`.
     /// Same as nft_transfer but can be called only by backend
     /// and save approval on this nft for backend account
+    ///
+    /// Requirements
+    /// * Caller of the method must attach a deposit of 1 yoctoⓃ for security purposes
+    /// * Contract MUST panic if called by someone other than `contract.backend_id` or,
+    ///  if `contract.backend_id` not one of the approved accounts
     #[payable]
     pub fn nft_transfer_backend(
         &mut self,
@@ -302,11 +318,11 @@ mod tests {
         let context = VMContextBuilder::new().attached_deposit(0).build();
 
         testing_env!(context);
-        contract.nft_burn("test".into());
+        contract.nft_burn("test".into(), None);
     }
 
     #[test]
-    #[should_panic = "Predecessor must be token owner"]
+    #[should_panic = "Not enough permission"]
     fn nft_burn_should_panic_if_called_not_by_token_owner() {
         let mut contract = Contract::new(Some(accounts(0)), None);
 
@@ -323,7 +339,7 @@ mod tests {
             .build();
 
         testing_env!(context);
-        contract.nft_burn("test".into());
+        contract.nft_burn("test".into(), None);
     }
 
     #[test]
@@ -336,7 +352,7 @@ mod tests {
 
         testing_env!(context);
         contract.nft_mint("test".into(), accounts(0), None);
-        contract.nft_burn("test".into());
+        contract.nft_burn("test".into(), None);
 
         assert_eq!(contract.nft_total_supply(), U128(0));
         assert_eq!(contract.nft_supply_for_owner(accounts(0)), U128(0));
