@@ -2,7 +2,7 @@ use crate::*;
 use near_contract_standards::non_fungible_token::{
     enumeration::NonFungibleTokenEnumeration, Token,
 };
-use near_sdk::{json_types::U128, AccountId, near_bindgen};
+use near_sdk::{json_types::U128, near_bindgen, AccountId};
 
 const NFT_VIEW_LIMIT: u64 = 50;
 

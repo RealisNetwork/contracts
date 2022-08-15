@@ -77,8 +77,120 @@ impl NonFungibleTokenResolver for Contract {
         token
             .approved_account_ids
             .extend(approvals.unwrap_or_default().into_iter());
-        self.nft_transfer_internal(&token_id, Some(token), previous_owner_id);
+        self.nft_transfer_internal(&token_id, Some(token), previous_owner_id, false);
 
         false
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashMap;
+
+    use crate::{resolver::NonFungibleTokenResolver, *};
+    use near_contract_standards::non_fungible_token::{
+        approval::NonFungibleTokenApproval, core::NonFungibleTokenCore,
+    };
+    use near_sdk::{
+        test_utils::{accounts, VMContextBuilder},
+        testing_env, PromiseResult, RuntimeFeesConfig, VMConfig, ONE_YOCTO,
+    };
+
+    #[test]
+    fn nft_resolve_transfer_revert_on_promise_failure() {
+        let mut contract = Contract::new(Some(accounts(0)), None);
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(0))
+            .build();
+        testing_env!(context.clone());
+        contract.nft_mint("test".into(), accounts(0), None);
+        contract.nft_approve("test".into(), accounts(1), None);
+        let old_token = contract.nft_token("test".into()).unwrap();
+        contract.nft_transfer_call(accounts(2), "test".into(), None, None, "".into());
+
+        testing_env!(
+            context,
+            VMConfig::test(),
+            RuntimeFeesConfig::test(),
+            HashMap::default(),
+            vec![PromiseResult::Failed]
+        );
+        contract.nft_resolve_transfer(
+            accounts(0),
+            accounts(2),
+            "test".into(),
+            old_token.approved_account_ids.clone(),
+        );
+        let new_token = contract.nft_token("test".into()).unwrap();
+        assert_eq!(old_token, new_token);
+    }
+
+    #[test]
+    fn nft_resolve_transfer_revert_on_promise_return_true() {
+        let mut contract = Contract::new(Some(accounts(0)), None);
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(0))
+            .build();
+        testing_env!(context.clone());
+        contract.nft_mint("test".into(), accounts(0), None);
+        contract.nft_approve("test".into(), accounts(1), None);
+        let old_token = contract.nft_token("test".into()).unwrap();
+        contract.nft_transfer_call(accounts(2), "test".into(), None, None, "".into());
+
+        testing_env!(
+            context,
+            VMConfig::test(),
+            RuntimeFeesConfig::test(),
+            HashMap::default(),
+            vec![PromiseResult::Successful(
+                near_sdk::serde_json::to_vec(&true).unwrap()
+            )]
+        );
+        contract.nft_resolve_transfer(
+            accounts(0),
+            accounts(2),
+            "test".into(),
+            old_token.approved_account_ids.clone(),
+        );
+        let new_token = contract.nft_token("test".into()).unwrap();
+        assert_eq!(old_token, new_token);
+    }
+
+    #[test]
+    fn nft_resolve() {
+        let mut contract = Contract::new(Some(accounts(0)), None);
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(0))
+            .build();
+        testing_env!(context.clone());
+        contract.nft_mint("test".into(), accounts(0), None);
+        contract.nft_approve("test".into(), accounts(1), None);
+        let old_token = contract.nft_token("test".into()).unwrap();
+        contract.nft_transfer_call(accounts(2), "test".into(), None, None, "".into());
+        let token_after_transfer = contract.nft_token("test".into()).unwrap();
+
+        testing_env!(
+            context,
+            VMConfig::test(),
+            RuntimeFeesConfig::test(),
+            HashMap::default(),
+            vec![PromiseResult::Successful(
+                near_sdk::serde_json::to_vec(&false).unwrap()
+            )]
+        );
+        contract.nft_resolve_transfer(
+            accounts(0),
+            accounts(2),
+            "test".into(),
+            old_token.approved_account_ids,
+        );
+        let new_token = contract.nft_token("test".into()).unwrap();
+        assert_eq!(token_after_transfer, new_token);
     }
 }

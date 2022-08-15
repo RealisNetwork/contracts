@@ -145,3 +145,207 @@ impl NonFungibleTokenApproval for Contract {
             .is_approved(&approved_account_id, approval_id)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::*;
+    use near_contract_standards::non_fungible_token::approval::NonFungibleTokenApproval;
+    use near_sdk::{
+        test_utils::{accounts, VMContextBuilder},
+        testing_env, ONE_YOCTO,
+    };
+
+    #[test]
+    #[should_panic = "Requires attached deposit of exactly 1 yoctoNEAR"]
+    fn nft_approve_assert_one_yocto() {
+        let mut contract = Contract::default();
+        let context = VMContextBuilder::new().attached_deposit(0).build();
+
+        testing_env!(context);
+        contract.nft_approve("test".into(), accounts(0), None);
+    }
+
+    #[test]
+    #[should_panic = "Predecessor must be token owner"]
+    fn nft_approve_should_panic_if_called_not_by_owner() {
+        let mut contract = Contract::new(Some(accounts(0)), None);
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(0))
+            .build();
+        testing_env!(context);
+        contract.nft_mint("test".into(), accounts(0), None);
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(1))
+            .build();
+
+        testing_env!(context);
+        contract.nft_approve("test".into(), accounts(2), None);
+    }
+
+    #[test]
+    fn nft_approve_call_on_approve_if_message_provided() {
+        let mut contract = Contract::new(Some(accounts(0)), None);
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(0))
+            .build();
+        testing_env!(context);
+        contract.nft_mint("test".into(), accounts(0), None);
+
+        let option_promise = contract.nft_approve("test".into(), accounts(2), Some("test".into()));
+        assert!(option_promise.is_some());
+    }
+
+    #[test]
+    fn nft_approve() {
+        let mut contract = Contract::new(Some(accounts(0)), None);
+
+        let token_id: String = "test".into();
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(0))
+            .build();
+        testing_env!(context);
+        contract.nft_mint(token_id.clone(), accounts(1), None);
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(1))
+            .build();
+
+        testing_env!(context);
+        contract.nft_approve(token_id.clone(), accounts(2), None);
+
+        assert!(contract.nft_is_approved(token_id, accounts(2), None));
+    }
+
+    #[test]
+    #[should_panic = "Requires attached deposit of exactly 1 yoctoNEAR"]
+    fn nft_revoke_assert_one_yocto() {
+        let mut contract = Contract::default();
+        let context = VMContextBuilder::new().attached_deposit(0).build();
+
+        testing_env!(context);
+        contract.nft_revoke("test".into(), accounts(0));
+    }
+
+    #[test]
+    #[should_panic = "Predecessor must be token owner"]
+    fn nft_revoke_should_panic_if_called_not_by_owner() {
+        let mut contract = Contract::new(Some(accounts(0)), None);
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(0))
+            .build();
+        testing_env!(context);
+        contract.nft_mint("test".into(), accounts(0), None);
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(1))
+            .build();
+
+        testing_env!(context);
+        contract.nft_revoke("test".into(), accounts(2));
+    }
+
+    #[test]
+    fn nft_revoke() {
+        let mut contract = Contract::new(Some(accounts(0)), None);
+        let token_id: String = "test".into();
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(0))
+            .build();
+        testing_env!(context);
+        contract.nft_mint(token_id.clone(), accounts(0), None);
+
+        contract.nft_approve(token_id.clone(), accounts(1), None);
+        contract.nft_approve(token_id.clone(), accounts(2), None);
+        contract.nft_approve(token_id.clone(), accounts(3), None);
+
+        assert!(contract.nft_is_approved(token_id.clone(), accounts(1), None));
+        assert!(contract.nft_is_approved(token_id.clone(), accounts(2), None));
+        assert!(contract.nft_is_approved(token_id.clone(), accounts(3), None));
+
+        contract.nft_revoke(token_id.clone(), accounts(2));
+        assert!(contract.nft_is_approved(token_id.clone(), accounts(1), None));
+        assert!(!contract.nft_is_approved(token_id.clone(), accounts(2), None));
+        assert!(contract.nft_is_approved(token_id.clone(), accounts(3), None));
+
+        contract.nft_revoke(token_id.clone(), accounts(3));
+        assert!(contract.nft_is_approved(token_id.clone(), accounts(1), None));
+        assert!(!contract.nft_is_approved(token_id.clone(), accounts(2), None));
+        assert!(!contract.nft_is_approved(token_id.clone(), accounts(3), None));
+
+        contract.nft_revoke(token_id.clone(), accounts(1));
+        assert!(!contract.nft_is_approved(token_id.clone(), accounts(1), None));
+        assert!(!contract.nft_is_approved(token_id.clone(), accounts(2), None));
+        assert!(!contract.nft_is_approved(token_id.clone(), accounts(3), None));
+    }
+
+    #[test]
+    #[should_panic = "Requires attached deposit of exactly 1 yoctoNEAR"]
+    fn nft_revoke_all_assert_one_yocto() {
+        let mut contract = Contract::default();
+        let context = VMContextBuilder::new().attached_deposit(0).build();
+
+        testing_env!(context);
+        contract.nft_revoke_all("test".into());
+    }
+
+    #[test]
+    #[should_panic = "Predecessor must be token owner"]
+    fn nft_revoke_all_should_panic_if_called_not_by_owner() {
+        let mut contract = Contract::new(Some(accounts(0)), None);
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(0))
+            .build();
+        testing_env!(context);
+        contract.nft_mint("test".into(), accounts(0), None);
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(1))
+            .build();
+
+        testing_env!(context);
+        contract.nft_revoke_all("test".into());
+    }
+
+    #[test]
+    fn nft_revoke_all() {
+        let mut contract = Contract::new(Some(accounts(0)), None);
+        let token_id: String = "test".into();
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(0))
+            .build();
+        testing_env!(context);
+        contract.nft_mint(token_id.clone(), accounts(0), None);
+
+        contract.nft_approve(token_id.clone(), accounts(1), None);
+        contract.nft_approve(token_id.clone(), accounts(2), None);
+        contract.nft_approve(token_id.clone(), accounts(3), None);
+
+        assert!(contract.nft_is_approved(token_id.clone(), accounts(1), None));
+        assert!(contract.nft_is_approved(token_id.clone(), accounts(2), None));
+        assert!(contract.nft_is_approved(token_id.clone(), accounts(3), None));
+
+        contract.nft_revoke_all(token_id.clone());
+        assert!(!contract.nft_is_approved(token_id.clone(), accounts(1), None));
+        assert!(!contract.nft_is_approved(token_id.clone(), accounts(2), None));
+        assert!(!contract.nft_is_approved(token_id.clone(), accounts(3), None));
+    }
+}

@@ -7,7 +7,7 @@ use near_sdk::{
     assert_one_yocto,
     borsh::{self, BorshDeserialize, BorshSerialize},
     collections::{LazyOption, LookupMap, UnorderedMap, UnorderedSet},
-    env, near_bindgen, require, AccountId, BorshStorageKey, PanicOnDefault,
+    env, near_bindgen, require, AccountId, BorshStorageKey,
 };
 use token::Token;
 
@@ -28,12 +28,18 @@ pub enum StorageKey {
 }
 
 #[near_bindgen]
-#[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
+#[derive(BorshDeserialize, BorshSerialize)]
 pub struct Contract {
     pub owner_id: AccountId,
     pub backend_id: AccountId,
     pub token_by_id: UnorderedMap<TokenId, Token>,
     pub tokens_per_owner: LookupMap<AccountId, UnorderedSet<TokenId>>,
+}
+
+impl Default for Contract {
+    fn default() -> Self {
+        Self::new(None, None)
+    }
 }
 
 #[near_bindgen]
@@ -58,7 +64,10 @@ impl Contract {
         metadata: Option<TokenMetadata>,
     ) {
         assert_one_yocto();
-        require!(env::predecessor_account_id() == self.owner_id);
+        require!(
+            env::predecessor_account_id() == self.owner_id,
+            "Predecessor must be contract owner"
+        );
         require!(
             self.token_by_id.get(&token_id).is_none(),
             "Token with such id exists"
@@ -100,13 +109,16 @@ impl Contract {
             .token_by_id
             .get(&token_id)
             .unwrap_or_else(|| env::panic_str("No such token"));
-        require!(token.owner_id == owner_id, "Not enough permission");
+        require!(
+            token.owner_id == owner_id,
+            "Predecessor must be token owner"
+        );
 
         self.token_by_id.remove(&token_id);
         let mut tokens_per_owner = self.get_tokens_per_owner_internal(&token.owner_id);
         tokens_per_owner.remove(&token_id);
         self.tokens_per_owner.insert(&owner_id, &tokens_per_owner);
-        
+
         NftBurn {
             owner_id: &owner_id,
             token_ids: &[&token_id],
@@ -130,7 +142,7 @@ impl Contract {
         assert_one_yocto();
         require!(
             env::predecessor_account_id() == self.backend_id,
-            "Not enought permission"
+            "Predecessor must be backend account"
         );
 
         let mut token = self.get_token_internal(&token_id);
@@ -140,11 +152,11 @@ impl Contract {
             "Not enought permission"
         );
         let approval_id = token.next_approval_id();
+        token.approved_account_ids.clear();
         token
             .approved_account_ids
             .insert(&self.backend_id, &approval_id);
-
-        self.nft_transfer_internal(&token_id, Some(token), receiver_id);
+        self.nft_transfer_internal(&token_id, Some(token), receiver_id, false);
     }
 }
 
@@ -168,6 +180,7 @@ impl Contract {
         token_id: &TokenId,
         token: Option<Token>,
         receiver_id: AccountId,
+        clean_approval: bool,
     ) {
         let mut token = token.unwrap_or_else(|| self.get_token_internal(token_id));
         let old_owner_id = token.owner_id.clone();
@@ -180,6 +193,9 @@ impl Contract {
             .insert(&token.owner_id, &tokens_per_owner);
 
         token.owner_id = receiver_id;
+        if clean_approval {
+            token.approved_account_ids.clear();
+        }
 
         let mut tokens_per_owner = self.get_tokens_per_owner_internal(&token.owner_id);
         tokens_per_owner.insert(token_id);
@@ -196,5 +212,207 @@ impl Contract {
             memo: None,
         }
         .emit();
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::*;
+    use near_contract_standards::non_fungible_token::{
+        approval::NonFungibleTokenApproval, core::NonFungibleTokenCore,
+        enumeration::NonFungibleTokenEnumeration,
+    };
+    use near_sdk::{
+        json_types::U128,
+        test_utils::{accounts, VMContextBuilder},
+        testing_env, ONE_YOCTO,
+    };
+
+    #[test]
+    #[should_panic = "Requires attached deposit of exactly 1 yoctoNEAR"]
+    fn nft_mint_assert_one_yocto() {
+        let mut contract = Contract::new(Some(accounts(0)), None);
+        let context = VMContextBuilder::new().attached_deposit(0).build();
+
+        testing_env!(context);
+        contract.nft_mint("test".into(), accounts(0), None);
+    }
+
+    #[test]
+    #[should_panic = "Predecessor must be contract owner"]
+    fn nft_mint_should_panic_if_called_not_by_contract_owner() {
+        let mut contract = Contract::new(Some(accounts(0)), None);
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(1))
+            .build();
+
+        testing_env!(context);
+        contract.nft_mint("test".into(), accounts(0), None);
+    }
+
+    #[test]
+    #[should_panic = "Token with such id exists"]
+    fn nft_mint_shoul_panic_if_mint_token_with_same_token_id() {
+        let mut contract = Contract::new(Some(accounts(0)), None);
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(0))
+            .build();
+
+        testing_env!(context);
+        contract.nft_mint("test".into(), accounts(1), None);
+        contract.nft_mint("test".into(), accounts(2), None);
+    }
+
+    #[test]
+    fn nft_mint() {
+        let mut contract = Contract::new(Some(accounts(0)), None);
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(0))
+            .build();
+
+        testing_env!(context);
+        contract.nft_mint("test".into(), accounts(1), None);
+
+        assert_eq!(contract.nft_total_supply(), U128(1));
+        assert_eq!(contract.nft_supply_for_owner(accounts(1)), U128(1));
+        let option_token = contract.nft_token("test".into());
+        assert!(option_token.is_some());
+        let token = option_token.unwrap();
+        assert_eq!(token.token_id, "test");
+        assert_eq!(token.owner_id, accounts(1));
+        assert!(token.metadata.is_none());
+        assert!(token.approved_account_ids.unwrap().is_empty())
+    }
+
+    #[test]
+    #[should_panic = "Requires attached deposit of exactly 1 yoctoNEAR"]
+    fn nft_burn_assert_one_yocto() {
+        let mut contract = Contract::default();
+        let context = VMContextBuilder::new().attached_deposit(0).build();
+
+        testing_env!(context);
+        contract.nft_burn("test".into());
+    }
+
+    #[test]
+    #[should_panic = "Predecessor must be token owner"]
+    fn nft_burn_should_panic_if_called_not_by_token_owner() {
+        let mut contract = Contract::new(Some(accounts(0)), None);
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(0))
+            .build();
+        testing_env!(context);
+        contract.nft_mint("test".into(), accounts(0), None);
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(1))
+            .build();
+
+        testing_env!(context);
+        contract.nft_burn("test".into());
+    }
+
+    #[test]
+    fn nft_burn() {
+        let mut contract = Contract::new(Some(accounts(0)), None);
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(0))
+            .build();
+
+        testing_env!(context);
+        contract.nft_mint("test".into(), accounts(0), None);
+        contract.nft_burn("test".into());
+
+        assert_eq!(contract.nft_total_supply(), U128(0));
+        assert_eq!(contract.nft_supply_for_owner(accounts(0)), U128(0));
+        let option_token = contract.nft_token("test".into());
+        assert!(option_token.is_none());
+    }
+
+    #[test]
+    #[should_panic = "Requires attached deposit of exactly 1 yoctoNEAR"]
+    fn nft_transfer_backend_assert_one_yocto() {
+        let mut contract = Contract::default();
+        let context = VMContextBuilder::new().attached_deposit(0).build();
+
+        testing_env!(context);
+        contract.nft_transfer_backend(accounts(0), "test".into(), None, None);
+    }
+
+    #[test]
+    #[should_panic = "Predecessor must be backend account"]
+    fn nft_transfer_backend_should_panic_if_called_not_by_backend_account() {
+        let mut contract = Contract::new(Some(accounts(0)), Some(accounts(1)));
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(0))
+            .build();
+        testing_env!(context);
+        contract.nft_mint("test".into(), accounts(0), None);
+
+        contract.nft_transfer_backend(accounts(2), "test".into(), None, None);
+    }
+
+    #[test]
+    #[should_panic = "Not enough permission"]
+    fn nft_transfer_backend_should_panic_if_backend_account_not_approved() {
+        let mut contract = Contract::new(Some(accounts(0)), Some(accounts(1)));
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(0))
+            .build();
+        testing_env!(context);
+        contract.nft_mint("test".into(), accounts(0), None);
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(1))
+            .build();
+
+        testing_env!(context);
+        contract.nft_transfer_backend(accounts(2), "test".into(), None, None);
+    }
+
+    #[test]
+    fn nft_transfer_backend() {
+        let mut contract = Contract::new(Some(accounts(0)), Some(accounts(1)));
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(0))
+            .build();
+        testing_env!(context);
+        contract.nft_mint("test".into(), accounts(0), None);
+        contract.nft_approve("test".into(), accounts(1), None);
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(1))
+            .build();
+
+        testing_env!(context);
+        contract.nft_transfer_backend(accounts(2), "test".into(), None, None);
+
+        assert_eq!(contract.nft_total_supply(), U128(1));
+        assert_eq!(contract.nft_supply_for_owner(accounts(2)), U128(1));
+        let option_token = contract.nft_token("test".into());
+        assert!(option_token.is_some());
+        let token = option_token.unwrap();
+        assert_eq!(token.token_id, "test");
+        assert_eq!(token.owner_id, accounts(2));
+        assert!(token.metadata.is_none());
+        assert!(token
+            .approved_account_ids
+            .unwrap()
+            .contains_key(&accounts(1)))
     }
 }
