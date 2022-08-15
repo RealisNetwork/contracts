@@ -197,12 +197,6 @@ mod tests {
         testing_env!(context);
         contract.nft_mint("test".into(), accounts(0), None);
 
-        let context = VMContextBuilder::new()
-            .attached_deposit(ONE_YOCTO)
-            .predecessor_account_id(accounts(0))
-            .build();
-
-        testing_env!(context);
         let option_promise = contract.nft_approve("test".into(), accounts(2), Some("test".into()));
         assert!(option_promise.is_some());
     }
