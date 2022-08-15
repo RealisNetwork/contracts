@@ -1,5 +1,19 @@
 # Realis ft token contract
 
+## Interface structure
+
+```rust
+pub struct FungibleTokenMetadata {
+    pub spec: String,
+    pub name: String,
+    pub symbol: String,
+    pub icon: Option<String>,
+    pub reference: Option<String>,
+    pub reference_hash: Option<Base64VecU8>,
+    pub decimals: u8,
+}
+```
+
 ## Fungible token methods
 
 ### Transfer
@@ -55,6 +69,12 @@ Burn tokens from account & total supply contract.
 ```
 
 ## View methods
+
+### Token metadata
+
+```rust
+    fn ft_metadata(&self) -> FungibleTokenMetadata
+```
 
 ### Total supply
 
