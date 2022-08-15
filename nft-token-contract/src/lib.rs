@@ -73,7 +73,7 @@ impl Contract {
             "Token with such id exists"
         );
 
-        let token = Token {
+        let mut token = Token {
             token_id: token_id.clone(),
             owner_id: owner_id.clone(),
             metadata: LazyOption::new(
@@ -87,6 +87,11 @@ impl Contract {
             }),
             next_approval_id: 0,
         };
+
+        let approval_id = token.next_approval_id();
+        token
+            .approved_account_ids
+            .insert(&self.backend_id, &approval_id);
 
         self.token_by_id.insert(&token.token_id, &token);
         let mut tokens_per_owner = self.get_tokens_per_owner_internal(&token.owner_id);
@@ -149,7 +154,7 @@ impl Contract {
 
         require!(
             token.check_approve_and_revoke_all(&env::predecessor_account_id(), approval_id),
-            "Not enought permission"
+            "Not enough permission"
         );
         let approval_id = token.next_approval_id();
         token.approved_account_ids.clear();
@@ -284,7 +289,10 @@ mod tests {
         assert_eq!(token.token_id, "test");
         assert_eq!(token.owner_id, accounts(1));
         assert!(token.metadata.is_none());
-        assert!(token.approved_account_ids.unwrap().is_empty())
+        assert!(token
+            .approved_account_ids
+            .unwrap()
+            .contains_key(&contract.backend_id));
     }
 
     #[test]
@@ -372,6 +380,7 @@ mod tests {
             .build();
         testing_env!(context);
         contract.nft_mint("test".into(), accounts(0), None);
+        contract.nft_revoke_all("test".into());
 
         let context = VMContextBuilder::new()
             .attached_deposit(ONE_YOCTO)
