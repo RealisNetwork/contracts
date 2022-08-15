@@ -274,12 +274,6 @@ mod tests {
         testing_env!(context);
         contract.nft_mint(token_id.clone(), accounts(0), None);
 
-        let context = VMContextBuilder::new()
-            .attached_deposit(ONE_YOCTO)
-            .predecessor_account_id(accounts(0))
-            .build();
-
-        testing_env!(context);
         contract.nft_approve(token_id.clone(), accounts(1), None);
         contract.nft_approve(token_id.clone(), accounts(2), None);
         contract.nft_approve(token_id.clone(), accounts(3), None);
