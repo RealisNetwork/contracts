@@ -42,7 +42,7 @@ impl NonFungibleTokenCore for Contract {
 
         require!(
             token.check_approve_and_revoke_all(&env::predecessor_account_id(), approval_id),
-            "Not enought permission"
+            "Not enough permission"
         );
 
         self.nft_transfer_internal(&token_id, Some(token), receiver_id, true);
@@ -97,7 +97,7 @@ impl NonFungibleTokenCore for Contract {
 
         require!(
             token.check_approve_and_revoke_all(&env::predecessor_account_id(), approval_id),
-            "Not enought permission"
+            "Not enough permission"
         );
         self.nft_transfer_internal(&token_id, Some(token), receiver_id.clone(), true);
 
@@ -150,7 +150,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic = "Not enought permission"]
+    #[should_panic = "Not enough permission"]
     fn nft_transfer_panic_if_called_not_by_owner_or_approved_account() {
         let mut contract = Contract::new(Some(accounts(0)), None);
 
@@ -223,7 +223,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic = "Not enought permission"]
+    #[should_panic = "Not enough permission"]
     fn nft_transfer_call_panic_if_called_not_by_owner_or_approved_account() {
         let mut contract = Contract::new(Some(accounts(0)), None);
 

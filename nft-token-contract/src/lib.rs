@@ -362,7 +362,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic = "Not enought permission"]
+    #[should_panic = "Not enough permission"]
     fn nft_transfer_backend_should_panic_if_backend_account_not_approved() {
         let mut contract = Contract::new(Some(accounts(0)), Some(accounts(1)));
 

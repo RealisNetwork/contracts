@@ -97,7 +97,7 @@ mod tests {
     };
 
     #[test]
-    fn nft_resolve_transfer_revert_on_promise_failur() {
+    fn nft_resolve_transfer_revert_on_promise_failure() {
         let mut contract = Contract::new(Some(accounts(0)), None);
 
         let context = VMContextBuilder::new()
