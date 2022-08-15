@@ -358,12 +358,6 @@ mod tests {
         testing_env!(context);
         contract.nft_mint("test".into(), accounts(0), None);
 
-        let context = VMContextBuilder::new()
-            .attached_deposit(ONE_YOCTO)
-            .predecessor_account_id(accounts(0))
-            .build();
-
-        testing_env!(context);
         contract.nft_transfer_backend(accounts(2), "test".into(), None, None);
     }
 
