@@ -14,6 +14,17 @@
 - Ability to add new lockups.
 - Whitelist for the accounts that can create new lockups.
 
+## Interface structure
+
+```rust
+/// Information about each lockup. 
+  pub struct LockupView {
+      amount: U128,
+      unlock_on: U64,
+      is_claimed: bool,
+  }
+```
+
 ## Lockup methods
 
 ### Claim
