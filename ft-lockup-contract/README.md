@@ -17,12 +17,12 @@
 ## Interface structure
 
 ```rust
-  /// Information about each lockup. 
-  pub struct LockupView {
+/// Information about each lockup. 
+pub struct LockupView {
     amount: U128,
     unlock_on: U64,
     is_claimed: bool,
-  }
+}
 ```
 
 ## Lockup methods
@@ -31,13 +31,13 @@
 Claim lockup with given lockup index.
 
 ```rust
-  /// Claim function. Claim lockup for account with given `lockup_index`.
-  /// 
-  /// Requirements
-  /// * Caller of the method must attach a deposit of 1 yoctoⓃ for security purposes.
-  /// * Caller must have lockup with given `lockup_index`.
-  #[payable]
-  pub fn claim(&mut self, index: LockupIndex) -> Promise 
+/// Claim function. Claim lockup for account with given `lockup_index`.
+/// 
+/// Requirements
+/// * Caller of the method must attach a deposit of 1 yoctoⓃ for security purposes.
+/// * Caller must have lockup with given `lockup_index`.
+#[payable]
+pub fn claim(&mut self, index: LockupIndex) -> Promise 
 ```
 
 ## View methods
@@ -46,63 +46,63 @@ Claim lockup with given lockup index.
 Return token contract `account_id` to receive tokens for lockup.
 
 ```rust
-  pub fn get_token_account_id(&self) -> AccountId
+pub fn get_token_account_id(&self) -> AccountId
 ```
 
 ### Deposit whitelist 
 Return list of AccoutIds that can create new lockups.
 
 ```rust
-  pub fn get_deposit_whitelist(&self) -> Vec<AccountId>
+pub fn get_deposit_whitelist(&self) -> Vec<AccountId>
 ```
 
 ### Number of lockups
 Return number of all lockups on the contract.
 
 ```rust 
-  pub fn get_num_lockups(&self) -> U64
+pub fn get_num_lockups(&self) -> U64
 ```
 
 ### Number of account lockups
 Return number of lockups on a particular account.
 
 ```rust 
-  pub fn get_account_num_lockups(&self, account_id: AccountId) -> u32
+pub fn get_account_num_lockups(&self, account_id: AccountId) -> u32
 ```
 
 ### Lockup
 Return one particular lockup with given `lockup_index`.
 
 ```rust 
-  pub fn get_lockup(&self, index: LockupIndex) -> Option<LockupView>
+pub fn get_lockup(&self, index: LockupIndex) -> Option<LockupView>
 ```
 
 ### Lockups
 Return set of `(lockup_index - lockup)` with given set of 'lockup_index'.
 
 ```rust
-  pub fn get_lockups(&self, indexes: Vec<LockupIndex>) -> HashMap<LockupIndex, LockupView>
+pub fn get_lockups(&self, indexes: Vec<LockupIndex>) -> HashMap<LockupIndex, LockupView>
 ```
 
 ### Lockups paged
 Return set of `(lockup_index - lockup)` from all lockups with given `from_index` and `limit` arguments.
 
 ```rust
-  pub fn get_lockups_paged(
-      &self,
-      from_index: Option<LockupIndex>,
-      limit: Option<LockupIndex>,
-  ) -> HashMap<LockupIndex, LockupView>
+pub fn get_lockups_paged(
+    &self,
+    from_index: Option<LockupIndex>,
+    limit: Option<LockupIndex>,
+) -> HashMap<LockupIndex, LockupView>
 ```
 
 ### Account lockups
 Return set of `(lockup_index - lockup)` from account lockups with given `account_id`, `from_index` and `limit` arguments.
 
 ```rust 
-  pub fn get_account_lockups(
+pub fn get_account_lockups(
     &self,
     account_id: AccountId,
     from_index: Option<LockupIndex>,
     limit: Option<LockupIndex>,
-  ) -> HashMap<LockupIndex, LockupView> 
+) -> HashMap<LockupIndex, LockupView> 
 ```
