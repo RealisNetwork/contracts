@@ -17,11 +17,11 @@
 ## Interface structure
 
 ```rust
-/// Information about each lockup. 
+  /// Information about each lockup. 
   pub struct LockupView {
-      amount: U128,
-      unlock_on: U64,
-      is_claimed: bool,
+    amount: U128,
+    unlock_on: U64,
+    is_claimed: bool,
   }
 ```
 
@@ -37,7 +37,7 @@ Claim lockup with given lockup index.
   /// * Caller of the method must attach a deposit of 1 yoctoⓃ for security purposes.
   /// * Caller must have lockup with given `lockup_index`.
   #[payable]
-    pub fn claim(&mut self, index: LockupIndex) -> Promise 
+  pub fn claim(&mut self, index: LockupIndex) -> Promise 
 ```
 
 ## View methods
@@ -89,20 +89,20 @@ Return set of `(lockup_index - lockup)` from all lockups with given `from_index`
 
 ```rust
   pub fn get_lockups_paged(
-        &self,
-        from_index: Option<LockupIndex>,
-        limit: Option<LockupIndex>,
-    ) -> HashMap<LockupIndex, LockupView>
+      &self,
+      from_index: Option<LockupIndex>,
+      limit: Option<LockupIndex>,
+  ) -> HashMap<LockupIndex, LockupView>
 ```
 
 ### Account lockups
 Return set of `(lockup_index - lockup)` from account lockups with given `account_id`, `from_index` and `limit` arguments.
 
 ```rust 
-   pub fn get_account_lockups(
-        &self,
-        account_id: AccountId,
-        from_index: Option<LockupIndex>,
-        limit: Option<LockupIndex>,
-    ) -> HashMap<LockupIndex, LockupView> 
+  pub fn get_account_lockups(
+    &self,
+    account_id: AccountId,
+    from_index: Option<LockupIndex>,
+    limit: Option<LockupIndex>,
+  ) -> HashMap<LockupIndex, LockupView> 
 ```

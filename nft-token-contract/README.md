@@ -103,8 +103,6 @@ Same as basic transfer, but can be called only by `contract.backend_account` and
 
 ### Approve
 
-### Approve
-
 ```rust
     #[payable]
     fn nft_approve(
