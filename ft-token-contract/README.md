@@ -20,19 +20,19 @@ pub struct FungibleTokenMetadata {
 Transfer tokens from one user to other user. 
 
 ```rust
-    /// Simple token transfer. Transfer `amount` from caller of the method to `receiver_id`.
-    ///
-    /// Requirements: 
-    /// * Caller of the method must attach a deposit of 1 yoctoⓃ for security purposes.
-    /// * Caller of the method must be different with `receiver_id`.
-    /// * Amount must be positive number.
-    #[payable]
-    fn ft_transfer(
-        &mut self,
-        receiver_id: AccountId, 
-        amount: U128, 
-        memo: Option<String>
-    )
+/// Simple token transfer. Transfer `amount` from caller of the method to `receiver_id`.
+///
+/// Requirements: 
+/// * Caller of the method must attach a deposit of 1 yoctoⓃ for security purposes.
+/// * Caller of the method must be different with `receiver_id`.
+/// * Amount must be positive number.
+#[payable]
+fn ft_transfer(
+    &mut self,
+    receiver_id: AccountId, 
+    amount: U128, 
+    memo: Option<String>
+)
 ```
 
 ### Transfer call
@@ -40,20 +40,20 @@ Transfer tokens from one user to other user.
 Same as `Transfer` with gas requirements and initiating receiver's call and the callback.
 
 ```rust
-    /// Token transfer with initiating receiver's call and the callback. Transfer `amount` from caller of the method to `receiver_id` with prepaired gas limitation.
-    ///
-    /// Requirements:
-    /// * Caller of the method must attach a deposit of 1 yoctoⓃ for security purposes.
-    /// * Caller of the method must be different with `receiver_id`.
-    /// * Amount must be positive number.
-    #[payable]
-    fn ft_transfer_call(
-        &mut self,
-        receiver_id: AccountId,
-        amount: U128,
-        memo: Option<String>,
-        msg: String,
-    ) -> PromiseOrValue<U128>
+/// Token transfer with initiating receiver's call and the callback. Transfer `amount` from caller of the method to `receiver_id` with prepaired gas limitation.
+///
+/// Requirements:
+/// * Caller of the method must attach a deposit of 1 yoctoⓃ for security purposes.
+/// * Caller of the method must be different with `receiver_id`.
+/// * Amount must be positive number.
+#[payable]
+fn ft_transfer_call(
+    &mut self,
+    receiver_id: AccountId,
+    amount: U128,
+    memo: Option<String>,
+    msg: String,
+) -> PromiseOrValue<U128>
 ```
 
 ### Burn
@@ -61,11 +61,11 @@ Same as `Transfer` with gas requirements and initiating receiver's call and the 
 Burn tokens from account & total supply contract.
 
 ```rust
-    /// Simple token burn. Remove a given `amount` from fn `caller`.
-    ///
-    /// Requirements: 
-    /// * Amount must be positive number.
-    pub fn ft_burn(&mut self, amount: U128)
+/// Simple token burn. Remove a given `amount` from fn `caller`.
+///
+/// Requirements: 
+/// * Amount must be positive number.
+pub fn ft_burn(&mut self, amount: U128)
 ```
 
 ### Register 
@@ -73,8 +73,8 @@ Burn tokens from account & total supply contract.
 Register new account. 
 
 ```rust 
-    /// Register new account on contract
-    pub fn register(&mut self, account_id: AccountId)
+/// Register new account on contract
+pub fn register(&mut self, account_id: AccountId)
 ```
 
 ## View methods
@@ -82,7 +82,7 @@ Register new account.
 ### Token metadata
 
 ```rust
-    fn ft_metadata(&self) -> FungibleTokenMetadata
+fn ft_metadata(&self) -> FungibleTokenMetadata
 ```
 
 ### Total supply
@@ -90,8 +90,8 @@ Register new account.
 Returns total supply tokens on contract.
 
 ```rust
-    /// Shows `contract.total_supply`. 
-    fn ft_total_supply(&self) -> U128
+/// Shows `contract.total_supply`. 
+fn ft_total_supply(&self) -> U128
 ```
 
 ### Account balance
@@ -99,5 +99,5 @@ Returns total supply tokens on contract.
 Returns balance of account.
 
 ```rust
-    fn ft_balance_of(&self, account_id: AccountId) -> U128
+fn ft_balance_of(&self, account_id: AccountId) -> U128
 ```
