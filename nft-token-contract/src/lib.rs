@@ -16,6 +16,7 @@ pub mod nft_core;
 pub mod receiver;
 pub mod resolver;
 pub mod token;
+pub mod update;
 pub mod view;
 
 #[derive(BorshStorageKey, BorshDeserialize, BorshSerialize)]
@@ -25,6 +26,8 @@ pub enum StorageKey {
     AccountTokens { hash: Vec<u8> },
     TokenMetadata { hash: Vec<u8> },
     TokenApprovals { hash: Vec<u8> },
+    LockedTokens,
+    AccountLockedTokens { hash: Vec<u8> },
 }
 
 #[near_bindgen]
@@ -34,6 +37,7 @@ pub struct Contract {
     pub backend_id: AccountId,
     pub token_by_id: UnorderedMap<TokenId, Token>,
     pub tokens_per_owner: LookupMap<AccountId, UnorderedSet<TokenId>>,
+    pub locked_tokens_per_owner: LookupMap<AccountId, UnorderedSet<TokenId>>,
 }
 
 impl Default for Contract {
@@ -53,6 +57,7 @@ impl Contract {
             backend_id,
             token_by_id: UnorderedMap::new(StorageKey::TokenById),
             tokens_per_owner: LookupMap::new(StorageKey::TokensPerOwner),
+            locked_tokens_per_owner: LookupMap::new(StorageKey::LockedTokens),
         }
     }
 
@@ -179,6 +184,87 @@ impl Contract {
             .insert(&self.backend_id, &approval_id);
         self.nft_transfer_internal(&token_id, Some(token), receiver_id, false);
     }
+
+    /// Lock token by a given `token_id`. Remove given `token_id` from
+    /// list of "free" tokens and add to locked.
+    ///
+    /// Requirements
+    /// * Caller of the method must attach a deposit of 1 yoctoⓃ for security purposes
+    /// * Contract MUST panic if called by someone other than token owner or
+    ///  one of the approved accounts
+    #[payable]
+    pub fn nft_lock(&mut self, token_id: TokenId, approval_id: Option<u64>) {
+        assert_one_yocto();
+        let token = self
+            .token_by_id
+            .get(&token_id)
+            .unwrap_or_else(|| env::panic_str("No such token"));
+
+        require!(
+            token.is_approved(&env::predecessor_account_id(), approval_id),
+            "Not enough permission"
+        );
+
+        let mut tokens_per_owner = self.get_tokens_per_owner_internal(&token.owner_id);
+        require!(
+            tokens_per_owner.remove(&token_id),
+            "Token is already locked"
+        );
+        self.tokens_per_owner
+            .insert(&token.owner_id, &tokens_per_owner);
+
+        let mut locked_tokens_per_owner =
+            self.get_locked_tokens_per_owner_internal(&token.owner_id);
+        locked_tokens_per_owner.insert(&token_id);
+        self.locked_tokens_per_owner
+            .insert(&token.owner_id, &locked_tokens_per_owner);
+    }
+
+    /// Unlock token by a given `token_id`. Remove given `token_id` from
+    /// locked and add to "Free"
+    ///
+    /// Requirements
+    /// * Caller of the method must attach a deposit of 1 yoctoⓃ for security purposes
+    /// * Contract MUST panic if called by someone other than backend account
+    #[payable]
+    pub fn nft_unlock(&mut self, token_id: TokenId) {
+        assert_one_yocto();
+        require!(
+            env::predecessor_account_id() == self.backend_id,
+            "Predecessor must be backend account"
+        );
+
+        let token = self
+            .token_by_id
+            .get(&token_id)
+            .unwrap_or_else(|| env::panic_str("No such token"));
+
+        let mut locked_tokens_per_owner =
+            self.get_locked_tokens_per_owner_internal(&token.owner_id);
+        require!(
+            locked_tokens_per_owner.remove(&token_id),
+            "Token not locked"
+        );
+        self.locked_tokens_per_owner
+            .insert(&token.owner_id, &locked_tokens_per_owner);
+
+        let mut tokens_per_owner = self.get_tokens_per_owner_internal(&token.owner_id);
+        tokens_per_owner.insert(&token_id);
+        self.tokens_per_owner
+            .insert(&token.owner_id, &tokens_per_owner);
+    }
+
+    /// Unlock token by a given `token_id`. Remove given `token_id` from
+    /// locked and transfer to `receiver_id`.
+    ///
+    /// Requirements
+    /// * Caller of the method must attach a deposit of 1 yoctoⓃ for security purposes
+    /// * Contract MUST panic if called by someone other than backend account
+    #[payable]
+    pub fn nft_unlock_and_transfer_backend(&mut self, token_id: TokenId, receiver_id: AccountId) {
+        self.nft_unlock(token_id.clone());
+        self.nft_transfer_backend(receiver_id, token_id, None, None);
+    }
 }
 
 impl Contract {
@@ -188,6 +274,19 @@ impl Contract {
                 hash: env::sha256(account_id.as_bytes()),
             })
         })
+    }
+
+    fn get_locked_tokens_per_owner_internal(
+        &self,
+        account_id: &AccountId,
+    ) -> UnorderedSet<TokenId> {
+        self.locked_tokens_per_owner
+            .get(account_id)
+            .unwrap_or_else(|| {
+                UnorderedSet::new(StorageKey::AccountLockedTokens {
+                    hash: env::sha256(account_id.as_bytes()),
+                })
+            })
     }
 
     fn get_token_internal(&self, token_id: &TokenId) -> Token {

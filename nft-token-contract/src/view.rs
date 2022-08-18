@@ -75,3 +75,50 @@ impl NonFungibleTokenEnumeration for Contract {
             .unwrap_or_default()
     }
 }
+
+#[near_bindgen]
+impl Contract {
+    /// Get number of locked tokens owned by a given account
+    ///
+    /// Arguments:
+    /// * `account_id`: a valid NEAR account
+    ///
+    /// Returns the number of locked non-fungible tokens owned by given `account_id` as
+    /// a string representing the value as an unsigned 128-bit integer to avoid
+    /// JSON number limit of 2^53.
+    pub fn nft_locked_supply_per_owner(&self, account_id: AccountId) -> U128 {
+        self.locked_tokens_per_owner
+            .get(&account_id)
+            .map(|tokens| tokens.len() as u128)
+            .unwrap_or_default()
+            .into()
+    }
+
+    /// Get list of all locked tokens owned by a given account
+    ///
+    /// Arguments:
+    /// * `account_id`: a valid NEAR account
+    /// * `from_index`: a string representing an unsigned 128-bit integer, representing the starting
+    ///   index of tokens to return
+    /// * `limit`: the maximum number of tokens to return
+    ///
+    /// Returns a paginated list of all locked tokens owned by this account
+    pub fn nft_locked_tokens_for_owner(
+        &self,
+        account_id: AccountId,
+        from_index: Option<U128>,
+        limit: Option<u64>,
+    ) -> Vec<Token> {
+        self.locked_tokens_per_owner
+            .get(&account_id)
+            .map(|token_ids| {
+                token_ids
+                    .iter()
+                    .skip(from_index.map(|v| v.0).unwrap_or_default() as usize)
+                    .take(limit.unwrap_or(NFT_VIEW_LIMIT) as usize)
+                    .filter_map(|id| self.token_by_id.get(&id).map(|token| token.into()))
+                    .collect()
+            })
+            .unwrap_or_default()
+    }
+}
