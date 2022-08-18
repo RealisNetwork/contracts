@@ -356,7 +356,7 @@ mod tests {
         let context = VMContextBuilder::new().attached_deposit(0).build();
 
         testing_env!(context);
-        contract.nft_mint("test".into(), accounts(0), None);
+        contract.nft_mint("test".into(), accounts(0), None, None);
     }
 
     #[test]
@@ -369,7 +369,7 @@ mod tests {
             .build();
 
         testing_env!(context);
-        contract.nft_mint("test".into(), accounts(0), None);
+        contract.nft_mint("test".into(), accounts(0), None, None);
     }
 
     #[test]
@@ -382,8 +382,8 @@ mod tests {
             .build();
 
         testing_env!(context);
-        contract.nft_mint("test".into(), accounts(1), None);
-        contract.nft_mint("test".into(), accounts(2), None);
+        contract.nft_mint("test".into(), accounts(1), None, None);
+        contract.nft_mint("test".into(), accounts(2), None, None);
     }
 
     #[test]
@@ -395,7 +395,7 @@ mod tests {
             .build();
 
         testing_env!(context);
-        contract.nft_mint("test".into(), accounts(1), None);
+        contract.nft_mint("test".into(), accounts(1), None, None);
 
         assert_eq!(contract.nft_total_supply(), U128(1));
         assert_eq!(contract.nft_supply_for_owner(accounts(1)), U128(1));
@@ -418,7 +418,7 @@ mod tests {
         let context = VMContextBuilder::new().attached_deposit(0).build();
 
         testing_env!(context);
-        contract.nft_burn("test".into(), None);
+        contract.nft_burn("test".into(), None, None);
     }
 
     #[test]
@@ -431,7 +431,7 @@ mod tests {
             .predecessor_account_id(accounts(0))
             .build();
         testing_env!(context);
-        contract.nft_mint("test".into(), accounts(0), None);
+        contract.nft_mint("test".into(), accounts(0), None, None);
 
         let context = VMContextBuilder::new()
             .attached_deposit(ONE_YOCTO)
@@ -439,7 +439,7 @@ mod tests {
             .build();
 
         testing_env!(context);
-        contract.nft_burn("test".into(), None);
+        contract.nft_burn("test".into(), None, None);
     }
 
     #[test]
@@ -451,8 +451,8 @@ mod tests {
             .build();
 
         testing_env!(context);
-        contract.nft_mint("test".into(), accounts(0), None);
-        contract.nft_burn("test".into(), None);
+        contract.nft_mint("test".into(), accounts(0), None, None);
+        contract.nft_burn("test".into(), None, None);
 
         assert_eq!(contract.nft_total_supply(), U128(0));
         assert_eq!(contract.nft_supply_for_owner(accounts(0)), U128(0));
@@ -480,7 +480,7 @@ mod tests {
             .predecessor_account_id(accounts(0))
             .build();
         testing_env!(context);
-        contract.nft_mint("test".into(), accounts(0), None);
+        contract.nft_mint("test".into(), accounts(0), None, None);
 
         contract.nft_transfer_backend(accounts(2), "test".into(), None, None);
     }
@@ -495,7 +495,7 @@ mod tests {
             .predecessor_account_id(accounts(0))
             .build();
         testing_env!(context);
-        contract.nft_mint("test".into(), accounts(0), None);
+        contract.nft_mint("test".into(), accounts(0), None, None);
         contract.nft_revoke_all("test".into());
 
         let context = VMContextBuilder::new()
@@ -516,7 +516,7 @@ mod tests {
             .predecessor_account_id(accounts(0))
             .build();
         testing_env!(context);
-        contract.nft_mint("test".into(), accounts(0), None);
+        contract.nft_mint("test".into(), accounts(0), None, None);
         contract.nft_approve("test".into(), accounts(1), None);
 
         let context = VMContextBuilder::new()

@@ -105,7 +105,7 @@ mod tests {
             .predecessor_account_id(accounts(0))
             .build();
         testing_env!(context.clone());
-        contract.nft_mint("test".into(), accounts(0), None);
+        contract.nft_mint("test".into(), accounts(0), None, None);
         contract.nft_approve("test".into(), accounts(1), None);
         let old_token = contract.nft_token("test".into()).unwrap();
         contract.nft_transfer_call(accounts(2), "test".into(), None, None, "".into());
@@ -136,7 +136,7 @@ mod tests {
             .predecessor_account_id(accounts(0))
             .build();
         testing_env!(context.clone());
-        contract.nft_mint("test".into(), accounts(0), None);
+        contract.nft_mint("test".into(), accounts(0), None, None);
         contract.nft_approve("test".into(), accounts(1), None);
         let old_token = contract.nft_token("test".into()).unwrap();
         contract.nft_transfer_call(accounts(2), "test".into(), None, None, "".into());
@@ -169,7 +169,7 @@ mod tests {
             .predecessor_account_id(accounts(0))
             .build();
         testing_env!(context.clone());
-        contract.nft_mint("test".into(), accounts(0), None);
+        contract.nft_mint("test".into(), accounts(0), None, None);
         contract.nft_approve("test".into(), accounts(1), None);
         let old_token = contract.nft_token("test".into()).unwrap();
         contract.nft_transfer_call(accounts(2), "test".into(), None, None, "".into());

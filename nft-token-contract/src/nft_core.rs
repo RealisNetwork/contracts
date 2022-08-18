@@ -159,7 +159,7 @@ mod tests {
             .predecessor_account_id(accounts(0))
             .build();
         testing_env!(context);
-        contract.nft_mint("test".into(), accounts(0), None);
+        contract.nft_mint("test".into(), accounts(0), None, None);
 
         let context = VMContextBuilder::new()
             .attached_deposit(ONE_YOCTO)
@@ -179,7 +179,7 @@ mod tests {
             .predecessor_account_id(accounts(0))
             .build();
         testing_env!(context);
-        contract.nft_mint("test".into(), accounts(0), None);
+        contract.nft_mint("test".into(), accounts(0), None, None);
         contract.nft_approve("test".into(), accounts(1), None);
         contract.nft_transfer(accounts(2), "test".into(), None, None);
 
@@ -198,7 +198,7 @@ mod tests {
             .predecessor_account_id(accounts(0))
             .build();
         testing_env!(context);
-        contract.nft_mint("test".into(), accounts(0), None);
+        contract.nft_mint("test".into(), accounts(0), None, None);
         contract.nft_transfer(accounts(2), "test".into(), None, None);
 
         assert_eq!(contract.nft_total_supply(), U128(1));
@@ -232,7 +232,7 @@ mod tests {
             .predecessor_account_id(accounts(0))
             .build();
         testing_env!(context);
-        contract.nft_mint("test".into(), accounts(0), None);
+        contract.nft_mint("test".into(), accounts(0), None, None);
 
         let context = VMContextBuilder::new()
             .attached_deposit(ONE_YOCTO)
@@ -252,7 +252,7 @@ mod tests {
             .predecessor_account_id(accounts(0))
             .build();
         testing_env!(context);
-        contract.nft_mint("test".into(), accounts(0), None);
+        contract.nft_mint("test".into(), accounts(0), None, None);
         contract.nft_approve("test".into(), accounts(1), None);
         contract.nft_transfer_call(accounts(2), "test".into(), None, None, "".into());
 
@@ -271,7 +271,7 @@ mod tests {
             .predecessor_account_id(accounts(0))
             .build();
         testing_env!(context);
-        contract.nft_mint("test".into(), accounts(0), None);
+        contract.nft_mint("test".into(), accounts(0), None, None);
         contract.nft_transfer_call(accounts(2), "test".into(), None, None, "".into());
 
         assert_eq!(contract.nft_total_supply(), U128(1));

@@ -175,7 +175,7 @@ mod tests {
             .predecessor_account_id(accounts(0))
             .build();
         testing_env!(context);
-        contract.nft_mint("test".into(), accounts(0), None);
+        contract.nft_mint("test".into(), accounts(0), None, None);
 
         let context = VMContextBuilder::new()
             .attached_deposit(ONE_YOCTO)
@@ -195,7 +195,7 @@ mod tests {
             .predecessor_account_id(accounts(0))
             .build();
         testing_env!(context);
-        contract.nft_mint("test".into(), accounts(0), None);
+        contract.nft_mint("test".into(), accounts(0), None, None);
 
         let option_promise = contract.nft_approve("test".into(), accounts(2), Some("test".into()));
         assert!(option_promise.is_some());
@@ -212,7 +212,7 @@ mod tests {
             .predecessor_account_id(accounts(0))
             .build();
         testing_env!(context);
-        contract.nft_mint(token_id.clone(), accounts(1), None);
+        contract.nft_mint(token_id.clone(), accounts(1), None, None);
 
         let context = VMContextBuilder::new()
             .attached_deposit(ONE_YOCTO)
@@ -245,7 +245,7 @@ mod tests {
             .predecessor_account_id(accounts(0))
             .build();
         testing_env!(context);
-        contract.nft_mint("test".into(), accounts(0), None);
+        contract.nft_mint("test".into(), accounts(0), None, None);
 
         let context = VMContextBuilder::new()
             .attached_deposit(ONE_YOCTO)
@@ -266,7 +266,7 @@ mod tests {
             .predecessor_account_id(accounts(0))
             .build();
         testing_env!(context);
-        contract.nft_mint(token_id.clone(), accounts(0), None);
+        contract.nft_mint(token_id.clone(), accounts(0), None, None);
 
         contract.nft_approve(token_id.clone(), accounts(1), None);
         contract.nft_approve(token_id.clone(), accounts(2), None);
@@ -312,7 +312,7 @@ mod tests {
             .predecessor_account_id(accounts(0))
             .build();
         testing_env!(context);
-        contract.nft_mint("test".into(), accounts(0), None);
+        contract.nft_mint("test".into(), accounts(0), None, None);
 
         let context = VMContextBuilder::new()
             .attached_deposit(ONE_YOCTO)
@@ -333,7 +333,7 @@ mod tests {
             .predecessor_account_id(accounts(0))
             .build();
         testing_env!(context);
-        contract.nft_mint(token_id.clone(), accounts(0), None);
+        contract.nft_mint(token_id.clone(), accounts(0), None, None);
 
         contract.nft_approve(token_id.clone(), accounts(1), None);
         contract.nft_approve(token_id.clone(), accounts(2), None);
