@@ -3,8 +3,6 @@
 
 format_strings = false
 imports_granularity = "Crate"
-normalize_comments = false
-wrap_comments = false
 
 reorder_impl_items = true
 use_try_shorthand = true

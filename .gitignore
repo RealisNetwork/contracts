@@ -27,3 +27,5 @@ common.rs
 .local
 
 **/node_modules/
+
+/neardev/
