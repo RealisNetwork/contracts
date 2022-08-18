@@ -19,10 +19,6 @@ Cargo.lock
 .DS_Store
 common.rs
 
-
-# The cache for docker container dependency
-.cargo
-
 # The cache for chain data in container
 .local
 

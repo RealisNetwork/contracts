@@ -17,7 +17,7 @@ then
 fi
 
 echo "Building contracts"
-cargo build --target wasm32-unknown-unknown --release
+cargo wasm
 
 if ! [ -x "$(command -v near)" ];
 then
