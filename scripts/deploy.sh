@@ -119,5 +119,7 @@ else
     echo "Updating contract"
     echo y | near deploy --accountId $NFT_CONTRACT_ID \
         --wasmFile ./target/wasm32-unknown-unknown/release/nft_token_contract.wasm \
+        --initFunction "update" \
+        --initArgs '{}' \
         --initGas 300000000000000
 fi
