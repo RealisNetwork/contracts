@@ -17,6 +17,7 @@ pub fn nft_mint(
     token_id: TokenId,
     owner_id: AccountId,
     metadata: Option<TokenMetadata>,
+    memo: Option<String>,
 )
 ```
 
@@ -30,7 +31,7 @@ pub fn nft_mint(
 /// * Contract MUST panic if called by someone other than token owner or
 ///  one of the approved accounts
 #[payable]
-pub fn nft_burn(&mut self, token_id: TokenId, approval_id: Option<u64>)
+pub fn nft_burn(&mut self, token_id: TokenId, approval_id: Option<u64>, memo: Option<String>)
 ```
 
 ### Transfer

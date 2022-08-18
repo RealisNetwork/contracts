@@ -72,6 +72,7 @@ impl Contract {
         token_id: TokenId,
         owner_id: AccountId,
         metadata: Option<TokenMetadata>,
+        memo: Option<String>,
     ) {
         assert_one_yocto();
         require!(
@@ -111,7 +112,7 @@ impl Contract {
         NftMint {
             owner_id: &owner_id,
             token_ids: &[&token_id],
-            memo: None,
+            memo: memo.as_deref(),
         }
         .emit();
     }
@@ -123,7 +124,7 @@ impl Contract {
     /// * Contract MUST panic if called by someone other than token owner or
     ///  one of the approved accounts
     #[payable]
-    pub fn nft_burn(&mut self, token_id: TokenId, approval_id: Option<u64>) {
+    pub fn nft_burn(&mut self, token_id: TokenId, approval_id: Option<u64>, memo: Option<String>) {
         assert_one_yocto();
         let owner_id = env::predecessor_account_id();
         let mut token = self
@@ -144,7 +145,7 @@ impl Contract {
             owner_id: &owner_id,
             token_ids: &[&token_id],
             authorized_id: None,
-            memo: None,
+            memo: memo.as_deref(),
         }
         .emit();
     }
