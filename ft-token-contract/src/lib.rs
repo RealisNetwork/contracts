@@ -10,18 +10,21 @@ use near_sdk::{
 };
 
 mod lis_token;
+mod update;
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
 pub struct Contract {
+    pub owner_id: AccountId,
     pub ft: FungibleToken,
 }
 
 #[near_bindgen]
 impl Contract {
     #[init]
-    pub fn new() -> Self {
+    pub fn new(owner_id: Option<AccountId>) -> Self {
         let mut this = Self {
+            owner_id: owner_id.unwrap_or_else(env::predecessor_account_id),
             ft: FungibleToken::new(b"a".to_vec()),
         };
 
