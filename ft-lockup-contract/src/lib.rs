@@ -12,6 +12,7 @@ use near_sdk::{
 
 pub mod ft_token_receiver;
 pub mod lockup;
+pub mod update;
 pub mod view;
 
 use crate::lockup::*;
@@ -23,6 +24,7 @@ pub const GAS_FOR_FT_TRANSFER: Gas = Gas(25_000_000_000_000);
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
 pub struct Contract {
+    pub owner_id: AccountId,
     /// Token contract account id to receive tokens for lockup
     pub token_account_id: AccountId,
     /// Account IDs that can create new lockups.
@@ -45,10 +47,15 @@ pub(crate) enum StorageKey {
 #[near_bindgen]
 impl Contract {
     #[init]
-    pub fn new(token_account_id: AccountId, deposit_whitelist: Vec<AccountId>) -> Self {
+    pub fn new(
+        owner_id: Option<AccountId>,
+        token_account_id: AccountId,
+        deposit_whitelist: Vec<AccountId>,
+    ) -> Self {
         let mut deposit_whitelist_set = UnorderedSet::new(StorageKey::DepositWhitelist);
         deposit_whitelist_set.extend(deposit_whitelist.into_iter());
         Self {
+            owner_id: owner_id.unwrap_or_else(env::predecessor_account_id),
             lockups: UnorderedMap::new(StorageKey::Lockups),
             account_lockups: LookupMap::new(StorageKey::AccountLockups),
             token_account_id,
