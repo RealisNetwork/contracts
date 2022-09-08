@@ -420,6 +420,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "ft-staking-contract"
+version = "0.1.0"
+dependencies = [
+ "near-contract-standards",
+ "near-sdk",
+ "primitive-types 0.7.3",
+]
+
+[[package]]
 name = "ft-token-contract"
 version = "0.1.0"
 dependencies = [

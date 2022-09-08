@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "ft-token-contract",
+    "ft-staking-contract",
     "ft-lockup-contract",
     "nft-token-contract",
 ]
