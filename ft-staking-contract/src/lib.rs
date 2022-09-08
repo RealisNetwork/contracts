@@ -25,7 +25,7 @@ pub struct Contract {
     total_supply: Balance,
     /// Total supply of the all xtokens
     total_xtoken_supply: Balance,
-    /// Determine the price ration between tokens and xtokens
+    /// Determine the price ratio between tokens and xtokens
     xtoken_cost: XTokenCost,
 }
 
