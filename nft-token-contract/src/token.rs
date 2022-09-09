@@ -59,4 +59,11 @@ impl Token {
 
         false
     }
+
+    pub fn clear(
+        &mut self
+    ) {
+        self.approved_account_ids.clear();
+        self.metadata.remove();
+    }
 }

@@ -89,12 +89,12 @@ impl Contract {
             owner_id: owner_id.clone(),
             metadata: LazyOption::new(
                 StorageKey::TokenMetadata {
-                    hash: env::sha256(owner_id.as_bytes()),
+                    hash: env::sha256(token_id.as_bytes()),
                 },
                 metadata.as_ref(),
             ),
             approved_account_ids: UnorderedMap::new(StorageKey::TokenApprovals {
-                hash: env::sha256(owner_id.as_bytes()),
+                hash: env::sha256(token_id.as_bytes()),
             }),
             next_approval_id: 0,
         };
@@ -135,6 +135,7 @@ impl Contract {
             token.check_approve_and_revoke_all(&env::predecessor_account_id(), approval_id),
             "Not enough permission"
         );
+        token.clear();
 
         self.token_by_id.remove(&token_id);
         let mut tokens_per_owner = self.get_tokens_per_owner_internal(&token.owner_id);
