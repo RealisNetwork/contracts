@@ -1,6 +1,7 @@
 use crate::*;
 use near_contract_standards::fungible_token::core::FungibleTokenCore;
 
+#[near_bindgen]
 impl FungibleTokenCore for Contract {
     #[allow(unused_variables)]
     fn ft_transfer(&mut self, receiver_id: AccountId, amount: U128, memo: Option<String>) {

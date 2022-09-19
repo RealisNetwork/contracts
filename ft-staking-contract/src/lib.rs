@@ -89,7 +89,7 @@ impl Contract {
 impl Contract {
     pub fn stake_internal(&mut self, account_id: &AccountId, amount: Balance) {
         let xtokens_amount = self.xtoken_cost.convert_to_xtokens(amount);
-        self.total_xtoken_supply += amount;
+        self.total_supply += amount;
         self.total_xtoken_supply += xtokens_amount;
         let account_xtokens_amount = self.accounts.get(account_id).unwrap_or_default();
         self.accounts
