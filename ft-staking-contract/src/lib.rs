@@ -65,7 +65,13 @@ impl Contract {
         let account_xtokens_amount = self.accounts.get(account_id).unwrap_or_default();
         self.accounts
             .insert(account_id, &(account_xtokens_amount + xtokens_amount));
-        // TODO: mint event
+
+        near_contract_standards::fungible_token::events::FtMint {
+            owner_id: account_id,
+            amount: &xtokens_amount.into(),
+            memo: None,
+        }
+        .emit();
     }
 
     pub fn unstake_internal(&mut self, account_id: &AccountId, xtoken_amount: Balance) {
@@ -75,7 +81,13 @@ impl Contract {
         let account_xtokens_amount = self.accounts.get(account_id).unwrap_or_default();
         self.accounts
             .insert(account_id, &(account_xtokens_amount - xtoken_amount));
-        // TODO: Burn event
+
+        near_contract_standards::fungible_token::events::FtBurn {
+            owner_id: account_id,
+            amount: &xtoken_amount.into(),
+            memo: None,
+        }
+        .emit();
     }
 
     pub fn add_to_pool_internal(&mut self, amount: Balance) {

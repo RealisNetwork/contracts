@@ -55,6 +55,11 @@ impl Contract {
                 .internal_deposit(&self.staking_contract, MINT_AMOUNT);
             self.last_mint = env::block_timestamp() / WEEK * WEEK;
         }
-        // TODO: mint event
+        near_contract_standards::fungible_token::events::FtMint {
+            owner_id: &self.staking_contract,
+            amount: &MINT_AMOUNT.into(),
+            memo: None,
+        }
+        .emit();
     }
 }
