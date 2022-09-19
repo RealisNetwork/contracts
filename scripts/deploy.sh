@@ -3,7 +3,7 @@
 export NEAR_ENV=testnet #mainnet
 export OWNER_ID="realis.testnet"
 export BACKEND_ID="backend.$OWNER_ID"
-export ROOT_CONTRACT_ID="testnet.$OWNER_ID"
+export ROOT_CONTRACT_ID="dev-v1.$OWNER_ID"
 export TOKEN_CONTRACT_ID="token.$ROOT_CONTRACT_ID"
 export STAKING_CONTRACT_ID="staking.$ROOT_CONTRACT_ID"
 export LOCKUP_CONTRACT_ID="lis-lockup.$ROOT_CONTRACT_ID"
@@ -30,9 +30,9 @@ fi
 if [[ $(near state $BACKEND_ID) == *"not found"* ]];
 then
     echo "Creating account for contract"
-    near create-account $ROOT_CONTRACT_ID \
+    near create-account $BACKEND_ID \
         --masterAccount $OWNER_ID \
-        --initialBalance 200
+        --initialBalance 100
 fi
 
 # TODO: Check backend for enough balance and transfer near
@@ -43,7 +43,7 @@ then
     echo "Creating account for contract"
     near create-account $ROOT_CONTRACT_ID \
         --masterAccount $OWNER_ID \
-        --initialBalance 160
+        --initialBalance 210
 fi
 
 # TODO: Check root for enough balance for deploy and transfer near
@@ -66,6 +66,15 @@ then
         --initialBalance 50
 fi
 
+# Creating account for staking contracts if not exists
+if [[ $(near state $STAKING_CONTRACT_ID) == *"not found"* ]];
+then
+    echo "Creating account for contract"
+    near create-account $STAKING_CONTRACT_ID \
+        --masterAccount $ROOT_CONTRACT_ID \
+        --initialBalance 50
+fi
+
 # Creating account for nft contracts if not exists
 if [[ $(near state $NFT_CONTRACT_ID) == *"not found"* ]];
 then
@@ -74,15 +83,6 @@ then
         --masterAccount $ROOT_CONTRACT_ID \
         --initialBalance 50
 fi
-
-# # Creating account for staking contracts if not exists
-# if [[ $(near state $STAKING_CONTRACT_ID) == *"not found"* ]];
-# then
-#     echo "Creating account for contract"
-#     near create-account $STAKING_CONTRACT_ID \
-#         --masterAccount $ROOT_CONTRACT_ID \
-#         --initialBalance 50
-# fi
 
 # Deploying token contracts if not exists, otherwise update
 if [[ $(near view-state $TOKEN_CONTRACT_ID --finality final) == *"[]"* ]];
@@ -116,23 +116,23 @@ else
         --initGas 300000000000000
 fi
 
-# # Deploying staking contracts if not exists, otherwise update
-# if [[ $(near view-state $STAKING_CONTRACT_ID --finality final) == *"[]"* ]];
-# then
-#     echo "Deploying contract"
-#     near deploy --accountId $STAKING_CONTRACT_ID \
-#         --wasmFile ./target/wasm32-unknown-unknown/release/nft_token_contract.wasm \
-#         --initFunction "new" \
-#         --initArgs '{"owner_id": "'$OWNER_ID'", "token_account_id": "'$TOKEN_CONTRACT_ID'"}' \
-#         --initGas 300000000000000
-# else
-#     echo "Updating contract"
-#     echo y | near deploy --accountId $STAKING_CONTRACT_ID \
-#         --wasmFile ./target/wasm32-unknown-unknown/release/nft_token_contract.wasm \
-#         --initFunction "update" \
-#         --initArgs '{}' \
-#         --initGas 300000000000000
-# fi
+# Deploying staking contracts if not exists, otherwise update
+if [[ $(near view-state $STAKING_CONTRACT_ID --finality final) == *"[]"* ]];
+then
+    echo "Deploying contract"
+    near deploy --accountId $STAKING_CONTRACT_ID \
+        --wasmFile ./target/wasm32-unknown-unknown/release/ft_staking_contract.wasm \
+        --initFunction "new" \
+        --initArgs '{"owner_id": "'$OWNER_ID'", "token_account_id": "'$TOKEN_CONTRACT_ID'", "lockup_account_id": "'$LOCKUP_CONTRACT_ID'"}' \
+        --initGas 300000000000000
+else
+    echo "Updating contract"
+    echo y | near deploy --accountId $STAKING_CONTRACT_ID \
+        --wasmFile ./target/wasm32-unknown-unknown/release/ft_staking_contract.wasm \
+        --initFunction "update" \
+        --initArgs '{}' \
+        --initGas 300000000000000
+fi
 
 # Deploying nft contracts if not exists, otherwise update
 if [[ $(near view-state $NFT_CONTRACT_ID --finality final) == *"[]"* ]];

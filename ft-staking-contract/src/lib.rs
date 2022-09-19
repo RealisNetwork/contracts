@@ -1,4 +1,4 @@
-use near_contract_standards::fungible_token::receiver::ext_ft_receiver;
+use near_contract_standards::fungible_token::core::ext_ft_core;
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
     collections::LookupMap,
@@ -118,11 +118,14 @@ impl Contract {
         }
         .emit();
 
-        ext_ft_receiver::ext(self.lockup_account_id.clone())
+        // token.contract ft_transfer_call
+
+        ext_ft_core::ext(self.token_account_id.clone())
             .with_static_gas(env::prepaid_gas() - GAS_FOR_UNSTAKE)
-            .ft_on_transfer(
-                env::current_account_id(),
+            .ft_transfer_call(
+                self.lockup_account_id.clone(),
                 amount.into(),
+                None,
                 json!({
                     "duration": format!("{}", WEEK),
                     "account_id": account_id,
