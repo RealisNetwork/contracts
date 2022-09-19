@@ -4,7 +4,8 @@ export NEAR_ENV=testnet #mainnet
 export OWNER_ID="realis.testnet"
 export BACKEND_ID="backend.$OWNER_ID"
 export ROOT_CONTRACT_ID="testnet.$OWNER_ID"
-export TOKEN_CONTRACT_ID="lis.$ROOT_CONTRACT_ID"
+export TOKEN_CONTRACT_ID="token.$ROOT_CONTRACT_ID"
+export STAKING_CONTRACT_ID="staking.$ROOT_CONTRACT_ID"
 export LOCKUP_CONTRACT_ID="lis-lockup.$ROOT_CONTRACT_ID"
 export NFT_CONTRACT_ID="nft.$ROOT_CONTRACT_ID"
 
@@ -25,7 +26,7 @@ then
     npm install -g near-cli
 fi
 
-# Creating root account for contracts if not exists
+# Creating backend account for contracts if not exists
 if [[ $(near state $BACKEND_ID) == *"not found"* ]];
 then
     echo "Creating account for contract"
@@ -74,6 +75,15 @@ then
         --initialBalance 50
 fi
 
+# # Creating account for staking contracts if not exists
+# if [[ $(near state $STAKING_CONTRACT_ID) == *"not found"* ]];
+# then
+#     echo "Creating account for contract"
+#     near create-account $STAKING_CONTRACT_ID \
+#         --masterAccount $ROOT_CONTRACT_ID \
+#         --initialBalance 50
+# fi
+
 # Deploying token contracts if not exists, otherwise update
 if [[ $(near view-state $TOKEN_CONTRACT_ID --finality final) == *"[]"* ]];
 then
@@ -81,7 +91,7 @@ then
     near deploy --accountId $TOKEN_CONTRACT_ID \
         --wasmFile ./target/wasm32-unknown-unknown/release/ft_token_contract.wasm \
         --initFunction "new" \
-        --initArgs '{}' \
+        --initArgs '{"owner_id": "'$OWNER_ID'", "staking_id": "'$STAKING_CONTRACT_ID'"}' \
         --initGas 300000000000000
 else
     echo "Updating contract"
@@ -105,6 +115,24 @@ else
         --wasmFile ./target/wasm32-unknown-unknown/release/ft_lockup_contract.wasm \
         --initGas 300000000000000
 fi
+
+# # Deploying staking contracts if not exists, otherwise update
+# if [[ $(near view-state $STAKING_CONTRACT_ID --finality final) == *"[]"* ]];
+# then
+#     echo "Deploying contract"
+#     near deploy --accountId $STAKING_CONTRACT_ID \
+#         --wasmFile ./target/wasm32-unknown-unknown/release/nft_token_contract.wasm \
+#         --initFunction "new" \
+#         --initArgs '{"owner_id": "'$OWNER_ID'", "token_account_id": "'$TOKEN_CONTRACT_ID'"}' \
+#         --initGas 300000000000000
+# else
+#     echo "Updating contract"
+#     echo y | near deploy --accountId $STAKING_CONTRACT_ID \
+#         --wasmFile ./target/wasm32-unknown-unknown/release/nft_token_contract.wasm \
+#         --initFunction "update" \
+#         --initArgs '{}' \
+#         --initGas 300000000000000
+# fi
 
 # Deploying nft contracts if not exists, otherwise update
 if [[ $(near view-state $NFT_CONTRACT_ID --finality final) == *"[]"* ]];

@@ -15,18 +15,7 @@ impl Ownable for Contract {
 #[near_bindgen]
 impl Contract {
     #[init(ignore_state)]
-    pub fn update(owner_id: Option<AccountId>) -> Self {
-        #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
-        pub struct OldContract {
-            pub ft: FungibleToken,
-        }
-
-        let contract: OldContract =
-            env::state_read().unwrap_or_else(|| env::panic_str("Not initialized"));
-
-        Self {
-            owner_id: owner_id.unwrap_or_else(env::predecessor_account_id),
-            ft: contract.ft,
-        }
+    pub fn update() -> Self {
+        env::state_read().unwrap_or_else(|| env::panic_str("Not initialized"))
     }
 }

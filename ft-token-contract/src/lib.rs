@@ -6,7 +6,7 @@ use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
     env,
     json_types::U128,
-    near_bindgen, require, AccountId, Balance, PanicOnDefault, PromiseOrValue,
+    near_bindgen, require, AccountId, Balance, PanicOnDefault, PromiseOrValue, Timestamp,
 };
 
 mod lis_token;
@@ -16,16 +16,20 @@ mod update;
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
 pub struct Contract {
     pub owner_id: AccountId,
+    pub staking_contract: AccountId,
     pub ft: FungibleToken,
+    pub last_mint: Timestamp,
 }
 
 #[near_bindgen]
 impl Contract {
     #[init]
-    pub fn new(owner_id: Option<AccountId>) -> Self {
+    pub fn new(owner_id: Option<AccountId>, staking_id: AccountId) -> Self {
         let mut this = Self {
             owner_id: owner_id.unwrap_or_else(env::predecessor_account_id),
+            staking_contract: staking_id,
             ft: FungibleToken::new(b"a".to_vec()),
+            last_mint: env::block_timestamp(),
         };
 
         let account_id = env::predecessor_account_id();
