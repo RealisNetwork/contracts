@@ -3,7 +3,7 @@
 export NEAR_ENV=testnet #mainnet
 export OWNER_ID="realis.testnet"
 export BACKEND_ID="backend.$OWNER_ID"
-export ROOT_CONTRACT_ID="dev-v3.$OWNER_ID"
+export ROOT_CONTRACT_ID="dev-v4.$OWNER_ID"
 export TOKEN_CONTRACT_ID="token.$ROOT_CONTRACT_ID"
 export STAKING_CONTRACT_ID="staking.$ROOT_CONTRACT_ID"
 export LOCKUP_CONTRACT_ID="lis-lockup.$ROOT_CONTRACT_ID"

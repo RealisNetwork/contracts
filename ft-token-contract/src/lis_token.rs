@@ -22,7 +22,7 @@ impl Contract {
         require!(self.last_mint + WEEK <= time, "Too early");
         self.ft
             .internal_deposit(&self.staking_contract, MINT_AMOUNT);
-        self.last_mint = env::block_timestamp() / WEEK * WEEK;
+        self.last_mint = time;
 
         ext_ft_receiver::ext(self.staking_contract.clone())
             .with_static_gas(env::prepaid_gas() - GAS_FOR_MINT)
@@ -60,6 +60,7 @@ impl Contract {
                 memo: None,
             }
             .emit();
+            return;
         }
         // Rollback deposit tokens if transfer fail
         self.ft
