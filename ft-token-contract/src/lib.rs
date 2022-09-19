@@ -35,9 +35,15 @@ impl Contract {
 
         this.ft.internal_register_account(&owner_id);
         this.ft.internal_register_account(&staking_id);
-        this.ft
-            .internal_deposit(&owner_id, 3_000_000_000 * 10_u128.pow(12));
-        // TODO: mint event
+
+        let amount = 3_000_000_000 * 10_u128.pow(12);
+        this.ft.internal_deposit(&owner_id, amount);
+        near_contract_standards::fungible_token::events::FtMint {
+            owner_id: &owner_id,
+            amount: &amount.into(),
+            memo: None,
+        }
+        .emit();
 
         this
     }
