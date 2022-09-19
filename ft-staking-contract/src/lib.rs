@@ -6,7 +6,7 @@ use near_sdk::{
     json_types::U128,
     near_bindgen, require,
     serde_json::json,
-    AccountId, Balance, Gas, PanicOnDefault, Promise, PromiseOrValue,
+    AccountId, Balance, Gas, PanicOnDefault, Promise, PromiseOrValue, assert_one_yocto, ONE_YOCTO,
 };
 use xtoken::XTokenCost;
 
@@ -23,7 +23,7 @@ pub const HOUR: u64 = 60 * MINUTE;
 pub const DAY: u64 = 24 * HOUR;
 pub const WEEK: u64 = 7 * DAY;
 
-pub const GAS_FOR_UNSTAKE: Gas = Gas(20_000_000_000_000);
+pub const GAS_FOR_UNSTAKE: Gas = Gas(40_000_000_000_000);
 pub const GAS_FOR_UNSTAKE_CALLBACK: Gas = Gas(20_000_000_000_000);
 
 #[near_bindgen]
@@ -63,7 +63,9 @@ impl Contract {
         }
     }
 
+    #[payable]
     pub fn unstake(&mut self, xtoken_amount: Option<U128>) -> Promise {
+        assert_one_yocto();
         let xtoken_amount = xtoken_amount.map(|a| a.0).unwrap_or_else(|| {
             self.accounts
                 .get(&env::predecessor_account_id())
@@ -122,6 +124,7 @@ impl Contract {
 
         ext_ft_core::ext(self.token_account_id.clone())
             .with_static_gas(env::prepaid_gas() - GAS_FOR_UNSTAKE)
+            .with_attached_deposit(ONE_YOCTO)
             .ft_transfer_call(
                 self.lockup_account_id.clone(),
                 amount.into(),

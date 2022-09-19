@@ -3,7 +3,7 @@
 export NEAR_ENV=testnet #mainnet
 export OWNER_ID="realis.testnet"
 export BACKEND_ID="backend.$OWNER_ID"
-export ROOT_CONTRACT_ID="dev-v1.$OWNER_ID"
+export ROOT_CONTRACT_ID="dev-v3.$OWNER_ID"
 export TOKEN_CONTRACT_ID="token.$ROOT_CONTRACT_ID"
 export STAKING_CONTRACT_ID="staking.$ROOT_CONTRACT_ID"
 export LOCKUP_CONTRACT_ID="lis-lockup.$ROOT_CONTRACT_ID"
@@ -107,8 +107,10 @@ then
     near deploy --accountId $LOCKUP_CONTRACT_ID \
         --wasmFile ./target/wasm32-unknown-unknown/release/ft_lockup_contract.wasm \
         --initFunction "new" \
-        --initArgs '{"token_account_id": "'$TOKEN_CONTRACT_ID'", "deposit_whitelist": ["'$OWNER_ID'"]}' \
+        --initArgs '{"token_account_id": "'$TOKEN_CONTRACT_ID'", "deposit_whitelist": ["'$OWNER_ID'", "'$STAKING_CONTRACT_ID'"]}' \
         --initGas 300000000000000
+    echo "Register in token contract"
+    near call $TOKEN_CONTRACT_ID register '{"account_id": "'$LOCKUP_CONTRACT_ID'"}' --accountId $OWNER_ID
 else
     echo "Updating contract"
     echo y | near deploy --accountId $LOCKUP_CONTRACT_ID \
