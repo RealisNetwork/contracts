@@ -25,17 +25,19 @@ pub struct Contract {
 impl Contract {
     #[init]
     pub fn new(owner_id: Option<AccountId>, staking_id: AccountId) -> Self {
+        let owner_id = owner_id.unwrap_or_else(env::predecessor_account_id);
         let mut this = Self {
-            owner_id: owner_id.unwrap_or_else(env::predecessor_account_id),
-            staking_contract: staking_id,
+            owner_id: owner_id.clone(),
+            staking_contract: staking_id.clone(),
             ft: FungibleToken::new(b"a".to_vec()),
             last_mint: env::block_timestamp(),
         };
 
-        let account_id = env::predecessor_account_id();
-        this.ft.internal_register_account(&account_id);
+        this.ft.internal_register_account(&owner_id);
+        this.ft.internal_register_account(&staking_id);
         this.ft
-            .internal_deposit(&account_id, 3_000_000_000 * 10_u128.pow(12));
+            .internal_deposit(&owner_id, 3_000_000_000 * 10_u128.pow(12));
+        // TODO: mint event
 
         this
     }

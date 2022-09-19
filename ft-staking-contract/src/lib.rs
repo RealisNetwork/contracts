@@ -6,7 +6,7 @@ use near_sdk::{
     json_types::U128,
     near_bindgen, require,
     serde_json::json,
-    AccountId, Balance, Gas, PanicOnDefault, PromiseOrValue, Promise,
+    AccountId, Balance, Gas, PanicOnDefault, Promise, PromiseOrValue,
 };
 use xtoken::XTokenCost;
 

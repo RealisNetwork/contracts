@@ -11,7 +11,7 @@ pub const WEEK: u64 = 7 * DAY;
 
 pub const MINT_AMOUNT: Balance = 410_000_000_000_000_000;
 
-pub const GAS_FOR_MINT: Gas = Gas(20_000_000_000_000);
+pub const GAS_FOR_MINT: Gas = Gas(50_000_000_000_000);
 pub const GAS_FOR_MINT_CALLBACK: Gas = Gas(20_000_000_000_000);
 
 #[near_bindgen]
@@ -19,7 +19,10 @@ impl Contract {
     pub fn ft_mint(&mut self) {
         self.assert_owner();
         let time = env::block_timestamp() / WEEK * WEEK;
-        require!(self.last_mint + WEEK <= time);
+        require!(self.last_mint + WEEK <= time, "Too early");
+        self.ft
+            .internal_deposit(&self.staking_contract, MINT_AMOUNT);
+        self.last_mint = env::block_timestamp() / WEEK * WEEK;
 
         ext_ft_receiver::ext(self.staking_contract.clone())
             .with_static_gas(env::prepaid_gas() - GAS_FOR_MINT)
@@ -51,15 +54,133 @@ impl Contract {
     #[private]
     pub fn transfer_on_mint_callback(&mut self) {
         if is_promise_success() {
-            self.ft
-                .internal_deposit(&self.staking_contract, MINT_AMOUNT);
-            self.last_mint = env::block_timestamp() / WEEK * WEEK;
+            near_contract_standards::fungible_token::events::FtMint {
+                owner_id: &self.staking_contract,
+                amount: &MINT_AMOUNT.into(),
+                memo: None,
+            }
+            .emit();
         }
-        near_contract_standards::fungible_token::events::FtMint {
-            owner_id: &self.staking_contract,
-            amount: &MINT_AMOUNT.into(),
-            memo: None,
-        }
-        .emit();
+        // Rollback deposit tokens if transfer fail
+        self.ft
+            .internal_withdraw(&self.staking_contract, MINT_AMOUNT);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{
+        lis_token::{DAY, MINT_AMOUNT, WEEK},
+        *,
+    };
+    use near_sdk::{test_utils::*, testing_env};
+
+    #[test]
+    fn mint_time_check() {
+        let owner_id = accounts(0);
+        let staking_id = accounts(1);
+        let intitial_total_supply = 3_000_000_000 * 10_u128.pow(12);
+        let context = VMContextBuilder::new();
+
+        // init contract
+        testing_env!(context.clone().block_timestamp(WEEK).build());
+        let mut contract = Contract::new(Some(owner_id.clone()), staking_id);
+        assert_eq!(contract.ft_total_supply().0, intitial_total_supply);
+
+        // wait week
+        testing_env!(context
+            .clone()
+            .predecessor_account_id(owner_id.clone())
+            .block_timestamp(env::block_timestamp() + WEEK)
+            .build());
+        // can mint
+        contract.ft_mint();
+        assert_eq!(
+            contract.ft_total_supply().0,
+            intitial_total_supply + MINT_AMOUNT
+        );
+
+        // wait week
+        testing_env!(context
+            .clone()
+            .predecessor_account_id(owner_id.clone())
+            .block_timestamp(env::block_timestamp() + WEEK)
+            .build());
+        // can mint
+        contract.ft_mint();
+        assert_eq!(
+            contract.ft_total_supply().0,
+            intitial_total_supply + 2 * MINT_AMOUNT
+        );
+
+        // wait week + 3 days; /// thursday
+        testing_env!(context
+            .clone()
+            .predecessor_account_id(owner_id.clone())
+            .block_timestamp(env::block_timestamp() + WEEK + 3 * DAY)
+            .build());
+        // can mint
+        contract.ft_mint();
+        assert_eq!(
+            contract.ft_total_supply().0,
+            intitial_total_supply + 3 * MINT_AMOUNT
+        );
+
+        // wait 5 days /// tuesday
+        testing_env!(context
+            .clone()
+            .predecessor_account_id(owner_id.clone())
+            .block_timestamp(env::block_timestamp() + 5 * DAY)
+            .build());
+        // can mint
+        contract.ft_mint();
+        assert_eq!(
+            contract.ft_total_supply().0,
+            intitial_total_supply + 4 * MINT_AMOUNT
+        );
+    }
+
+    #[test]
+    #[should_panic = "Too early"]
+    fn mint_before_new_week() {
+        let owner_id = accounts(0);
+        let staking_id = accounts(1);
+        let intitial_total_supply = 3_000_000_000 * 10_u128.pow(12);
+        let context = VMContextBuilder::new();
+
+        // init contract
+        testing_env!(context.clone().block_timestamp(WEEK).build());
+        let mut contract = Contract::new(Some(owner_id.clone()), staking_id);
+        assert_eq!(contract.ft_total_supply().0, intitial_total_supply);
+
+        // wait 3 days
+        testing_env!(context
+            .clone()
+            .predecessor_account_id(owner_id.clone())
+            .block_timestamp(env::block_timestamp() + 3 * DAY)
+            .build());
+        // cannot mint
+        contract.ft_mint();
+    }
+
+    #[test]
+    #[should_panic = "Owner must be predecessor"]
+    fn can_mint_only_owner() {
+        let owner_id = accounts(0);
+        let staking_id = accounts(1);
+        let context = VMContextBuilder::new();
+
+        // init contract
+        testing_env!(context.clone().block_timestamp(WEEK).build());
+        let mut contract = Contract::new(Some(owner_id.clone()), staking_id);
+
+        // wait week
+        testing_env!(context
+            .clone()
+            .predecessor_account_id(accounts(3))
+            .block_timestamp(env::block_timestamp() + WEEK)
+            .build());
+        // can mint
+        contract.ft_mint();
     }
 }
