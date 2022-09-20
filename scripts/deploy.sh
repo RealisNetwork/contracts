@@ -1,12 +1,12 @@
 #!/usr/bin/env sh
 
-export NEAR_ENV=testnet #mainnet
-export OWNER_ID="realis.testnet"
+export NEAR_ENV=mainnet
+export OWNER_ID="realisnetwork.near"
 export BACKEND_ID="backend.$OWNER_ID"
-export ROOT_CONTRACT_ID="dev-v4.$OWNER_ID"
+export ROOT_CONTRACT_ID="v1.$OWNER_ID"
 export TOKEN_CONTRACT_ID="token.$ROOT_CONTRACT_ID"
 export STAKING_CONTRACT_ID="staking.$ROOT_CONTRACT_ID"
-export LOCKUP_CONTRACT_ID="lis-lockup.$ROOT_CONTRACT_ID"
+export LOCKUP_CONTRACT_ID="lockup.$ROOT_CONTRACT_ID"
 export NFT_CONTRACT_ID="nft.$ROOT_CONTRACT_ID"
 
 if ! [ -x "$(command -v cargo)" ];
@@ -32,7 +32,7 @@ then
     echo "Creating account for contract"
     near create-account $BACKEND_ID \
         --masterAccount $OWNER_ID \
-        --initialBalance 100
+        --initialBalance 20
 fi
 
 # TODO: Check backend for enough balance and transfer near
