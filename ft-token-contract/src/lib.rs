@@ -10,6 +10,7 @@ use near_sdk::{
 };
 
 mod lis_token;
+mod storage_impl;
 mod update;
 
 #[near_bindgen]

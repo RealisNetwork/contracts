@@ -1,12 +1,13 @@
 use near_contract_standards::fungible_token::core::ext_ft_core;
 use near_sdk::{
+    assert_one_yocto,
     borsh::{self, BorshDeserialize, BorshSerialize},
     collections::LookupMap,
     env, is_promise_success,
     json_types::U128,
     near_bindgen, require,
     serde_json::json,
-    AccountId, Balance, Gas, PanicOnDefault, Promise, PromiseOrValue, assert_one_yocto, ONE_YOCTO,
+    AccountId, Balance, Gas, PanicOnDefault, Promise, PromiseOrValue, ONE_YOCTO,
 };
 use xtoken::XTokenCost;
 
