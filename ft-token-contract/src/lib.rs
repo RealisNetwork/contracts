@@ -9,6 +9,7 @@ use near_sdk::{
     near_bindgen, require, AccountId, Balance, PanicOnDefault, PromiseOrValue, Timestamp,
 };
 
+mod ft_core;
 mod lis_token;
 mod storage_impl;
 mod update;
@@ -53,8 +54,6 @@ impl Contract {
         self.ft.internal_register_account(&account_id);
     }
 }
-
-near_contract_standards::impl_fungible_token_core!(Contract, ft);
 
 #[near_bindgen]
 impl FungibleTokenMetadataProvider for Contract {
