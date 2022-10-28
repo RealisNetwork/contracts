@@ -74,6 +74,7 @@ mod tests {
         lis_token::{DAY, MINT_AMOUNT, WEEK},
         *,
     };
+    use near_contract_standards::fungible_token::core::FungibleTokenCore;
     use near_sdk::{test_utils::*, testing_env};
 
     #[test]
