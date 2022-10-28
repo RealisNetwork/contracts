@@ -1,6 +1,7 @@
 use crate::*;
 use near_contract_standards::upgrade::Ownable;
 
+#[near_bindgen]
 impl Ownable for Contract {
     fn get_owner(&self) -> AccountId {
         self.owner_id.clone()
