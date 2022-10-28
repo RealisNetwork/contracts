@@ -3,11 +3,11 @@ use near_sdk::{
     assert_one_yocto,
     borsh::{self, BorshDeserialize, BorshSerialize},
     collections::LookupMap,
-    env, is_promise_success,
+    env,
     json_types::U128,
     near_bindgen, require,
     serde_json::json,
-    AccountId, Balance, Gas, PanicOnDefault, Promise, PromiseOrValue, ONE_YOCTO,
+    AccountId, Balance, Gas, PanicOnDefault, Promise, PromiseError, PromiseOrValue, ONE_YOCTO,
 };
 use xtoken::XTokenCost;
 
@@ -80,12 +80,15 @@ impl Contract {
     }
 
     #[private]
-    pub fn transfer_on_unstake_callback(&mut self, account_id: AccountId, amount: U128) {
-        if is_promise_success() {
-            return;
-        }
+    pub fn transfer_on_unstake_callback(
+        &mut self,
+        account_id: AccountId,
+        amount: U128,
+        #[callback_result] used: Result<U128, PromiseError>,
+    ) {
+        let amount = amount.0 - used.map(|v| v.0).unwrap_or_default();
         // Rollback account stake
-        self.stake_internal(&account_id, amount.into());
+        self.stake_internal(&account_id, amount);
     }
 }
 
