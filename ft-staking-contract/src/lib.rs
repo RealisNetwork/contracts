@@ -72,10 +72,7 @@ impl Contract {
                 .get(&env::predecessor_account_id())
                 .unwrap_or_default()
         });
-        require!(
-            xtoken_amount > 0,
-            "The xtoken_amount should be a positive number"
-        );
+        require!(xtoken_amount > 0, "The xtoken_amount should not be zero");
         self.unstake_internal(&env::predecessor_account_id(), xtoken_amount)
     }
 
