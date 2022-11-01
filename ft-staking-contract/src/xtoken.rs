@@ -1,18 +1,10 @@
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
-    Balance, Timestamp,
+    Balance,
 };
 use primitive_types::U256;
 
-pub const NANOSECOND: u64 = 1;
-pub const MILLISECOND: u64 = 1_000_000 * NANOSECOND;
-pub const SECOND: u64 = 1000 * MILLISECOND;
-pub const MINUTE: u64 = 60 * SECOND;
-pub const HOUR: u64 = 60 * MINUTE;
-pub const DAY: u64 = 24 * HOUR;
-
 pub const STARTED_COST: Balance = 1000;
-pub const DEFAULT_LOCKUP_TIME: Timestamp = 7 * DAY;
 
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug)]
 pub struct XTokenCost {

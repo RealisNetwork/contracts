@@ -40,7 +40,7 @@ impl Contract {
 
     pub fn ft_burn(&mut self, amount: U128) {
         let amount: Balance = amount.into();
-        require!(amount > 0, "The amount should be a positive number");
+        require!(amount > 0, "The amount should not be zero");
         let sender_id = env::predecessor_account_id();
         self.ft.internal_withdraw(&sender_id, amount);
         near_contract_standards::fungible_token::events::FtBurn {
@@ -81,13 +81,13 @@ mod tests {
     fn mint_time_check() {
         let owner_id = accounts(0);
         let staking_id = accounts(1);
-        let intitial_total_supply = 3_000_000_000 * 10_u128.pow(12);
+        let initial_total_supply = 3_000_000_000 * 10_u128.pow(12);
         let context = VMContextBuilder::new();
 
         // init contract
         testing_env!(context.clone().block_timestamp(WEEK).build());
         let mut contract = Contract::new(Some(owner_id.clone()), staking_id);
-        assert_eq!(contract.ft_total_supply().0, intitial_total_supply);
+        assert_eq!(contract.ft_total_supply().0, initial_total_supply);
 
         // wait week
         testing_env!(context
@@ -99,7 +99,7 @@ mod tests {
         contract.ft_mint();
         assert_eq!(
             contract.ft_total_supply().0,
-            intitial_total_supply + MINT_AMOUNT
+            initial_total_supply + MINT_AMOUNT
         );
 
         // wait week
@@ -112,7 +112,7 @@ mod tests {
         contract.ft_mint();
         assert_eq!(
             contract.ft_total_supply().0,
-            intitial_total_supply + 2 * MINT_AMOUNT
+            initial_total_supply + 2 * MINT_AMOUNT
         );
 
         // wait week + 3 days; /// thursday
@@ -125,7 +125,7 @@ mod tests {
         contract.ft_mint();
         assert_eq!(
             contract.ft_total_supply().0,
-            intitial_total_supply + 3 * MINT_AMOUNT
+            initial_total_supply + 3 * MINT_AMOUNT
         );
 
         // wait 5 days /// tuesday
@@ -138,7 +138,7 @@ mod tests {
         contract.ft_mint();
         assert_eq!(
             contract.ft_total_supply().0,
-            intitial_total_supply + 4 * MINT_AMOUNT
+            initial_total_supply + 4 * MINT_AMOUNT
         );
     }
 
@@ -147,13 +147,13 @@ mod tests {
     fn mint_before_new_week() {
         let owner_id = accounts(0);
         let staking_id = accounts(1);
-        let intitial_total_supply = 3_000_000_000 * 10_u128.pow(12);
+        let initial_total_supply = 3_000_000_000 * 10_u128.pow(12);
         let context = VMContextBuilder::new();
 
         // init contract
         testing_env!(context.clone().block_timestamp(WEEK).build());
         let mut contract = Contract::new(Some(owner_id.clone()), staking_id);
-        assert_eq!(contract.ft_total_supply().0, intitial_total_supply);
+        assert_eq!(contract.ft_total_supply().0, initial_total_supply);
 
         // wait 3 days
         testing_env!(context

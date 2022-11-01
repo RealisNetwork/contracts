@@ -3,8 +3,8 @@ use near_sdk::{
     assert_one_yocto,
     borsh::{self, BorshDeserialize, BorshSerialize},
     collections::LookupMap,
-    env,
-    json_types::U128,
+    env, is_promise_success,
+    json_types::{U128, U64},
     near_bindgen, require,
     serde_json::json,
     AccountId, Balance, Gas, PanicOnDefault, Promise, PromiseError, PromiseOrValue, ONE_YOCTO,
@@ -17,12 +17,12 @@ pub mod metadata;
 pub mod update;
 pub mod xtoken;
 
-pub const MILLISECOND: u64 = 1_000_000;
-pub const SECOND: u64 = 1000 * MILLISECOND;
-pub const MINUTE: u64 = 60 * SECOND;
-pub const HOUR: u64 = 60 * MINUTE;
-pub const DAY: u64 = 24 * HOUR;
-pub const WEEK: u64 = 7 * DAY;
+pub const MILLISECOND: U64 = U64(1_000_000);
+pub const SECOND: U64 = U64(1000 * MILLISECOND.0);
+pub const MINUTE: U64 = U64(60 * SECOND.0);
+pub const HOUR: U64 = U64(60 * MINUTE.0);
+pub const DAY: U64 = U64(24 * HOUR.0);
+pub const WEEK: U64 = U64(7 * DAY.0);
 
 pub const GAS_FOR_UNSTAKE: Gas = Gas(40_000_000_000_000);
 pub const GAS_FOR_UNSTAKE_CALLBACK: Gas = Gas(20_000_000_000_000);
@@ -72,10 +72,7 @@ impl Contract {
                 .get(&env::predecessor_account_id())
                 .unwrap_or_default()
         });
-        require!(
-            xtoken_amount > 0,
-            "The xtoken_amount should be a positive number"
-        );
+        require!(xtoken_amount > 0, "The xtoken_amount should not be zero");
         self.unstake_internal(&env::predecessor_account_id(), xtoken_amount)
     }
 
@@ -136,7 +133,7 @@ impl Contract {
                 amount.into(),
                 None,
                 json!({
-                    "duration": format!("{}", WEEK),
+                    "duration": WEEK,
                     "account_id": account_id,
                 })
                 .to_string(),

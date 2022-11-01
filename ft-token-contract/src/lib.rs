@@ -14,6 +14,8 @@ mod lis_token;
 mod storage_impl;
 mod update;
 
+pub const DEFAULT_MINT_AMOUNT: u128 = 3_000_000_000 * 10_u128.pow(12);
+
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
 pub struct Contract {
@@ -38,11 +40,10 @@ impl Contract {
         this.ft.internal_register_account(&owner_id);
         this.ft.internal_register_account(&staking_id);
 
-        let amount = 3_000_000_000 * 10_u128.pow(12);
-        this.ft.internal_deposit(&owner_id, amount);
+        this.ft.internal_deposit(&owner_id, DEFAULT_MINT_AMOUNT);
         near_contract_standards::fungible_token::events::FtMint {
             owner_id: &owner_id,
-            amount: &amount.into(),
+            amount: &DEFAULT_MINT_AMOUNT.into(),
             memo: None,
         }
         .emit();
