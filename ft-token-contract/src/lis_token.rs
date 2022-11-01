@@ -86,7 +86,7 @@ mod tests {
 
         // init contract
         testing_env!(context.clone().block_timestamp(WEEK).build());
-        let mut contract = Contract::new(Some(owner_id.clone()), staking_id);
+        let mut contract = Contract::new(Some(owner_id.clone()), None, staking_id);
         assert_eq!(contract.ft_total_supply().0, initial_total_supply);
 
         // wait week
@@ -152,7 +152,7 @@ mod tests {
 
         // init contract
         testing_env!(context.clone().block_timestamp(WEEK).build());
-        let mut contract = Contract::new(Some(owner_id.clone()), staking_id);
+        let mut contract = Contract::new(Some(owner_id.clone()), None, staking_id);
         assert_eq!(contract.ft_total_supply().0, initial_total_supply);
 
         // wait 3 days
@@ -174,7 +174,7 @@ mod tests {
 
         // init contract
         testing_env!(context.clone().block_timestamp(WEEK).build());
-        let mut contract = Contract::new(Some(owner_id.clone()), staking_id);
+        let mut contract = Contract::new(Some(owner_id.clone()), None, staking_id);
 
         // wait week
         testing_env!(context

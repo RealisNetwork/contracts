@@ -17,8 +17,8 @@ impl Ownable for Contract {
 impl Contract {
     #[init(ignore_state)]
     pub fn update() -> Self {
-        let contract: ContractV0 = env::state_read()
-            .unwrap_or_else(|| env::panic_str("Not initialized"));
+        let contract: ContractV0 =
+            env::state_read().unwrap_or_else(|| env::panic_str("Not initialized"));
 
         Self {
             owner_id: contract.owner_id,
