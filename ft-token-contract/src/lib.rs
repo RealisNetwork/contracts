@@ -4,7 +4,7 @@ use near_contract_standards::fungible_token::{
 };
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
-    collections::LookupSet,
+    collections::UnorderedSet,
     env,
     json_types::U128,
     near_bindgen, require, AccountId, Balance, PanicOnDefault, PromiseOrValue, Timestamp,
@@ -12,6 +12,7 @@ use near_sdk::{
 
 mod ft_core;
 mod lis_token;
+mod owner;
 mod storage_impl;
 mod update;
 
@@ -24,7 +25,7 @@ pub struct Contract {
     pub staking_contract: AccountId,
     pub ft: FungibleToken,
     pub last_mint: Timestamp,
-    pub backend: LookupSet<AccountId>,
+    pub backend: UnorderedSet<AccountId>,
 }
 
 #[near_bindgen]
@@ -41,7 +42,7 @@ impl Contract {
             staking_contract: staking_id.clone(),
             ft: FungibleToken::new(b"a".to_vec()),
             last_mint: env::block_timestamp(),
-            backend: LookupSet::new(b"b".to_vec()),
+            backend: UnorderedSet::new(b"b".to_vec()),
         };
 
         this.backend
