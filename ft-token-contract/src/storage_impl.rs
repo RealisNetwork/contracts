@@ -7,7 +7,6 @@ use near_contract_standards::{
 #[near_bindgen]
 impl StorageManagement for Contract {
     #[payable]
-    #[allow(unused_variables)]
     fn storage_deposit(
         &mut self,
         account_id: Option<AccountId>,
@@ -17,13 +16,11 @@ impl StorageManagement for Contract {
     }
 
     #[payable]
-    #[allow(unused_variables)]
     fn storage_withdraw(&mut self, amount: Option<U128>) -> StorageBalance {
         self.ft.storage_withdraw(amount)
     }
 
     #[payable]
-    #[allow(unused_variables)]
     fn storage_unregister(&mut self, force: Option<bool>) -> bool {
         let account_id = env::predecessor_account_id();
         let balance = self.ft_balance_of(account_id).0;
