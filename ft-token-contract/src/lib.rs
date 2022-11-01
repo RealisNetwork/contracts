@@ -33,7 +33,7 @@ impl Contract {
     #[init]
     pub fn new(
         owner_id: Option<AccountId>,
-        backend_id: Option<Vec<AccountId>>,
+        backend_ids: Option<Vec<AccountId>>,
         staking_id: AccountId,
     ) -> Self {
         let owner_id = owner_id.unwrap_or_else(env::predecessor_account_id);
@@ -46,7 +46,7 @@ impl Contract {
         };
 
         this.backend
-            .extend(backend_id.unwrap_or_default().into_iter());
+            .extend(backend_ids.unwrap_or_default().into_iter());
 
         this.ft.internal_register_account(&owner_id);
         this.ft.internal_register_account(&staking_id);
