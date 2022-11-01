@@ -7,13 +7,14 @@ use near_sdk::{
     json_types::{U128, U64},
     near_bindgen, require,
     serde_json::json,
-    AccountId, Balance, Gas, PanicOnDefault, Promise, PromiseOrValue, ONE_YOCTO,
+    AccountId, Balance, Gas, PanicOnDefault, Promise, PromiseOrValue, StorageUsage, ONE_YOCTO,
 };
 use xtoken::XTokenCost;
 
 pub mod ft_token_core;
 pub mod ft_token_receiver;
 pub mod metadata;
+pub mod storage_impl;
 pub mod update;
 pub mod xtoken;
 
@@ -43,6 +44,8 @@ pub struct Contract {
     total_xtoken_supply: Balance,
     /// Determine the price ratio between tokens and xtokens
     xtoken_cost: XTokenCost,
+    /// Storage usage for one account
+    account_storage_usage: StorageUsage,
 }
 
 #[near_bindgen]
@@ -53,7 +56,7 @@ impl Contract {
         token_account_id: AccountId,
         lockup_account_id: AccountId,
     ) -> Self {
-        Self {
+        let mut this = Self {
             owner_id: owner_id.unwrap_or_else(env::predecessor_account_id),
             token_account_id,
             lockup_account_id,
@@ -61,7 +64,18 @@ impl Contract {
             total_supply: 0,
             total_xtoken_supply: 0,
             xtoken_cost: XTokenCost::default(),
-        }
+            account_storage_usage: 0,
+        };
+        this.measure_account_storage_usage();
+        this
+    }
+
+    fn measure_account_storage_usage(&mut self) {
+        let initial_storage_usage = env::storage_usage();
+        let tmp_account_id = AccountId::new_unchecked("a".repeat(64));
+        self.accounts.insert(&tmp_account_id, &0u128);
+        self.account_storage_usage = env::storage_usage() - initial_storage_usage;
+        self.accounts.remove(&tmp_account_id);
     }
 
     #[payable]
@@ -138,6 +152,12 @@ impl Contract {
                     .with_static_gas(GAS_FOR_UNSTAKE_CALLBACK)
                     .transfer_on_unstake_callback(account_id.clone(), amount.into()),
             )
+    }
+
+    pub fn internal_register_account(&mut self, account_id: &AccountId) {
+        if self.accounts.insert(account_id, &0).is_some() {
+            env::panic_str("The account is already registered");
+        }
     }
 
     pub fn add_to_pool_internal(&mut self, amount: Balance) {
