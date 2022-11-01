@@ -124,7 +124,9 @@ impl Contract {
         }
         .emit();
 
-        // token.contract ft_transfer_call
+        if amount == 0 {
+            env::panic_str("Too small xtokens amount");
+        }
 
         ext_ft_core::ext(self.token_account_id.clone())
             .with_static_gas(env::prepaid_gas() - GAS_FOR_UNSTAKE)
