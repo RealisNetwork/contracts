@@ -20,3 +20,11 @@ impl Contract {
         env::state_read().unwrap_or_else(|| env::panic_str("Not initialized"))
     }
 }
+
+#[derive(BorshDeserialize, BorshSerialize)]
+pub struct ContractV0 {
+    pub owner_id: AccountId,
+    pub staking_contract: AccountId,
+    pub ft: FungibleToken,
+    pub last_mint: Timestamp,
+}
