@@ -3,11 +3,12 @@ use near_sdk::{
     assert_one_yocto,
     borsh::{self, BorshDeserialize, BorshSerialize},
     collections::LookupMap,
-    env, is_promise_success,
+    env,
     json_types::{U128, U64},
     near_bindgen, require,
     serde_json::json,
-    AccountId, Balance, Gas, PanicOnDefault, Promise, PromiseOrValue, StorageUsage, ONE_YOCTO,
+    AccountId, Balance, Gas, PanicOnDefault, Promise, PromiseError, PromiseOrValue, StorageUsage,
+    ONE_YOCTO,
 };
 use xtoken::XTokenCost;
 
@@ -91,12 +92,15 @@ impl Contract {
     }
 
     #[private]
-    pub fn transfer_on_unstake_callback(&mut self, account_id: AccountId, amount: U128) {
-        if is_promise_success() {
-            return;
-        }
+    pub fn transfer_on_unstake_callback(
+        &mut self,
+        account_id: AccountId,
+        amount: U128,
+        #[callback_result] used: Result<U128, PromiseError>,
+    ) {
+        let amount = amount.0 - used.map(|v| v.0).unwrap_or_default();
         // Rollback account stake
-        self.stake_internal(&account_id, amount.into());
+        self.stake_internal(&account_id, amount);
     }
 }
 
@@ -105,7 +109,10 @@ impl Contract {
         let xtokens_amount = self.xtoken_cost.convert_to_xtokens(amount);
         self.total_supply += amount;
         self.total_xtoken_supply += xtokens_amount;
-        let account_xtokens_amount = self.accounts.get(account_id).unwrap_or_default();
+        let account_xtokens_amount = self
+            .accounts
+            .get(account_id)
+            .unwrap_or_else(|| env::panic_str("User is not registered"));
         self.accounts
             .insert(account_id, &(account_xtokens_amount + xtokens_amount));
 
@@ -132,7 +139,9 @@ impl Contract {
         }
         .emit();
 
-        // token.contract ft_transfer_call
+        if amount == 0 {
+            env::panic_str("Too small xtokens amount");
+        }
 
         ext_ft_core::ext(self.token_account_id.clone())
             .with_static_gas(env::prepaid_gas() - GAS_FOR_UNSTAKE)
@@ -157,6 +166,12 @@ impl Contract {
     pub fn internal_register_account(&mut self, account_id: &AccountId) {
         if self.accounts.insert(account_id, &0).is_some() {
             env::panic_str("The account is already registered");
+        }
+    }
+
+    pub fn assert_register(&mut self, account_id: &AccountId) {
+        if !self.accounts.contains_key(account_id) {
+            env::panic_str("User is not registered")
         }
     }
 
