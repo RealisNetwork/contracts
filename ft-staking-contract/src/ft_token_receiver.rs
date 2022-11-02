@@ -33,11 +33,11 @@ impl FungibleTokenReceiver for Contract {
             FtMessage::Stake => {
                 self.assert_register(&sender_id);
                 self.stake_internal(&sender_id, amount)
-            },
+            }
             FtMessage::StakeFor { account_id } => {
                 self.assert_register(&account_id);
                 self.stake_internal(&account_id, amount)
-            },
+            }
             FtMessage::AddToPool => self.add_to_pool_internal(amount),
         }
 
