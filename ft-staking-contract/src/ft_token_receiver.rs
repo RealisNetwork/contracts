@@ -30,8 +30,14 @@ impl FungibleTokenReceiver for Contract {
         match serde_json::from_str::<FtMessage>(&msg)
             .unwrap_or_else(|_| env::panic_str("Invalid msg"))
         {
-            FtMessage::Stake => self.stake_internal(&sender_id, amount),
-            FtMessage::StakeFor { account_id } => self.stake_internal(&account_id, amount),
+            FtMessage::Stake => {
+                self.assert_register(&sender_id);
+                self.stake_internal(&sender_id, amount)
+            }
+            FtMessage::StakeFor { account_id } => {
+                self.assert_register(&account_id);
+                self.stake_internal(&account_id, amount)
+            }
             FtMessage::AddToPool => self.add_to_pool_internal(amount),
         }
 

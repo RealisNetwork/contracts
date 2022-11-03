@@ -7,9 +7,7 @@ use near_contract_standards::fungible_token::{
 impl FungibleTokenCore for Contract {
     #[payable]
     fn ft_transfer(&mut self, receiver_id: AccountId, amount: U128, memo: Option<String>) {
-        if !self.ft.accounts.contains_key(&receiver_id) {
-            self.ft.internal_register_account(&receiver_id);
-        }
+        self.backend_register_account(&receiver_id);
         self.ft.ft_transfer(receiver_id, amount, memo)
     }
 
@@ -21,9 +19,7 @@ impl FungibleTokenCore for Contract {
         memo: Option<String>,
         msg: String,
     ) -> PromiseOrValue<U128> {
-        if !self.ft.accounts.contains_key(&receiver_id) {
-            self.ft.internal_register_account(&receiver_id);
-        }
+        self.backend_register_account(&receiver_id);
         self.ft.ft_transfer_call(receiver_id, amount, memo, msg)
     }
 

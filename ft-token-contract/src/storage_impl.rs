@@ -1,34 +1,41 @@
 use crate::*;
-use near_contract_standards::storage_management::{
-    StorageBalance, StorageBalanceBounds, StorageManagement,
+use near_contract_standards::{
+    fungible_token::core::FungibleTokenCore,
+    storage_management::{StorageBalance, StorageBalanceBounds, StorageManagement},
 };
 
 #[near_bindgen]
 impl StorageManagement for Contract {
     #[payable]
-    #[allow(unused_variables)]
     fn storage_deposit(
         &mut self,
         account_id: Option<AccountId>,
         registration_only: Option<bool>,
     ) -> StorageBalance {
-        env::panic_str("This contract do not accept deposit");
+        self.ft.storage_deposit(account_id, registration_only)
     }
 
     #[payable]
-    #[allow(unused_variables)]
     fn storage_withdraw(&mut self, amount: Option<U128>) -> StorageBalance {
-        unimplemented!()
+        self.ft.storage_withdraw(amount)
     }
 
     #[payable]
-    #[allow(unused_variables)]
     fn storage_unregister(&mut self, force: Option<bool>) -> bool {
-        unimplemented!()
+        let account_id = env::predecessor_account_id();
+        let balance = self.ft_balance_of(account_id).0;
+        let force = force.unwrap_or_default();
+
+        // Use `ft_burn` to emit burn event
+        if balance > 0 && force {
+            self.ft_burn(balance.into());
+        }
+
+        self.ft.storage_unregister(Some(force))
     }
 
     fn storage_balance_bounds(&self) -> StorageBalanceBounds {
-        unimplemented!()
+        self.ft.storage_balance_bounds()
     }
 
     fn storage_balance_of(&self, account_id: AccountId) -> Option<StorageBalance> {
