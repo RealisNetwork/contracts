@@ -10,3 +10,11 @@ crate-type = ["cdylib"]
 near-sdk = "4.0.0"
 near-contract-standards = "4.0.0"
 primitive-types = "0.7.0"
+
+[dev-dependencies]
+near-units = "0.2.0"
+workspaces = { version = "0.6.0", features = ["unstable"] }
+serde_json = "1.0.87"
+anyhow = "1.0.66"
+tokio = "1.21.2"
+serde = "1.0.147"
