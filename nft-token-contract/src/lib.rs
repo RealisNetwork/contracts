@@ -52,13 +52,38 @@ impl Contract {
     pub fn new(owner_id: Option<AccountId>, backend_id: Option<AccountId>) -> Self {
         let owner_id = owner_id.unwrap_or_else(env::predecessor_account_id);
         let backend_id = backend_id.unwrap_or_else(env::predecessor_account_id);
-        Self {
+        let mut this = Self {
             owner_id,
             backend_id,
             token_by_id: UnorderedMap::new(StorageKey::TokenById),
             tokens_per_owner: LookupMap::new(StorageKey::TokensPerOwner),
             locked_tokens_per_owner: LookupMap::new(StorageKey::LockedTokens),
-        }
+        };
+        this.measure_nft_storage_usage();
+        this
+    }
+
+    fn measure_nft_storage_usage(&mut self) {
+        let initial_storage_usage = env::storage_usage();
+        let token_id = "a".repeat(64).to_string();
+        let token = Token {
+            token_id: token_id.clone(),
+            owner_id: AccountId::new_unchecked("a".repeat(64)),
+            metadata: LazyOption::new(
+                    StorageKey::TokenMetadata {
+                        hash: env::sha256(token_id.as_bytes()),
+                    },
+                    None,
+            ),
+            approved_account_ids: UnorderedMap::new(StorageKey::TokenApprovals {
+                hash: env::sha256(token_id.as_bytes()),
+            }),
+            next_approval_id: 0,
+        };
+        self.token_by_id.insert(&token_id, &token);
+        let nft_storage_usage = env::storage_usage() - initial_storage_usage;
+        self.token_by_id.remove(&token_id);
+        env::log_str(&format!("{}", nft_storage_usage as u128 * env::storage_byte_cost()));
     }
 
     /// Simple burn. Create token with a given `token_id` for `owner_id`.

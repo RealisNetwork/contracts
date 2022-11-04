@@ -7,13 +7,13 @@ const OWNER_ID: &str = "testnetacc.testnet";
 const STAKING_CONTRACT_ID: &str = "staking.v1.testnetacc.testnet";
 const CONTRACT_ACCOUNT: &str = "token.v1.testnetacc.testnet";
 const EXPECTED_NFT_METADATA: &str = r#"{
-  spec: 'ft-1.0.0',
-  name: 'Realis Network LIS token',
-  symbol: 'LIS',
-  icon: null,
-  reference: null,
-  reference_hash: null,
-  decimals: 12
+  "spec": "ft-1.0.1",
+  "name": "Realis Network LIS token",
+  "symbol": "LIS",
+  "icon": null,
+  "reference": null,
+  "reference_hash": null,
+  "decimals": 12
 }"#;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -54,7 +54,7 @@ async fn pull_contract(_owner: &Account, worker: &Worker<Sandbox>) -> anyhow::Re
 
 #[tokio::test]
 async fn test_migration() -> anyhow::Result<()> {
-    let wasm = workspaces::compile_project("ft-token-contract").await?;
+    let wasm = workspaces::compile_project("./").await?;
 
     let worker = workspaces::sandbox().await?;
     let contract = worker.dev_deploy(&wasm).await?;
@@ -62,7 +62,7 @@ async fn test_migration() -> anyhow::Result<()> {
     contract
         .call("new")
         .args_json(serde_json::json!({
-            "owner_id": "'$OWNER_ID'", "staking_id": "'$STAKING_CONTRACT_ID'"
+            "staking_id": STAKING_CONTRACT_ID
         }))
         .transact()
         .await?
