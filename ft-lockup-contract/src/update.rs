@@ -14,6 +14,10 @@ impl Ownable for Contract {
 
 #[near_bindgen]
 impl Contract {
+    pub fn get_metadata(&self) -> String {
+        String::from("1.0.1")
+    }
+
     #[init(ignore_state)]
     pub fn update() -> Self {
         env::state_read().unwrap_or_else(|| env::panic_str("Not initialized"))

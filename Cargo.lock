@@ -909,9 +909,13 @@ dependencies = [
 name = "ft-lockup-contract"
 version = "1.0.0"
 dependencies = [
+ "anyhow",
  "near-contract-standards",
  "near-sdk",
+ "near-units",
  "serde_json",
+ "tokio",
+ "workspaces",
 ]
 
 [[package]]
