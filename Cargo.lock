@@ -922,9 +922,13 @@ dependencies = [
 name = "ft-staking-contract"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "near-contract-standards",
  "near-sdk",
+ "near-units",
  "primitive-types 0.7.3",
+ "tokio",
+ "workspaces",
 ]
 
 [[package]]
