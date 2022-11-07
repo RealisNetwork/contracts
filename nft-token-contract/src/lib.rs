@@ -65,7 +65,7 @@ impl Contract {
 
     fn measure_nft_storage_usage(&mut self) {
         let initial_storage_usage = env::storage_usage();
-        let token_id = "a".repeat(64).to_string();
+        let token_id = "a".repeat(64);
         let token = Token {
             token_id: token_id.clone(),
             owner_id: AccountId::new_unchecked("a".repeat(64)),
