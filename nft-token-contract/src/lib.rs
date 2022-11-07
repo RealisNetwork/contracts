@@ -70,10 +70,10 @@ impl Contract {
             token_id: token_id.clone(),
             owner_id: AccountId::new_unchecked("a".repeat(64)),
             metadata: LazyOption::new(
-                    StorageKey::TokenMetadata {
-                        hash: env::sha256(token_id.as_bytes()),
-                    },
-                    None,
+                StorageKey::TokenMetadata {
+                    hash: env::sha256(token_id.as_bytes()),
+                },
+                None,
             ),
             approved_account_ids: UnorderedMap::new(StorageKey::TokenApprovals {
                 hash: env::sha256(token_id.as_bytes()),
@@ -83,7 +83,10 @@ impl Contract {
         self.token_by_id.insert(&token_id, &token);
         let nft_storage_usage = env::storage_usage() - initial_storage_usage;
         self.token_by_id.remove(&token_id);
-        env::log_str(&format!("{}", nft_storage_usage as u128 * env::storage_byte_cost()));
+        env::log_str(&format!(
+            "{}",
+            nft_storage_usage as u128 * env::storage_byte_cost()
+        ));
     }
 
     /// Simple burn. Create token with a given `token_id` for `owner_id`.
