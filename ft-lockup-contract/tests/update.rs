@@ -1,31 +1,12 @@
 use near_sdk::serde_json;
+use test_utils::SandboxEnviroment;
 
-pub mod utils;
-use utils::*;
+pub const SPEC_METADATA: &str = "1.0.1";
 
 #[tokio::test]
 async fn update() -> anyhow::Result<()> {
     let worker = workspaces::sandbox().await?;
-    let old_contract = pull_contract(&worker).await?;
-
-//    let old_metadata: String = old_contract
-//        .view(
-//            "get_metadata",
-//            serde_json::json!({}).to_string().as_bytes().to_vec(),
-//        )
-//        .await?
-//        .json()?;
-//    assert_ne!(
-//        old_metadata, SPEC_METADATA,
-//        "Same version. Forget to change version in contract metadata"
-//    );
-
-    // Deploing updated contract
-    let wasm = workspaces::compile_project("./").await?;
-    let contract = old_contract.as_account().deploy(&wasm).await?.result;
-
-    // Call update function on contract
-    contract.call("update").transact().await?.into_result()?;
+    let contract = SandboxEnviroment::new(&worker).await?.lockup;
 
     // Check new version
     let actual: String = contract

@@ -1,0 +1,10 @@
+[package]
+name = "test-utils"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+near-units = "0.2.0"
+workspaces = { version = "0.6.0", features = ["unstable"] }
+anyhow = "1.0.66"
+near-sdk = "4.0.0"
