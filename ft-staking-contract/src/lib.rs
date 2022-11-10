@@ -97,10 +97,14 @@ impl Contract {
         account_id: AccountId,
         amount: U128,
         #[callback_result] used: Result<U128, PromiseError>,
-    ) {
-        let amount = amount.0 - used.map(|v| v.0).unwrap_or_default();
+        ) {
+        let amount = amount.0.checked_sub(
+                used.map(|v| v.0).unwrap_or_default()
+        ).unwrap_or_else(|| env::panic_str("Overflow occured"));
         // Rollback account stake
-        self.stake_internal(&account_id, amount);
+        if amount > 0 {
+            self.stake_internal(&account_id, amount);
+        }
     }
 }
 
