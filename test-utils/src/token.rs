@@ -1,5 +1,5 @@
 use crate::utils::*;
-use near_sdk::{serde_json, json_types::U128};
+use near_sdk::{json_types::U128, serde_json};
 use near_units::parse_near;
 use workspaces::{network::Sandbox, AccountId, Contract, Worker};
 
@@ -63,7 +63,9 @@ pub async fn ft_balance_of(contract: &Contract, account_id: &AccountId) -> anyho
             "ft_balance_of",
             serde_json::json!({
                 "account_id": account_id,
-            }).to_string().into_bytes()
+            })
+            .to_string()
+            .into_bytes(),
         )
         .await?
         .json()?;
