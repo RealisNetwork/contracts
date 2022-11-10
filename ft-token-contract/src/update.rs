@@ -15,6 +15,7 @@ impl Ownable for Contract {
 
 #[near_bindgen]
 impl Contract {
+    #[private]
     #[init(ignore_state)]
     pub fn update() -> Self {
         let contract: ContractV0 =
