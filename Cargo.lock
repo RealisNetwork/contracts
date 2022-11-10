@@ -928,6 +928,7 @@ dependencies = [
  "near-sdk",
  "near-units",
  "primitive-types 0.7.3",
+ "test-utils",
  "tokio",
  "workspaces",
 ]
