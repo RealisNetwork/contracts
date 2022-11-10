@@ -78,18 +78,18 @@ async fn create_lock_with_0_amount() -> anyhow::Result<()> {
     let sandbox = SandboxEnviroment::new(&worker).await?;
 
     let result = sandbox
-    .owner
-    .call(sandbox.token.id(), "ft_transfer_call")
-    .deposit(YOCTO)
-    .gas(300000000000000)
-    .args_json(serde_json::json!({
-    "receiver_id": sandbox.lockup.id(),
-    "amount": "0",
-    "msg": "",
-    }))
-    .transact()
-    .await?
-    .into_result();
+        .owner
+        .call(sandbox.token.id(), "ft_transfer_call")
+        .deposit(YOCTO)
+        .gas(300000000000000)
+        .args_json(serde_json::json!({
+            "receiver_id": sandbox.lockup.id(),
+            "amount": "0",
+            "msg": "",
+        }))
+        .transact()
+        .await?
+        .into_result();
 
     assert!(result.is_err());
     let outcome = result.unwrap_err();
