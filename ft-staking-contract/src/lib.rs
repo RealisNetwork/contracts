@@ -146,11 +146,18 @@ impl Contract {
 
     pub fn unstake_internal(&mut self, account_id: &AccountId, xtoken_amount: Balance) -> Promise {
         let amount = self.xtoken_cost.convert_to_amount(xtoken_amount);
-        self.total_supply = self.total_supply.checked_sub(amount).expect("Index out of bound");
+        self.total_supply = self
+            .total_supply
+            .checked_sub(amount)
+            .expect("Index out of bound");
         self.total_xtoken_supply -= xtoken_amount;
         let account_xtokens_amount = self.accounts.get(account_id).unwrap_or_default();
-        self.accounts
-            .insert(account_id, &(account_xtokens_amount.checked_sub(xtoken_amount).expect("Index out of bound")));
+        self.accounts.insert(
+            account_id,
+            &(account_xtokens_amount
+                .checked_sub(xtoken_amount)
+                .expect("Index out of bound")),
+        );
 
         near_contract_standards::fungible_token::events::FtBurn {
             owner_id: account_id,
