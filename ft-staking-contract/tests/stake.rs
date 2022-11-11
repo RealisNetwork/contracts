@@ -90,7 +90,10 @@ async fn stake_zero_amount() -> anyhow::Result<()> {
     let failure = outcome.receipt_failures()[0];
     assert!(failure.is_failure());
     assert!(format!("{:?}", failure).contains("The amount should be a positive number"));
-    assert_eq!(0, token::ft_balance_of(&sandbox.staking, sandbox.owner.id()).await?);
+    assert_eq!(
+        0,
+        token::ft_balance_of(&sandbox.staking, sandbox.owner.id()).await?
+    );
 
     Ok(())
 }
@@ -139,5 +142,5 @@ async fn stake_other_token() -> anyhow::Result<()> {
 
 #[tokio::test]
 async fn stake_for_other() -> anyhow::Result<()> {
-
+    Ok(())
 }

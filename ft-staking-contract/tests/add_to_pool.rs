@@ -29,7 +29,9 @@ async fn add_to_pool_change_price() -> anyhow::Result<()> {
         .into_result()?;
 
     // Transfer some LIS to user
-    sandbox.owner.call(sandbox.token.id(), "ft_transfer")
+    sandbox
+        .owner
+        .call(sandbox.token.id(), "ft_transfer")
         .args_json(serde_json::json!({
             "receiver_id": user.id(),
             "amount": amount.to_string(),
@@ -53,7 +55,9 @@ async fn add_to_pool_change_price() -> anyhow::Result<()> {
         .into_result()?;
 
     // Owner add tokens to pool
-    sandbox.owner.call(sandbox.token.id(), "ft_transfer_call")
+    sandbox
+        .owner
+        .call(sandbox.token.id(), "ft_transfer_call")
         .args_json(serde_json::json!({
             "receiver_id": sandbox.staking.id(),
             "amount": amount.to_string(),
@@ -111,7 +115,9 @@ async fn add_to_empty_pool_not_change_price() -> anyhow::Result<()> {
         .into_result()?;
 
     // Transfer some LIS to user
-    sandbox.owner.call(sandbox.token.id(), "ft_transfer")
+    sandbox
+        .owner
+        .call(sandbox.token.id(), "ft_transfer")
         .args_json(serde_json::json!({
             "receiver_id": user.id(),
             "amount": amount.to_string(),
@@ -122,7 +128,9 @@ async fn add_to_empty_pool_not_change_price() -> anyhow::Result<()> {
         .into_result()?;
 
     // Owner add tokens to pool
-    sandbox.owner.call(sandbox.token.id(), "ft_transfer_call")
+    sandbox
+        .owner
+        .call(sandbox.token.id(), "ft_transfer_call")
         .args_json(serde_json::json!({
             "receiver_id": sandbox.staking.id(),
             "amount": amount.to_string(),

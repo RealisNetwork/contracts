@@ -92,7 +92,9 @@ impl Contract {
 impl Contract {
     pub fn next_index(&mut self) -> LockupIndex {
         while self.lockups.keys().any(|key| key == self.index) {
-            self.index += 1;
+            self.index
+                .checked_add(1)
+                .expect("Lockup index out of bound");
         }
         self.index
     }
