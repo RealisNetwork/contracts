@@ -2,7 +2,10 @@ use crate::*;
 use near_contract_standards::{fungible_token::receiver::ext_ft_receiver, upgrade::Ownable};
 use near_sdk::{env, is_promise_success, json_types::U128, Gas};
 
-pub const MILLISECOND: u64 = 1_000_000;
+/// The values of the constants do not exceed the u64 limits,
+/// but changing the value of these constants is not provided!
+/// If you need to change their values, be careful!
+pub const MILLISECOND: u64 = 1_000;
 pub const SECOND: u64 = 1000 * MILLISECOND;
 pub const MINUTE: u64 = 60 * SECOND;
 pub const HOUR: u64 = 60 * MINUTE;
@@ -18,7 +21,11 @@ pub const GAS_FOR_MINT_CALLBACK: Gas = Gas(20_000_000_000_000);
 impl Contract {
     pub fn ft_mint(&mut self) {
         self.assert_owner();
-        let time = env::block_timestamp() / WEEK * WEEK;
+        let time = env::block_timestamp()
+            .checked_div(WEEK)
+            .expect("Index out of bound")
+            .checked_mul(WEEK)
+            .expect("Index out of bound");
         require!(self.last_mint + WEEK <= time, "Too early");
         self.ft
             .internal_deposit(&self.staking_contract, MINT_AMOUNT);

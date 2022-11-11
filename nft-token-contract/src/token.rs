@@ -28,7 +28,9 @@ impl From<Token> for near_contract_standards::non_fungible_token::Token {
 impl Token {
     /// TODO: add fn internal_nft_approve
     pub fn next_approval_id(&mut self) -> u64 {
-        self.next_approval_id += 1;
+        self.next_approval_id
+            .checked_add(1)
+            .expect("Approval id out of bound");
         self.next_approval_id
     }
 
