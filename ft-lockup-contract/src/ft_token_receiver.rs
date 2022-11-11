@@ -28,9 +28,7 @@ impl FungibleTokenReceiver for Contract {
         let index = self.next_index();
         let lockup = Lockup {
             amount: amount.0,
-            unlock_on: env::block_timestamp()
-                .checked_add(ft_message.duration.0)
-                .expect("Invalid lockup duration"),
+            unlock_on: env::block_timestamp() + ft_message.duration.0,
             is_claimed: false,
         };
 
