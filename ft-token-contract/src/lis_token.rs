@@ -29,7 +29,7 @@ impl Contract {
             .checked_div(WEEK.0)
             .unwrap_or_else(|| env::panic_str("Div will overflow"))
             .checked_mul(WEEK.0)
-            .unwrap_or_else(|| env::panic_str("Div will overflow"));
+            .unwrap_or_else(|| env::panic_str("Mul will overflow"));
         require!(
             self.last_mint
                 .checked_add(WEEK.0)
@@ -42,10 +42,13 @@ impl Contract {
         self.last_mint = time;
 
         ext_ft_receiver::ext(self.staking_contract.clone())
-            .with_static_gas(Gas(env::prepaid_gas()
-                .0
-                .checked_sub(GAS_FOR_MINT.0)
-                .unwrap_or_else(|| env::panic_str("Sub will overflow"))))
+            .with_static_gas(
+                env::prepaid_gas()
+                    .0
+                    .checked_sub(GAS_FOR_MINT.0)
+                    .unwrap_or_else(|| env::panic_str("Sub will overflow"))
+                    .into(),
+            )
             .ft_on_transfer(
                 env::current_account_id(),
                 MINT_AMOUNT.into(),

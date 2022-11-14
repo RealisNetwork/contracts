@@ -102,10 +102,13 @@ impl NonFungibleTokenCore for Contract {
         self.nft_transfer_internal(&token_id, Some(token), receiver_id.clone(), true);
 
         ext_nft_receiver::ext(receiver_id.clone())
-            .with_static_gas(Gas(env::prepaid_gas()
-                .0
-                .checked_sub(GAS_FOR_NFT_TRANSFER_CALL.0)
-                .unwrap_or_else(|| env::panic_str("Sub will overflow"))))
+            .with_static_gas(
+                env::prepaid_gas()
+                    .0
+                    .checked_sub(GAS_FOR_NFT_TRANSFER_CALL.0)
+                    .unwrap_or_else(|| env::panic_str("Sub will overflow"))
+                    .into(),
+            )
             .nft_on_transfer(
                 env::predecessor_account_id(),
                 old_owner.clone(),
