@@ -133,7 +133,7 @@ impl Contract {
             account_id,
             &(account_xtokens_amount
                 .checked_add(xtokens_amount)
-                .unwrap_or_else(|| env::panic_str("Sub will overflow"))),
+                .unwrap_or_else(|| env::panic_str("Add will overflow"))),
         );
 
         near_contract_standards::fungible_token::events::FtMint {
