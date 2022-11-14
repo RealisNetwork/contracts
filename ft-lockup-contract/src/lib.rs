@@ -95,7 +95,7 @@ impl Contract {
             self.index = self
                 .index
                 .checked_add(1)
-                .expect("Lockup index out of bound");
+                .unwrap_or_else(|| env::panic_str("Add will overflow"));
         }
         self.index
     }

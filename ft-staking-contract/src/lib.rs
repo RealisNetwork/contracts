@@ -4,7 +4,7 @@ use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
     collections::LookupMap,
     env,
-    json_types::U128,
+    json_types::{U128, U64},
     near_bindgen, require,
     serde_json::json,
     AccountId, Balance, Gas, PanicOnDefault, Promise, PromiseError, PromiseOrValue, StorageUsage,
@@ -22,12 +22,12 @@ pub mod xtoken;
 /// The values of the constants do not exceed the u64 limits,
 /// but changing the value of these constants is not provided!
 /// If you need to change their values, be careful!
-pub const MILLISECOND: u64 = 1_000;
-pub const SECOND: u64 = 1000 * MILLISECOND;
-pub const MINUTE: u64 = 60 * SECOND;
-pub const HOUR: u64 = 60 * MINUTE;
-pub const DAY: u64 = 24 * HOUR;
-pub const WEEK: u64 = 7 * DAY;
+pub const MILLISECOND: U64 = U64(1_000_000);
+pub const SECOND: U64 = U64(1000 * MILLISECOND.0);
+pub const MINUTE: U64 = U64(60 * SECOND.0);
+pub const HOUR: U64 = U64(60 * MINUTE.0);
+pub const DAY: U64 = U64(24 * HOUR.0);
+pub const WEEK: U64 = U64(7 * DAY.0);
 
 pub const GAS_FOR_UNSTAKE: Gas = Gas(40_000_000_000_000);
 pub const GAS_FOR_UNSTAKE_CALLBACK: Gas = Gas(20_000_000_000_000);
@@ -80,7 +80,7 @@ impl Contract {
         self.accounts.insert(&tmp_account_id, &0u128);
         self.account_storage_usage = env::storage_usage()
             .checked_sub(initial_storage_usage)
-            .expect("Index out of bound");
+            .unwrap_or_else(|| env::panic_str("Sub will overflow"));
         self.accounts.remove(&tmp_account_id);
     }
 
@@ -106,7 +106,7 @@ impl Contract {
         let amount = amount
             .0
             .checked_sub(used.map(|v| v.0).unwrap_or_default())
-            .unwrap_or_else(|| env::panic_str("Overflow occurred"));
+            .unwrap_or_else(|| env::panic_str("Sub will overflow"));
         // Rollback account stake
         if amount > 0 {
             self.stake_internal(&account_id, amount);
@@ -120,11 +120,11 @@ impl Contract {
         self.total_supply = self
             .total_supply
             .checked_add(amount)
-            .expect("Index out of bound");
+            .unwrap_or_else(|| env::panic_str("Add will overflow"));
         self.total_xtoken_supply = self
             .total_xtoken_supply
             .checked_add(xtokens_amount)
-            .expect("Index out of bound");
+            .unwrap_or_else(|| env::panic_str("Add will overflow"));
         let account_xtokens_amount = self
             .accounts
             .get(account_id)
@@ -133,7 +133,7 @@ impl Contract {
             account_id,
             &(account_xtokens_amount
                 .checked_add(xtokens_amount)
-                .expect("Index out of bound")),
+                .unwrap_or_else(|| env::panic_str("Sub will overflow"))),
         );
 
         near_contract_standards::fungible_token::events::FtMint {
@@ -149,14 +149,17 @@ impl Contract {
         self.total_supply = self
             .total_supply
             .checked_sub(amount)
-            .expect("Index out of bound");
-        self.total_xtoken_supply -= xtoken_amount;
+            .unwrap_or_else(|| env::panic_str("Sub will overflow"));
+        self.total_xtoken_supply = self
+            .total_xtoken_supply
+            .checked_sub(xtoken_amount)
+            .unwrap_or_else(|| env::panic_str("Sub will overflow"));
         let account_xtokens_amount = self.accounts.get(account_id).unwrap_or_default();
         self.accounts.insert(
             account_id,
             &(account_xtokens_amount
                 .checked_sub(xtoken_amount)
-                .expect("Index out of bound")),
+                .unwrap_or_else(|| env::panic_str("Sub will overflow"))),
         );
 
         near_contract_standards::fungible_token::events::FtBurn {
@@ -175,7 +178,7 @@ impl Contract {
                 env::prepaid_gas()
                     .0
                     .checked_sub(GAS_FOR_UNSTAKE.0)
-                    .expect("Index out of bound")
+                    .unwrap_or_else(|| env::panic_str("Sub will overflow"))
                     .into(),
             )
             .with_attached_deposit(ONE_YOCTO)

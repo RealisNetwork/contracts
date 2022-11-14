@@ -33,7 +33,7 @@ impl Lockup {
                 env::prepaid_gas()
                     .0
                     .checked_sub(GAS_FOR_FT_TRANSFER.0)
-                    .expect("Index out of bound")
+                    .unwrap_or_else(|| env::panic_str("Sub will overflow"))
                     .into(),
             )
             .with_attached_deposit(ONE_YOCTO)

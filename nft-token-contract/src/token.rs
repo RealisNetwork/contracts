@@ -2,7 +2,7 @@ use near_contract_standards::non_fungible_token::{metadata::TokenMetadata, Token
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
     collections::{LazyOption, UnorderedMap},
-    AccountId,
+    env, AccountId,
 };
 
 #[derive(BorshDeserialize, BorshSerialize)]
@@ -30,7 +30,7 @@ impl Token {
     pub fn next_approval_id(&mut self) -> u64 {
         self.next_approval_id
             .checked_add(1)
-            .expect("Approval id out of bound");
+            .unwrap_or_else(|| env::panic_str("Add will overflow"));
         self.next_approval_id
     }
 
