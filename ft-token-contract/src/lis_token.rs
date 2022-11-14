@@ -116,98 +116,52 @@ mod tests {
         testing_env!(context
             .clone()
             .predecessor_account_id(owner_id.clone())
-            .block_timestamp(
-                env::block_timestamp()
-                    .checked_add(WEEK.0)
-                    .unwrap_or_else(|| env::panic_str("Add will overflow"))
-            )
+            .block_timestamp(env::block_timestamp() + WEEK.0)
             .build());
         // can mint
         contract.ft_mint();
         assert_eq!(
             contract.ft_total_supply().0,
-            initial_total_supply
-                .checked_add(MINT_AMOUNT)
-                .unwrap_or_else(|| env::panic_str("Add will overflow"))
+            initial_total_supply + MINT_AMOUNT
         );
 
         // wait week
         testing_env!(context
             .clone()
             .predecessor_account_id(owner_id.clone())
-            .block_timestamp(
-                env::block_timestamp()
-                    .checked_add(WEEK.0)
-                    .unwrap_or_else(|| env::panic_str("Add will overflow"))
-            )
+            .block_timestamp(env::block_timestamp() + WEEK.0)
             .build());
         // can mint
         contract.ft_mint();
         assert_eq!(
             contract.ft_total_supply().0,
-            initial_total_supply
-                .checked_add(
-                    2_u128
-                        .checked_mul(MINT_AMOUNT)
-                        .unwrap_or_else(|| env::panic_str("Mul will overflow")),
-                )
-                .unwrap_or_else(|| env::panic_str("Add will overflow"))
+            initial_total_supply + 2 * MINT_AMOUNT
         );
 
         // wait week + 3 days; /// thursday
         testing_env!(context
             .clone()
             .predecessor_account_id(owner_id.clone())
-            .block_timestamp(
-                env::block_timestamp()
-                    .checked_add(WEEK.0)
-                    .unwrap_or_else(|| env::panic_str("Add will overflow"))
-                    .checked_add(
-                        3_u64
-                            .checked_mul(DAY.0)
-                            .unwrap_or_else(|| env::panic_str("Mul will overflow"))
-                    )
-                    .unwrap_or_else(|| env::panic_str("Add will overflow"))
-            )
+            .block_timestamp(env::block_timestamp() + WEEK.0 + 3 * DAY.0)
             .build());
         // can mint
         contract.ft_mint();
         assert_eq!(
             contract.ft_total_supply().0,
-            initial_total_supply
-                .checked_add(
-                    3_u128
-                        .checked_mul(MINT_AMOUNT)
-                        .unwrap_or_else(|| env::panic_str("Mul will overflow"))
-                )
-                .unwrap_or_else(|| env::panic_str("Add will overflow"))
+            initial_total_supply + 3 * MINT_AMOUNT
         );
 
         // wait 5 days /// tuesday
         testing_env!(context
             .clone()
             .predecessor_account_id(owner_id.clone())
-            .block_timestamp(
-                env::block_timestamp()
-                    .checked_add(
-                        5_u64
-                            .checked_mul(DAY.0)
-                            .unwrap_or_else(|| env::panic_str("Mul will overflow"))
-                    )
-                    .unwrap_or_else(|| env::panic_str("Add will overflow"))
-            )
+            .block_timestamp(env::block_timestamp() + 5 * DAY.0)
             .build());
         // can mint
         contract.ft_mint();
         assert_eq!(
             contract.ft_total_supply().0,
-            initial_total_supply
-                .checked_add(
-                    4_u128
-                        .checked_mul(MINT_AMOUNT)
-                        .unwrap_or_else(|| env::panic_str("Mul will overflow")),
-                )
-                .unwrap_or_else(|| env::panic_str("Add will overflow"))
+            initial_total_supply + 4 * MINT_AMOUNT
         );
     }
 
@@ -228,15 +182,7 @@ mod tests {
         testing_env!(context
             .clone()
             .predecessor_account_id(owner_id.clone())
-            .block_timestamp(
-                env::block_timestamp()
-                    .checked_add(
-                        3_u64
-                            .checked_mul(DAY.0)
-                            .unwrap_or_else(|| env::panic_str("Mul will overflow"))
-                    )
-                    .unwrap_or_else(|| env::panic_str("Add will overflow"))
-            )
+            .block_timestamp(env::block_timestamp() + 3 * DAY.0)
             .build());
         // cannot mint
         contract.ft_mint();
@@ -257,11 +203,7 @@ mod tests {
         testing_env!(context
             .clone()
             .predecessor_account_id(accounts(3))
-            .block_timestamp(
-                env::block_timestamp()
-                    .checked_add(WEEK.0)
-                    .unwrap_or_else(|| env::panic_str("Add will overflow"))
-            )
+            .block_timestamp(env::block_timestamp() + WEEK.0)
             .build());
         // can mint
         contract.ft_mint();
