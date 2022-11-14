@@ -2,7 +2,7 @@ use near_contract_standards::non_fungible_token::{metadata::TokenMetadata, Token
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
     collections::{LazyOption, UnorderedMap},
-    AccountId,
+    env, AccountId,
 };
 
 #[derive(BorshDeserialize, BorshSerialize)]
@@ -28,7 +28,9 @@ impl From<Token> for near_contract_standards::non_fungible_token::Token {
 impl Token {
     /// TODO: add fn internal_nft_approve
     pub fn next_approval_id(&mut self) -> u64 {
-        self.next_approval_id += 1;
+        self.next_approval_id
+            .checked_add(1)
+            .unwrap_or_else(|| env::panic_str("Add will overflow"));
         self.next_approval_id
     }
 

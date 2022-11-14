@@ -29,7 +29,13 @@ impl Lockup {
         self.is_claimed = true;
 
         ext_ft_core::ext(token_id)
-            .with_static_gas(env::prepaid_gas() - GAS_FOR_FT_TRANSFER)
+            .with_static_gas(
+                env::prepaid_gas()
+                    .0
+                    .checked_sub(GAS_FOR_FT_TRANSFER.0)
+                    .unwrap_or_else(|| env::panic_str("Sub will overflow"))
+                    .into(),
+            )
             .with_attached_deposit(ONE_YOCTO)
             .ft_transfer(account_id.clone(), self.amount.into(), None)
             .then(

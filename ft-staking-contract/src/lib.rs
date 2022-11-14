@@ -19,6 +19,9 @@ pub mod storage_impl;
 pub mod update;
 pub mod xtoken;
 
+/// The values of the constants do not exceed the u64 limits,
+/// but changing the value of these constants is not provided!
+/// If you need to change their values, be careful!
 pub const MILLISECOND: U64 = U64(1_000_000);
 pub const SECOND: U64 = U64(1000 * MILLISECOND.0);
 pub const MINUTE: U64 = U64(60 * SECOND.0);
@@ -75,7 +78,9 @@ impl Contract {
         let initial_storage_usage = env::storage_usage();
         let tmp_account_id = AccountId::new_unchecked("a".repeat(64));
         self.accounts.insert(&tmp_account_id, &0u128);
-        self.account_storage_usage = env::storage_usage() - initial_storage_usage;
+        self.account_storage_usage = env::storage_usage()
+            .checked_sub(initial_storage_usage)
+            .unwrap_or_else(|| env::panic_str("Sub will overflow"));
         self.accounts.remove(&tmp_account_id);
     }
 
@@ -101,7 +106,7 @@ impl Contract {
         let amount = amount
             .0
             .checked_sub(used.map(|v| v.0).unwrap_or_default())
-            .unwrap_or_else(|| env::panic_str("Overflow occured"));
+            .unwrap_or_else(|| env::panic_str("Sub will overflow"));
         // Rollback account stake
         if amount > 0 {
             self.stake_internal(&account_id, amount);
@@ -112,14 +117,24 @@ impl Contract {
 impl Contract {
     pub fn stake_internal(&mut self, account_id: &AccountId, amount: Balance) {
         let xtokens_amount = self.xtoken_cost.convert_to_xtokens(amount);
-        self.total_supply += amount;
-        self.total_xtoken_supply += xtokens_amount;
+        self.total_supply = self
+            .total_supply
+            .checked_add(amount)
+            .unwrap_or_else(|| env::panic_str("Add will overflow"));
+        self.total_xtoken_supply = self
+            .total_xtoken_supply
+            .checked_add(xtokens_amount)
+            .unwrap_or_else(|| env::panic_str("Add will overflow"));
         let account_xtokens_amount = self
             .accounts
             .get(account_id)
             .unwrap_or_else(|| env::panic_str("User is not registered"));
-        self.accounts
-            .insert(account_id, &(account_xtokens_amount + xtokens_amount));
+        self.accounts.insert(
+            account_id,
+            &(account_xtokens_amount
+                .checked_add(xtokens_amount)
+                .unwrap_or_else(|| env::panic_str("Add will overflow"))),
+        );
 
         near_contract_standards::fungible_token::events::FtMint {
             owner_id: account_id,
@@ -131,11 +146,21 @@ impl Contract {
 
     pub fn unstake_internal(&mut self, account_id: &AccountId, xtoken_amount: Balance) -> Promise {
         let amount = self.xtoken_cost.convert_to_amount(xtoken_amount);
-        self.total_supply -= amount;
-        self.total_xtoken_supply -= xtoken_amount;
+        self.total_supply = self
+            .total_supply
+            .checked_sub(amount)
+            .unwrap_or_else(|| env::panic_str("Sub will overflow"));
+        self.total_xtoken_supply = self
+            .total_xtoken_supply
+            .checked_sub(xtoken_amount)
+            .unwrap_or_else(|| env::panic_str("Sub will overflow"));
         let account_xtokens_amount = self.accounts.get(account_id).unwrap_or_default();
-        self.accounts
-            .insert(account_id, &(account_xtokens_amount - xtoken_amount));
+        self.accounts.insert(
+            account_id,
+            &(account_xtokens_amount
+                .checked_sub(xtoken_amount)
+                .unwrap_or_else(|| env::panic_str("Sub will overflow"))),
+        );
 
         near_contract_standards::fungible_token::events::FtBurn {
             owner_id: account_id,
@@ -149,7 +174,13 @@ impl Contract {
         }
 
         ext_ft_core::ext(self.token_account_id.clone())
-            .with_static_gas(env::prepaid_gas() - GAS_FOR_UNSTAKE)
+            .with_static_gas(
+                env::prepaid_gas()
+                    .0
+                    .checked_sub(GAS_FOR_UNSTAKE.0)
+                    .unwrap_or_else(|| env::panic_str("Sub will overflow"))
+                    .into(),
+            )
             .with_attached_deposit(ONE_YOCTO)
             .ft_transfer_call(
                 self.lockup_account_id.clone(),

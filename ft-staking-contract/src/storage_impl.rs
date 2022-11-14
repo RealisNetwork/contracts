@@ -27,7 +27,9 @@ impl StorageManagement for Contract {
             }
 
             self.internal_register_account(&account_id);
-            let refund = amount - min_balance;
+            let refund = amount
+                .checked_sub(min_balance)
+                .unwrap_or_else(|| env::panic_str("Sub will overflow"));
             if refund > 0 {
                 Promise::new(env::predecessor_account_id()).transfer(refund);
             }
@@ -59,7 +61,13 @@ impl StorageManagement for Contract {
         match self.accounts.get(&account_id) {
             Some(0) => {
                 self.accounts.remove(&account_id);
-                Promise::new(account_id.clone()).transfer(self.storage_balance_bounds().min.0 + 1);
+                Promise::new(account_id.clone()).transfer(
+                    self.storage_balance_bounds()
+                        .min
+                        .0
+                        .checked_add(1)
+                        .unwrap_or_else(|| env::panic_str("Add will overflow")),
+                );
                 true
             }
             None => {

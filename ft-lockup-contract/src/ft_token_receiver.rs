@@ -28,7 +28,9 @@ impl FungibleTokenReceiver for Contract {
         let index = self.next_index();
         let lockup = Lockup {
             amount: amount.0,
-            unlock_on: env::block_timestamp() + ft_message.duration.0,
+            unlock_on: env::block_timestamp()
+                .checked_add(ft_message.duration.0)
+                .unwrap_or_else(|| env::panic_str("Add will overflow")),
             is_claimed: false,
         };
 

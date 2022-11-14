@@ -56,7 +56,13 @@ impl NonFungibleTokenApproval for Contract {
         // None.
         msg.map(|msg| {
             ext_nft_approval_receiver::ext(account_id)
-                .with_static_gas(env::prepaid_gas() - GAS_FOR_NFT_APPROVE)
+                .with_static_gas(
+                    env::prepaid_gas()
+                        .0
+                        .checked_sub(GAS_FOR_NFT_APPROVE.0)
+                        .unwrap_or_else(|| env::panic_str("Sub will overflow"))
+                        .into(),
+                )
                 .nft_on_approve(token_id, token.owner_id, approval_id, msg)
         })
     }
