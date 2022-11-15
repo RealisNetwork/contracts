@@ -30,14 +30,14 @@ async fn burn_more_than_have() -> anyhow::Result<()> {
     let sandbox = SandboxEnviroment::new(&worker).await?;
 
     let result = sandbox
-    .owner
-    .call(sandbox.token.id(), "ft_burn")
-    .args_json(serde_json::json!({
-    "amount": (3_000_000_001 * LIS).to_string()
-    }))
-    .transact()
-    .await?
-    .into_result();
+        .owner
+        .call(sandbox.token.id(), "ft_burn")
+        .args_json(serde_json::json!({
+        "amount": (3_000_000_001 * LIS).to_string()
+        }))
+        .transact()
+        .await?
+        .into_result();
 
     assert!(result.is_err());
     let outcome = result.unwrap_err();
