@@ -10,6 +10,7 @@ use workspaces::{network::Sandbox, Account, Contract, Worker};
 
 pub struct SandboxEnviroment {
     pub owner: Account,
+    pub backend: Account,
     pub token: Contract,
     pub staking: Contract,
     pub lockup: Contract,
@@ -19,10 +20,16 @@ pub struct SandboxEnviroment {
 impl SandboxEnviroment {
     pub async fn new(worker: &Worker<Sandbox>) -> anyhow::Result<Self> {
         let owner = worker.root_account()?;
+        let backend = owner
+            .create_subaccount("backend")
+            .initial_balance(10 * NEAR)
+            .transact()
+            .await?
+            .into_result()?;
         let token = token::pull(
             worker,
             Some(owner.id().clone()),
-            None,
+            Some(vec![backend.id().clone()]),
             STAKING_CONTRACT_ACCOUNT.parse()?,
         )
         .await?;
@@ -61,8 +68,19 @@ impl SandboxEnviroment {
             .await?
             .into_result()?;
 
+        owner
+            .call(token.id(), "storage_deposit")
+            .deposit(NEAR)
+            .args_json(serde_json::json!({
+                "account_id": backend.id()
+            }))
+            .transact()
+            .await?
+            .into_result()?;
+
         Ok(Self {
             owner,
+            backend,
             token,
             staking,
             lockup,
