@@ -72,3 +72,15 @@ pub async fn ft_balance_of(contract: &Contract, account_id: &AccountId) -> anyho
 
     Ok(balance.0)
 }
+
+pub async fn ft_total_supply(contract: &Contract) -> anyhow::Result<u128> {
+    let balance: U128 = contract
+        .view(
+            "ft_total_supply",
+            serde_json::json!({}).to_string().into_bytes(),
+        )
+        .await?
+        .json()?;
+
+    Ok(balance.0)
+}
