@@ -18,11 +18,11 @@ pub async fn pull(
         .await?;
 
     contract
-    .call("new")
-    .args_json(serde_json::json!({ "owner_od": owner_id, "token_account_id": token_account_id, "deposit_whitelist": deposit_whitelist }))
-    .transact()
-    .await?
-    .into_result()?;
+        .call("new")
+        .args_json(serde_json::json!({ "owner_od": owner_id, "token_account_id": token_account_id, "deposit_whitelist": deposit_whitelist }))
+        .transact()
+        .await?
+        .into_result()?;
 
     let wasm = workspaces::compile_project("../ft-lockup-contract").await?;
     let contract = contract.as_account().deploy(&wasm).await?.result;
