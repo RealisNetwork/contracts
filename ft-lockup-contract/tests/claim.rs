@@ -1,11 +1,11 @@
 use near_sdk::serde_json;
 use std::collections::HashMap;
-use test_utils::{token, utils::*, SandboxEnviroment};
+use test_utils::{token, utils::*, SandboxEnvironment};
 
 #[tokio::test]
 async fn claim() -> anyhow::Result<()> {
     let worker = workspaces::sandbox().await?;
-    let sandbox = SandboxEnviroment::new(&worker).await?;
+    let sandbox = SandboxEnvironment::new(&worker).await?;
     let amount = 100 * LIS;
 
     // Only staking contract can create lockups
@@ -84,7 +84,7 @@ async fn claim() -> anyhow::Result<()> {
 #[tokio::test]
 async fn claim_error_transfer_tokens() -> anyhow::Result<()> {
     let worker = workspaces::sandbox().await?;
-    let sandbox = SandboxEnviroment::new(&worker).await?;
+    let sandbox = SandboxEnvironment::new(&worker).await?;
     let amount = 100 * LIS;
     let user = sandbox
         .owner
@@ -169,7 +169,7 @@ async fn claim_error_transfer_tokens() -> anyhow::Result<()> {
 #[tokio::test]
 async fn claim_not_expired_lockup() -> anyhow::Result<()> {
     let worker = workspaces::sandbox().await?;
-    let sandbox = SandboxEnviroment::new(&worker).await?;
+    let sandbox = SandboxEnvironment::new(&worker).await?;
     let amount = 100 * LIS;
 
     // Only staking contract can create lockups
@@ -250,7 +250,7 @@ async fn claim_not_expired_lockup() -> anyhow::Result<()> {
 #[tokio::test]
 async fn claim_not_own_lockup() -> anyhow::Result<()> {
     let worker = workspaces::sandbox().await?;
-    let sandbox = SandboxEnviroment::new(&worker).await?;
+    let sandbox = SandboxEnvironment::new(&worker).await?;
     let amount = 100 * LIS;
     let user = sandbox
         .owner
@@ -356,7 +356,7 @@ async fn claim_not_own_lockup() -> anyhow::Result<()> {
 #[tokio::test]
 async fn claim_nothing() -> anyhow::Result<()> {
     let worker = workspaces::sandbox().await?;
-    let sandbox = SandboxEnviroment::new(&worker).await?;
+    let sandbox = SandboxEnvironment::new(&worker).await?;
 
     let result = sandbox
         .owner
@@ -381,7 +381,7 @@ async fn claim_nothing() -> anyhow::Result<()> {
 #[tokio::test]
 async fn claim_not_existed_lockup() -> anyhow::Result<()> {
     let worker = workspaces::sandbox().await?;
-    let sandbox = SandboxEnviroment::new(&worker).await?;
+    let sandbox = SandboxEnvironment::new(&worker).await?;
     let amount = 100 * LIS;
 
     // Only staking contract can create lockups

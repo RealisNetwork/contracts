@@ -1,9 +1,9 @@
-use test_utils::{token, utils::*, SandboxEnviroment};
+use test_utils::{token, utils::*, SandboxEnvironment};
 
 #[tokio::test]
 async fn create_lock_with_other_token() -> anyhow::Result<()> {
     let worker = workspaces::sandbox().await?;
-    let sandbox = SandboxEnviroment::new(&worker).await?;
+    let sandbox = SandboxEnvironment::new(&worker).await?;
     let user = worker.root_account()?;
     let fake_token_contract = token::new(
         &worker,
@@ -47,7 +47,7 @@ async fn create_lock_with_other_token() -> anyhow::Result<()> {
 #[tokio::test]
 async fn create_lock_not_whitelisted_creator() -> anyhow::Result<()> {
     let worker = workspaces::sandbox().await?;
-    let sandbox = SandboxEnviroment::new(&worker).await?;
+    let sandbox = SandboxEnvironment::new(&worker).await?;
 
     let result = sandbox
         .owner
@@ -75,7 +75,7 @@ async fn create_lock_not_whitelisted_creator() -> anyhow::Result<()> {
 #[tokio::test]
 async fn create_lock_with_0_amount() -> anyhow::Result<()> {
     let worker = workspaces::sandbox().await?;
-    let sandbox = SandboxEnviroment::new(&worker).await?;
+    let sandbox = SandboxEnvironment::new(&worker).await?;
 
     let result = sandbox
         .owner

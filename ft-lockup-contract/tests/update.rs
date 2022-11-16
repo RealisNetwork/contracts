@@ -1,12 +1,12 @@
 use near_sdk::serde_json;
-use test_utils::SandboxEnviroment;
+use test_utils::SandboxEnvironment;
 
 pub const SPEC_METADATA: &str = "1.0.1";
 
 #[tokio::test]
 async fn update() -> anyhow::Result<()> {
     let worker = workspaces::sandbox().await?;
-    let contract = SandboxEnviroment::new(&worker).await?.lockup;
+    let contract = SandboxEnvironment::new(&worker).await?.lockup;
 
     // Check new version
     let actual: String = contract

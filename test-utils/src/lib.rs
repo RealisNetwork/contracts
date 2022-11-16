@@ -4,11 +4,18 @@ pub mod token;
 //pub mod nft;
 pub mod utils;
 
+use near_contract_standards::fungible_token::receiver::FungibleTokenReceiver;
 use crate::utils::*;
-use near_sdk::serde_json;
-use workspaces::{network::Sandbox, Account, Contract, Worker};
+use near_sdk::{
+    borsh::{self, BorshDeserialize, BorshSerialize},
+    AccountId, env, near_bindgen, PanicOnDefault, PromiseOrValue, serde_json};
+use near_sdk::json_types::U128;
+use workspaces::{
+    network::Sandbox,
+    Account, Contract, Worker
+};
 
-pub struct SandboxEnviroment {
+pub struct SandboxEnvironment {
     pub owner: Account,
     pub token: Contract,
     pub staking: Contract,
@@ -16,7 +23,7 @@ pub struct SandboxEnviroment {
     //    pub nft: Contract,
 }
 
-impl SandboxEnviroment {
+impl SandboxEnvironment {
     pub async fn new(worker: &Worker<Sandbox>) -> anyhow::Result<Self> {
         let owner = worker.root_account()?;
         let token = token::pull(

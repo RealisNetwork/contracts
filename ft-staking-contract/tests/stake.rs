@@ -1,13 +1,13 @@
 pub mod utils;
 
 use near_sdk::serde_json;
-use test_utils::{token, utils::*, SandboxEnviroment};
+use test_utils::{token, utils::*, SandboxEnvironment};
 use utils::*;
 
 #[tokio::test]
 async fn stake() -> anyhow::Result<()> {
     let worker = workspaces::sandbox().await?;
-    let sandbox = SandboxEnviroment::new(&worker).await?;
+    let sandbox = SandboxEnvironment::new(&worker).await?;
     let amount = 100 * LIS;
 
     let old_balance =
@@ -51,7 +51,7 @@ async fn stake() -> anyhow::Result<()> {
 #[tokio::test]
 async fn stake_zero_amount() -> anyhow::Result<()> {
     let worker = workspaces::sandbox().await?;
-    let sandbox = SandboxEnviroment::new(&worker).await?;
+    let sandbox = SandboxEnvironment::new(&worker).await?;
     let amount = 0 * LIS;
 
     let old_balance =
@@ -101,7 +101,7 @@ async fn stake_zero_amount() -> anyhow::Result<()> {
 #[tokio::test]
 async fn stake_other_token() -> anyhow::Result<()> {
     let worker = workspaces::sandbox().await?;
-    let sandbox = SandboxEnviroment::new(&worker).await?;
+    let sandbox = SandboxEnvironment::new(&worker).await?;
     let user = worker.root_account()?;
     let fake_token_contract = token::new(
         &worker,
@@ -142,5 +142,46 @@ async fn stake_other_token() -> anyhow::Result<()> {
 
 #[tokio::test]
 async fn stake_for_other() -> anyhow::Result<()> {
+    let worker = workspaces::sandbox().await?;
+    let sandbox = SandboxEnvironment::new(&worker).await?;
+    let amount = 100 * LIS;
+    let user = worker.root_account()?;
+
+    let old_balance =
+        test_utils::token::ft_balance_of(&sandbox.staking, sandbox.owner.id()).await?;
+
+    // Check current owner balance
+    assert_eq!(old_balance, 0);
+
+    // Make storage deposit for owner
+    sandbox
+        .owner
+        .call(sandbox.staking.id(), "storage_deposit")
+        .args_json(serde_json::json!({}))
+        .deposit(NEAR)
+        .transact()
+        .await?
+        .into_result()?;
+
+    let stake_for = serde_json::json!({"StakeFor": { "account_id": user.id() } });
+
+    // Make `ft_transfer_call` to stake
+    sandbox
+        .owner
+        .call(sandbox.token.id(), "ft_transfer_call")
+        .args_json(
+            serde_json::json!({ "receiver_id": STAKING_ACCOUNT, "amount": amount.to_string(), "msg": stake_for.to_string() })
+        )
+        .deposit(YOCTO)
+        .gas(300000000000000)
+        .transact()
+        .await?
+        .into_result()?;
+
+    let new_balance = test_utils::token::ft_balance_of(&sandbox.staking, user.id()).await?;
+
+    // Check new owner balance
+    assert_eq!(new_balance, amount * 1_000);
+
     Ok(())
 }

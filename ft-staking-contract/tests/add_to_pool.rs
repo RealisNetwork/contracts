@@ -1,10 +1,10 @@
 use near_sdk::serde_json;
-use test_utils::{token, utils::*, SandboxEnviroment};
+use test_utils::{token, utils::*, SandboxEnvironment};
 
 #[tokio::test]
 async fn add_to_pool_change_price() -> anyhow::Result<()> {
     let worker = workspaces::sandbox().await?;
-    let sandbox = SandboxEnviroment::new(&worker).await?;
+    let sandbox = SandboxEnvironment::new(&worker).await?;
     let amount = 1000 * LIS;
     let user = sandbox
         .owner
@@ -90,7 +90,7 @@ async fn add_to_pool_change_price() -> anyhow::Result<()> {
 #[tokio::test]
 async fn add_to_empty_pool_not_change_price() -> anyhow::Result<()> {
     let worker = workspaces::sandbox().await?;
-    let sandbox = SandboxEnviroment::new(&worker).await?;
+    let sandbox = SandboxEnvironment::new(&worker).await?;
     let amount = 1000 * LIS;
     let user = sandbox
         .owner
