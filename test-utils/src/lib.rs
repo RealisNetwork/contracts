@@ -4,12 +4,8 @@ pub mod token;
 //pub mod nft;
 pub mod utils;
 
-use near_contract_standards::fungible_token::receiver::FungibleTokenReceiver;
 use crate::utils::*;
-use near_sdk::{
-    borsh::{self, BorshDeserialize, BorshSerialize},
-    AccountId, env, near_bindgen, PanicOnDefault, PromiseOrValue, serde_json};
-use near_sdk::json_types::U128;
+use near_sdk::serde_json;
 use workspaces::{
     network::Sandbox,
     Account, Contract, Worker

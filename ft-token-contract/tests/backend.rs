@@ -1,11 +1,11 @@
 use near_contract_standards::storage_management::StorageBalance;
 use near_sdk::serde_json;
-use test_utils::{token, utils::*, SandboxEnviroment};
+use test_utils::{token, utils::*, SandboxEnvironment};
 
 #[tokio::test]
 async fn backend_can_register_account_throw_transfer() -> anyhow::Result<()> {
     let worker = workspaces::sandbox().await?;
-    let sandbox = SandboxEnviroment::new(&worker).await?;
+    let sandbox = SandboxEnvironment::new(&worker).await?;
 
     let user = sandbox
         .owner

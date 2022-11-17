@@ -1,10 +1,10 @@
 use near_sdk::serde_json;
-use test_utils::{token, utils::*, SandboxEnviroment};
+use test_utils::{token, utils::*, SandboxEnvironment};
 
 #[tokio::test]
 async fn mint_success() -> anyhow::Result<()> {
     let worker = workspaces::sandbox().await?;
-    let sandbox = SandboxEnviroment::new(&worker).await?;
+    let sandbox = SandboxEnvironment::new(&worker).await?;
 
     worker.fast_forward(1_500_000).await?;
 
@@ -28,7 +28,7 @@ async fn mint_success() -> anyhow::Result<()> {
 #[tokio::test]
 async fn mint_too_early() -> anyhow::Result<()> {
     let worker = workspaces::sandbox().await?;
-    let sandbox = SandboxEnviroment::new(&worker).await?;
+    let sandbox = SandboxEnvironment::new(&worker).await?;
 
     let result = sandbox
         .owner
@@ -55,7 +55,7 @@ async fn mint_too_early() -> anyhow::Result<()> {
 #[tokio::test]
 async fn mint_not_owner() -> anyhow::Result<()> {
     let worker = workspaces::sandbox().await?;
-    let sandbox = SandboxEnviroment::new(&worker).await?;
+    let sandbox = SandboxEnvironment::new(&worker).await?;
     let user = sandbox
         .owner
         .create_subaccount("user")
