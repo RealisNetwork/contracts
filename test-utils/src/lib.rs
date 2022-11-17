@@ -6,10 +6,7 @@ pub mod utils;
 
 use crate::utils::*;
 use near_sdk::serde_json;
-use workspaces::{
-    network::Sandbox,
-    Account, Contract, Worker
-};
+use workspaces::{network::Sandbox, Account, Contract, Worker};
 
 pub struct SandboxEnvironment {
     pub owner: Account,

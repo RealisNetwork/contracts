@@ -5,9 +5,8 @@ members = [
     "ft-staking-contract",
     "ft-lockup-contract",
     "nft-token-contract",
-
 ]
-exclude = ["test-utils"]
+exclude = [    "test-utils"]
 
 [profile.release]
 codegen-units=1
