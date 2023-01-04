@@ -1,6 +1,5 @@
-use near_sdk::{env, serde_json};
+use near_sdk::serde_json;
 use test_utils::{token, utils::*, SandboxEnvironment};
-use workspaces::AccountId;
 
 #[tokio::test]
 async fn unstake_success() -> anyhow::Result<()> {
@@ -198,17 +197,8 @@ async fn unstake_small_amounts() -> anyhow::Result<()> {
 #[tokio::test]
 async fn unstake_partial_success() -> anyhow::Result<()> {
     let worker = workspaces::sandbox().await?;
-    let mut sandbox = SandboxEnvironment::new(&worker).await?;
-    let contract_id: AccountId = FAKE_LOCKUP_CONTRACT_ACCOUNT.parse()?;
+    let sandbox = SandboxEnvironment::new(&worker).await?;
     let amount = 100 * LIS;
-
-    let wasm = workspaces::compile_project("../fake-lockup-contract").await?;
-    let contract = sandbox
-        .lockup
-        .as_account()
-        .deploy(&wasm)
-        .await?
-        .into_result()?;
 
     let old_balance =
         test_utils::token::ft_balance_of(&sandbox.staking, sandbox.owner.id()).await?;
