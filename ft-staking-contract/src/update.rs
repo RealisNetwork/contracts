@@ -18,21 +18,7 @@ impl Contract {
     #[private]
     #[init(ignore_state)]
     pub fn update() -> Self {
-        let contract: ContractV0 =
-            env::state_read().unwrap_or_else(|| env::panic_str("Not initialized"));
-
-        let mut contract = Self {
-            owner_id: contract.owner_id,
-            token_account_id: contract.token_account_id,
-            lockup_account_id: contract.lockup_account_id,
-            accounts: contract.accounts,
-            total_supply: contract.total_supply,
-            total_xtoken_supply: contract.total_xtoken_supply,
-            xtoken_cost: contract.xtoken_cost,
-            account_storage_usage: 0,
-        };
-        contract.measure_account_storage_usage();
-        contract
+        env::state_read().unwrap_or_else(|| env::panic_str("Not initialized"))
     }
 }
 
@@ -45,4 +31,5 @@ pub struct ContractV0 {
     total_supply: Balance,
     total_xtoken_supply: Balance,
     xtoken_cost: XTokenCost,
+    account_storage_usage: u64,
 }
