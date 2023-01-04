@@ -1,4 +1,4 @@
-use near_contract_standards::fungible_token::receiver::FungibleTokenReceiver;
+use near_contract_standards::{fungible_token::receiver::FungibleTokenReceiver, upgrade::Ownable};
 use near_sdk::{
     assert_one_yocto,
     borsh::{self, maybestd::collections::HashSet, BorshDeserialize, BorshSerialize},
@@ -86,6 +86,22 @@ impl Contract {
         self.lockups.insert(&index, &lockup);
 
         promise
+    }
+
+    #[payable]
+    pub fn extend_deposit_whitelist(&mut self, account_ids: Vec<AccountId>) {
+        assert_one_yocto();
+        self.assert_owner();
+        self.deposit_whitelist.extend(account_ids.into_iter())
+    }
+
+    #[payable]
+    pub fn reduce_deposit_whitelist(&mut self, account_ids: Vec<AccountId>) {
+        assert_one_yocto();
+        self.assert_owner();
+        account_ids.into_iter().for_each(|account_id| {
+            self.deposit_whitelist.remove(&account_id);
+        });
     }
 }
 
