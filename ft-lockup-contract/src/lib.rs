@@ -65,9 +65,9 @@ impl Contract {
     }
 
     #[payable]
-    pub fn claim(&mut self, index: LockupIndex) -> Promise {
+    pub fn claim(&mut self, index: LockupIndex, account_id: Option<AccountId>) -> Promise {
         assert_one_yocto();
-        let account_id = env::predecessor_account_id();
+        let account_id = account_id.unwrap_or_else(env::predecessor_account_id);
         let account_lockups = self
             .account_lockups
             .get(&account_id)
