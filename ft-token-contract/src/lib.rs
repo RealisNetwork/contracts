@@ -1,5 +1,5 @@
 use near_contract_standards::fungible_token::{
-    metadata::{FungibleTokenMetadata, FungibleTokenMetadataProvider, FT_METADATA_SPEC},
+    metadata::{FungibleTokenMetadata, FungibleTokenMetadataProvider},
     FungibleToken,
 };
 use near_sdk::{
@@ -16,6 +16,7 @@ mod owner;
 mod storage_impl;
 mod update;
 
+pub const FT_METADATA_SPEC: &str = "ft-1.0.1";
 pub const DEFAULT_MINT_AMOUNT: u128 = 3_000_000_000 * 10_u128.pow(12);
 
 #[near_bindgen]

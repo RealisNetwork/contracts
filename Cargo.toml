@@ -1,10 +1,12 @@
 [workspace]
 members = [
+    "fake-lockup-contract",
     "ft-token-contract",
     "ft-staking-contract",
     "ft-lockup-contract",
     "nft-token-contract",
 ]
+exclude = [    "test-utils"]
 
 [profile.release]
 codegen-units=1
