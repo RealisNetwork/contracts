@@ -93,7 +93,8 @@ async fn claim_for_other_account() -> anyhow::Result<()> {
         .transact()
         .await?
         .into_result()?;
-    sandbox.owner
+    sandbox
+        .owner
         .call(sandbox.token.id(), "storage_deposit")
         .deposit(NEAR)
         .args_json(serde_json::json!({
