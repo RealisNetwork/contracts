@@ -49,7 +49,7 @@ impl StorageManagement for Contract {
                 _ => storage_balance,
             }
         } else {
-            env::panic_str(format!("The account {} is not registered", account_id).as_str());
+            env::panic_str(format!("The account {account_id} is not registered").as_str());
         }
     }
 

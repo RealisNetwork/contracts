@@ -69,9 +69,10 @@ impl FungibleTokenMetadataProvider for Contract {
     fn ft_metadata(&self) -> FungibleTokenMetadata {
         FungibleTokenMetadata {
             spec: FT_METADATA_SPEC.to_string(),
-            name: String::from("Realis Network LIS token"),
+            name: String::from("Realis"),
             symbol: String::from("LIS"),
-            icon: Some(String::from("\
+            icon: Some(String::from(
+                "\
             data:image/svg+xml;base64,\
             PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmU\
             iIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD\
@@ -144,7 +145,8 @@ impl FungibleTokenMetadataProvider for Contract {
             NTQiIHgxPSI3Ni4xMDU5IiB5MT0iMjExLjYzIiB4Mj0iMTQ5Ljg4MSIgeTI9IjIyOS4zMjQiIGdyYWRpZW5\
             0VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iI0Y0NkYyMyIvPgo8c3RvcCBvZm\
             ZzZXQ9IjAuNTE1NjI1IiBzdG9wLWNvbG9yPSIjRjk1RDIxIi8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb\
-            2xvcj0iI0ZGNDUyMCIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPgo=")),
+            2xvcj0iI0ZGNDUyMCIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPgo=",
+            )),
             reference: None,
             reference_hash: None,
             decimals: 12,
