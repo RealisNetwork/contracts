@@ -24,11 +24,9 @@ pub const DEFAULT_MINT_AMOUNT: u128 = 3_000_000_000 * 10_u128.pow(12);
 pub struct Contract {
     pub owner_id: AccountId,
     pub staking_contract: AccountId,
-    pub lockup_contract: AccountId,
     pub ft: FungibleToken,
     pub last_mint: Timestamp,
     pub backend: UnorderedSet<AccountId>,
-    pub suspensioned_accounts: UnorderedSet<AccountId>,
 }
 
 #[near_bindgen]
@@ -38,17 +36,14 @@ impl Contract {
         owner_id: Option<AccountId>,
         backend_ids: Option<Vec<AccountId>>,
         staking_id: AccountId,
-        lockup_id: AccountId,
     ) -> Self {
         let owner_id = owner_id.unwrap_or_else(env::predecessor_account_id);
         let mut this = Self {
             owner_id: owner_id.clone(),
             staking_contract: staking_id.clone(),
-            lockup_contract: lockup_id.clone(),
             ft: FungibleToken::new(b"a".to_vec()),
             last_mint: env::block_timestamp(),
             backend: UnorderedSet::new(b"b".to_vec()),
-            suspensioned_accounts: UnorderedSet::new(b"c".to_vec()),
         };
 
         this.backend
@@ -56,7 +51,6 @@ impl Contract {
 
         this.ft.internal_register_account(&owner_id);
         this.ft.internal_register_account(&staking_id);
-        this.ft.internal_register_account(&lockup_id);
 
         this.ft.internal_deposit(&owner_id, DEFAULT_MINT_AMOUNT);
         near_contract_standards::fungible_token::events::FtMint {
