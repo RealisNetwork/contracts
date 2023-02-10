@@ -78,6 +78,5 @@ impl Contract {
                     .with_static_gas(GAS_FOR_RESOLVE_TRANSFER)
                     .ft_resolve_transfer(sender_id, receiver_id, amount.into()),
             )
-            .into()
     }
 }
