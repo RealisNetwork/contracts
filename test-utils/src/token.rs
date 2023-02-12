@@ -35,7 +35,7 @@ pub async fn pull(
     let contract_id: AccountId = TOKEN_CONTRACT_ACCOUNT.parse()?;
     let contract = worker
         .import_contract(&contract_id, &mainnet)
-        .initial_balance(parse_near!("1000 N"))
+        .initial_balance(parse_near!("5000 N"))
         .transact()
         .await?;
 

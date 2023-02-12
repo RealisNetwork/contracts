@@ -107,7 +107,7 @@ impl Contract {
 
 impl Contract {
     pub fn next_index(&mut self) -> LockupIndex {
-        while self.lockups.keys().any(|key| key == self.index) {
+        if self.lockups.get(&self.index).is_some() {
             self.index = self
                 .index
                 .checked_add(1)

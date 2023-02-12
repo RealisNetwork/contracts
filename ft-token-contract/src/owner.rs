@@ -72,7 +72,7 @@ impl Contract {
         // Initiating receiver's call and the callback
         ext_ft_receiver::ext(receiver_id.clone())
             .with_static_gas(env::prepaid_gas() - GAS_FOR_FT_TRANSFER_CALL)
-            .ft_on_transfer(sender_id.clone(), amount.into(), msg)
+            .ft_on_transfer(env::predecessor_account_id(), amount.into(), msg)
             .then(
                 ext_ft_resolver::ext(env::current_account_id())
                     .with_static_gas(GAS_FOR_RESOLVE_TRANSFER)
