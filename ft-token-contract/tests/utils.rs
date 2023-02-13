@@ -11,7 +11,7 @@ pub async fn pull_contract(worker: &Worker<Sandbox>) -> anyhow::Result<Contract>
     let contract_id: AccountId = CONTRACT_ACCOUNT.parse()?;
     let contract = worker
         .import_contract(&contract_id, &mainnet)
-        .initial_balance(parse_near!("1000 N"))
+        .initial_balance(parse_near!("5000 N"))
         .transact()
         .await?;
 

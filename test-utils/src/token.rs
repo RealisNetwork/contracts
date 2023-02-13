@@ -8,6 +8,7 @@ pub async fn new(
     owner_id: Option<AccountId>,
     backend_ids: Option<Vec<AccountId>>,
     staking_id: AccountId,
+    lockup_id: AccountId,
 ) -> anyhow::Result<Contract> {
     let wasm = workspaces::compile_project("../ft-token-contract").await?;
     let contract = worker.dev_deploy(&wasm).await?;
@@ -17,6 +18,7 @@ pub async fn new(
         "owner_id": owner_id,
         "backend_ids": backend_ids,
         "staking_id": staking_id,
+        "lockup_id": lockup_id,
         }))
         .transact()
         .await?
@@ -30,12 +32,13 @@ pub async fn pull(
     owner_id: Option<AccountId>,
     backend_ids: Option<Vec<AccountId>>,
     staking_id: AccountId,
+    lockup_id: AccountId,
 ) -> anyhow::Result<Contract> {
     let mainnet = workspaces::mainnet_archival().await?;
     let contract_id: AccountId = TOKEN_CONTRACT_ACCOUNT.parse()?;
     let contract = worker
         .import_contract(&contract_id, &mainnet)
-        .initial_balance(parse_near!("1000 N"))
+        .initial_balance(parse_near!("5000 N"))
         .transact()
         .await?;
 
@@ -45,6 +48,7 @@ pub async fn pull(
             "owner_id": owner_id,
             "backend_ids": backend_ids,
             "staking_id": staking_id,
+            "lockup_id": lockup_id,
         }))
         .transact()
         .await?

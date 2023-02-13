@@ -1,7 +1,7 @@
 use crate::*;
 
 #[derive(BorshDeserialize, BorshSerialize)]
-pub struct ContractV020{
+pub struct ContractV020 {
     pub owner_id: AccountId,
     pub staking_contract: AccountId,
     pub lockup_contract: AccountId,
