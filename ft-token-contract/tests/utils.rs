@@ -4,6 +4,7 @@ use workspaces::{network::Sandbox, AccountId, Contract, Worker};
 
 pub const CONTRACT_ACCOUNT: &str = "token.v1.realisnetwork.near";
 pub const STAKING_ACCOUNT: &str = "staking.v1.realisnetwork.near";
+pub const LOCKUP_ACCOUNT: &str = "lockup.v1.realisnetwork.near";
 pub const SPEC_METADATA: &str = "ft-1.0.1";
 
 pub async fn pull_contract(worker: &Worker<Sandbox>) -> anyhow::Result<Contract> {
@@ -17,7 +18,9 @@ pub async fn pull_contract(worker: &Worker<Sandbox>) -> anyhow::Result<Contract>
 
     contract
         .call("new")
-        .args_json(serde_json::json!({ "staking_id": STAKING_ACCOUNT }))
+        .args_json(
+            serde_json::json!({ "staking_id": STAKING_ACCOUNT, "lockup_id": LOCKUP_ACCOUNT }),
+        )
         .transact()
         .await?
         .into_result()?;

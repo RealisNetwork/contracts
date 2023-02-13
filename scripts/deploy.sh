@@ -112,7 +112,7 @@ then
         --initArgs '{"token_account_id": "'$TOKEN_CONTRACT_ID'", "deposit_whitelist": ["'$OWNER_ID'", "'$STAKING_CONTRACT_ID'"]}' \
         --initGas 300000000000000
     echo "Register in token contract"
-    near call $TOKEN_CONTRACT_ID register '{"account_id": "'$LOCKUP_CONTRACT_ID'"}' --accountId $OWNER_ID
+    near call $TOKEN_CONTRACT_ID storage_deposit '{"account_id": "'$LOCKUP_CONTRACT_ID'"}' --accountId $OWNER_ID --deposit 1
 else
     echo "Updating contract"
     echo y | near deploy --accountId $LOCKUP_CONTRACT_ID \
