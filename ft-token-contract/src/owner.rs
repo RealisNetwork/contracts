@@ -1,9 +1,6 @@
 use crate::*;
-use near_contract_standards::{
-    fungible_token::{receiver::ext_ft_receiver, resolver::ext_ft_resolver},
-    upgrade::Ownable,
-};
-use near_sdk::{assert_one_yocto, env, json_types::U128, Gas, Promise};
+use near_contract_standards::upgrade::Ownable;
+use near_sdk::assert_one_yocto;
 
 #[near_bindgen]
 impl Ownable for Contract {
@@ -39,44 +36,5 @@ impl Contract {
 
     pub fn get_backend_accounts(&self) -> Vec<AccountId> {
         self.backend.iter().collect()
-    }
-
-    #[payable]
-    pub fn ft_freeze_call(
-        &mut self,
-        account_id: AccountId,
-        amount: U128,
-        memo: Option<String>,
-        msg: String,
-    ) -> Promise {
-        assert_one_yocto();
-        self.assert_owner();
-
-        require!(
-            self.suspensioned_accounts.contains(&account_id),
-            "Not suspensioned account"
-        );
-        require!(
-            env::prepaid_gas() > GAS_FOR_FT_TRANSFER_CALL,
-            "More gas is required"
-        );
-
-        const GAS_FOR_RESOLVE_TRANSFER: Gas = Gas(5_000_000_000_000);
-        const GAS_FOR_FT_TRANSFER_CALL: Gas = Gas(25_000_000_000_000 + GAS_FOR_RESOLVE_TRANSFER.0);
-
-        let receiver_id = self.lockup_contract.clone();
-        let sender_id = account_id;
-        let amount: Balance = amount.into();
-        self.ft
-            .internal_transfer(&sender_id, &receiver_id, amount, memo);
-        // Initiating receiver's call and the callback
-        ext_ft_receiver::ext(receiver_id.clone())
-            .with_static_gas(env::prepaid_gas() - GAS_FOR_FT_TRANSFER_CALL)
-            .ft_on_transfer(env::predecessor_account_id(), amount.into(), msg)
-            .then(
-                ext_ft_resolver::ext(env::current_account_id())
-                    .with_static_gas(GAS_FOR_RESOLVE_TRANSFER)
-                    .ft_resolve_transfer(sender_id, receiver_id, amount.into()),
-            )
     }
 }

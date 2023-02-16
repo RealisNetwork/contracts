@@ -104,13 +104,12 @@ mod tests {
     fn mint_time_check() {
         let owner_id = accounts(0);
         let staking_id = accounts(1);
-        let lockup_id = accounts(2);
         let initial_total_supply = 3_000_000_000 * 10_u128.pow(12);
         let context = VMContextBuilder::new();
 
         // init contract
         testing_env!(context.clone().block_timestamp(WEEK.0).build());
-        let mut contract = Contract::new(Some(owner_id.clone()), None, staking_id, lockup_id);
+        let mut contract = Contract::new(Some(owner_id.clone()), None, staking_id);
         assert_eq!(contract.ft_total_supply().0, initial_total_supply);
 
         // wait week
@@ -171,13 +170,12 @@ mod tests {
     fn mint_before_new_week() {
         let owner_id = accounts(0);
         let staking_id = accounts(1);
-        let lockup_id = accounts(2);
         let initial_total_supply = 3_000_000_000 * 10_u128.pow(12);
         let context = VMContextBuilder::new();
 
         // init contract
         testing_env!(context.clone().block_timestamp(WEEK.0).build());
-        let mut contract = Contract::new(Some(owner_id.clone()), None, staking_id, lockup_id);
+        let mut contract = Contract::new(Some(owner_id.clone()), None, staking_id);
         assert_eq!(contract.ft_total_supply().0, initial_total_supply);
 
         // wait 3 days
@@ -195,12 +193,11 @@ mod tests {
     fn can_mint_only_owner() {
         let owner_id = accounts(0);
         let staking_id = accounts(1);
-        let lockup_id = accounts(2);
         let context = VMContextBuilder::new();
 
         // init contract
         testing_env!(context.clone().block_timestamp(WEEK.0).build());
-        let mut contract = Contract::new(Some(owner_id.clone()), None, staking_id, lockup_id);
+        let mut contract = Contract::new(Some(owner_id.clone()), None, staking_id);
 
         // wait week
         testing_env!(context

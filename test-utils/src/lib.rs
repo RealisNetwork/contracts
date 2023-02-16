@@ -31,6 +31,7 @@ impl SandboxEnvironment {
             Some(owner.id().clone()),
             Some(vec![backend.id().clone()]),
             STAKING_CONTRACT_ACCOUNT.parse()?,
+            LOCKUP_CONTRACT_ACCOUNT.parse()?,
         )
         .await?;
         let staking = staking::pull(
