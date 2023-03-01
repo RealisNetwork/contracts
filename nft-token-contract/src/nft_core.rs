@@ -128,7 +128,9 @@ impl NonFungibleTokenCore for Contract {
         &self,
         token_id: TokenId,
     ) -> Option<near_contract_standards::non_fungible_token::Token> {
-        self.token_by_id.get(&token_id).map(|token| token.into())
+        self.token_by_id
+            .get(&token_id)
+            .map(|token| Token::from(token).into())
     }
 }
 

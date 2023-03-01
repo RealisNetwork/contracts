@@ -38,19 +38,21 @@ impl NonFungibleTokenApproval for Contract {
     ) -> Option<Promise> {
         assert_one_yocto();
 
-        let mut token = self
+        let mut token: Token = self
             .token_by_id
             .get(&token_id)
-            .unwrap_or_else(|| env::panic_str("Token not found"));
+            .unwrap_or_else(|| env::panic_str("Token not found"))
+            .into();
+        let token_owner_id = token.owner_id.clone();
 
         require!(
-            env::predecessor_account_id() == token.owner_id,
+            env::predecessor_account_id() == token_owner_id,
             "Predecessor must be token owner"
         );
 
         let approval_id = token.next_approval_id();
         token.approved_account_ids.insert(&account_id, &approval_id);
-        self.token_by_id.insert(&token_id, &token);
+        self.token_by_id.insert(&token_id, &token.into());
 
         // if given `msg`, schedule call to `nft_on_approve` and return it. Else, return
         // None.
@@ -63,7 +65,7 @@ impl NonFungibleTokenApproval for Contract {
                         .unwrap_or_else(|| env::panic_str("Sub will overflow"))
                         .into(),
                 )
-                .nft_on_approve(token_id, token.owner_id, approval_id, msg)
+                .nft_on_approve(token_id, token_owner_id, approval_id, msg)
         })
     }
 
@@ -82,10 +84,11 @@ impl NonFungibleTokenApproval for Contract {
     fn nft_revoke(&mut self, token_id: TokenId, account_id: AccountId) {
         assert_one_yocto();
 
-        let mut token = self
+        let mut token: Token = self
             .token_by_id
             .get(&token_id)
-            .unwrap_or_else(|| env::panic_str("Token not found"));
+            .unwrap_or_else(|| env::panic_str("Token not found"))
+            .into();
 
         require!(
             env::predecessor_account_id() == token.owner_id,
@@ -94,7 +97,7 @@ impl NonFungibleTokenApproval for Contract {
 
         token.approved_account_ids.remove(&account_id);
 
-        self.token_by_id.insert(&token_id, &token);
+        self.token_by_id.insert(&token_id, &token.into());
     }
 
     /// Revoke all approved accounts for a specific token.
@@ -111,10 +114,11 @@ impl NonFungibleTokenApproval for Contract {
     fn nft_revoke_all(&mut self, token_id: TokenId) {
         assert_one_yocto();
 
-        let mut token = self
+        let mut token: Token = self
             .token_by_id
             .get(&token_id)
-            .unwrap_or_else(|| env::panic_str("Token not found"));
+            .unwrap_or_else(|| env::panic_str("Token not found"))
+            .into();
 
         require!(
             env::predecessor_account_id() == token.owner_id,
@@ -123,7 +127,7 @@ impl NonFungibleTokenApproval for Contract {
 
         token.approved_account_ids.clear();
 
-        self.token_by_id.insert(&token_id, &token);
+        self.token_by_id.insert(&token_id, &token.into());
     }
 
     /// Check if a token is approved for transfer by a given account, optionally
@@ -145,10 +149,13 @@ impl NonFungibleTokenApproval for Contract {
         approved_account_id: AccountId,
         approval_id: Option<u64>,
     ) -> bool {
-        self.token_by_id
+        let token: Token = self
+            .token_by_id
             .get(&token_id)
             .unwrap_or_else(|| env::panic_str("Token not found"))
-            .is_approved(&approved_account_id, approval_id)
+            .into();
+
+        token.is_approved(&approved_account_id, approval_id)
     }
 }
 

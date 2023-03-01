@@ -9,7 +9,7 @@ use near_sdk::{
     collections::{LazyOption, LookupMap, UnorderedMap, UnorderedSet},
     env, near_bindgen, require, AccountId, BorshStorageKey,
 };
-use token::Token;
+use token::{Token, VersionedToken};
 
 pub mod approval;
 pub mod nft_core;
@@ -35,7 +35,7 @@ pub enum StorageKey {
 pub struct Contract {
     pub owner_id: AccountId,
     pub backend_id: AccountId,
-    pub token_by_id: UnorderedMap<TokenId, Token>,
+    pub token_by_id: UnorderedMap<TokenId, VersionedToken>,
     pub tokens_per_owner: LookupMap<AccountId, UnorderedSet<TokenId>>,
     pub locked_tokens_per_owner: LookupMap<AccountId, UnorderedSet<TokenId>>,
 }
@@ -80,7 +80,7 @@ impl Contract {
             }),
             next_approval_id: 0,
         };
-        self.token_by_id.insert(&token_id, &token);
+        self.token_by_id.insert(&token_id, &token.into());
         let nft_storage_usage = env::storage_usage() - initial_storage_usage;
         self.token_by_id.remove(&token_id);
         env::log_str(&format!(
@@ -132,10 +132,11 @@ impl Contract {
             .approved_account_ids
             .insert(&self.backend_id, &approval_id);
 
-        self.token_by_id.insert(&token.token_id, &token);
         let mut tokens_per_owner = self.get_tokens_per_owner_internal(&token.owner_id);
         tokens_per_owner.insert(&token.token_id);
         self.tokens_per_owner.insert(&owner_id, &tokens_per_owner);
+        self.token_by_id
+            .insert(&token.token_id.clone(), &token.into());
 
         NftMint {
             owner_id: &owner_id,
@@ -155,10 +156,11 @@ impl Contract {
     pub fn nft_burn(&mut self, token_id: TokenId, approval_id: Option<u64>, memo: Option<String>) {
         assert_one_yocto();
         let owner_id = env::predecessor_account_id();
-        let mut token = self
+        let mut token: Token = self
             .token_by_id
             .get(&token_id)
-            .unwrap_or_else(|| env::panic_str("No such token"));
+            .unwrap_or_else(|| env::panic_str("No such token"))
+            .into();
         require!(
             token.check_approve_and_revoke_all(&env::predecessor_account_id(), approval_id),
             "Not enough permission"
@@ -225,10 +227,11 @@ impl Contract {
     #[payable]
     pub fn nft_lock(&mut self, token_id: TokenId, approval_id: Option<u64>) {
         assert_one_yocto();
-        let token = self
+        let token: Token = self
             .token_by_id
             .get(&token_id)
-            .unwrap_or_else(|| env::panic_str("No such token"));
+            .unwrap_or_else(|| env::panic_str("No such token"))
+            .into();
 
         require!(
             token.is_approved(&env::predecessor_account_id(), approval_id),
@@ -264,10 +267,11 @@ impl Contract {
             "Predecessor must be backend account"
         );
 
-        let token = self
+        let token: Token = self
             .token_by_id
             .get(&token_id)
-            .unwrap_or_else(|| env::panic_str("No such token"));
+            .unwrap_or_else(|| env::panic_str("No such token"))
+            .into();
 
         let mut locked_tokens_per_owner =
             self.get_locked_tokens_per_owner_internal(&token.owner_id);
@@ -323,6 +327,7 @@ impl Contract {
         self.token_by_id
             .get(token_id)
             .unwrap_or_else(|| env::panic_str("Token not found"))
+            .into()
     }
 
     fn nft_transfer_internal(
@@ -342,7 +347,7 @@ impl Contract {
         self.tokens_per_owner
             .insert(&token.owner_id, &tokens_per_owner);
 
-        token.owner_id = receiver_id;
+        token.owner_id = receiver_id.clone();
         if clean_approval {
             token.approved_account_ids.clear();
         }
@@ -352,11 +357,11 @@ impl Contract {
         self.tokens_per_owner
             .insert(&token.owner_id, &tokens_per_owner);
 
-        self.token_by_id.insert(token_id, &token);
+        self.token_by_id.insert(token_id, &token.into());
 
         NftTransfer {
             old_owner_id: &old_owner_id,
-            new_owner_id: &token.owner_id,
+            new_owner_id: &receiver_id,
             token_ids: &[token_id],
             authorized_id: None,
             memo: None,

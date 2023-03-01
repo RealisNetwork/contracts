@@ -1,6 +1,6 @@
-use crate::*;
+use crate::{token::Token, *};
 use near_contract_standards::non_fungible_token::{
-    enumeration::NonFungibleTokenEnumeration, Token,
+    enumeration::NonFungibleTokenEnumeration, Token as StandardToken,
 };
 use near_sdk::{json_types::U128, near_bindgen, AccountId};
 
@@ -22,12 +22,12 @@ impl NonFungibleTokenEnumeration for Contract {
     /// * `limit`: the maximum number of tokens to return
     ///
     /// Returns an array of Token objects, as described in Core standard
-    fn nft_tokens(&self, from_index: Option<U128>, limit: Option<u64>) -> Vec<Token> {
+    fn nft_tokens(&self, from_index: Option<U128>, limit: Option<u64>) -> Vec<StandardToken> {
         self.token_by_id
             .iter()
             .skip(from_index.map(|v| v.0).unwrap_or_default() as usize)
             .take(limit.unwrap_or(NFT_VIEW_LIMIT) as usize)
-            .map(|(_, token)| token.into())
+            .map(|(_, token)| Token::from(token).into())
             .collect()
     }
 
@@ -61,7 +61,7 @@ impl NonFungibleTokenEnumeration for Contract {
         account_id: AccountId,
         from_index: Option<U128>,
         limit: Option<u64>,
-    ) -> Vec<Token> {
+    ) -> Vec<StandardToken> {
         self.tokens_per_owner
             .get(&account_id)
             .map(|token_ids| {
@@ -69,7 +69,11 @@ impl NonFungibleTokenEnumeration for Contract {
                     .iter()
                     .skip(from_index.map(|v| v.0).unwrap_or_default() as usize)
                     .take(limit.unwrap_or(NFT_VIEW_LIMIT) as usize)
-                    .filter_map(|id| self.token_by_id.get(&id).map(|token| token.into()))
+                    .filter_map(|id| {
+                        self.token_by_id
+                            .get(&id)
+                            .map(|token| Token::from(token).into())
+                    })
                     .collect()
             })
             .unwrap_or_default()
@@ -108,7 +112,7 @@ impl Contract {
         account_id: AccountId,
         from_index: Option<U128>,
         limit: Option<u64>,
-    ) -> Vec<Token> {
+    ) -> Vec<StandardToken> {
         self.locked_tokens_per_owner
             .get(&account_id)
             .map(|token_ids| {
@@ -116,7 +120,11 @@ impl Contract {
                     .iter()
                     .skip(from_index.map(|v| v.0).unwrap_or_default() as usize)
                     .take(limit.unwrap_or(NFT_VIEW_LIMIT) as usize)
-                    .filter_map(|id| self.token_by_id.get(&id).map(|token| token.into()))
+                    .filter_map(|id| {
+                        self.token_by_id
+                            .get(&id)
+                            .map(|token| Token::from(token).into())
+                    })
                     .collect()
             })
             .unwrap_or_default()
