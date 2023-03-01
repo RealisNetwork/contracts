@@ -38,11 +38,7 @@ impl NonFungibleTokenApproval for Contract {
     ) -> Option<Promise> {
         assert_one_yocto();
 
-        let mut token: Token = self
-            .token_by_id
-            .get(&token_id)
-            .unwrap_or_else(|| env::panic_str("Token not found"))
-            .into();
+        let mut token = self.get_token_internal(&token_id);
         let token_owner_id = token.owner_id.clone();
 
         require!(
@@ -84,11 +80,7 @@ impl NonFungibleTokenApproval for Contract {
     fn nft_revoke(&mut self, token_id: TokenId, account_id: AccountId) {
         assert_one_yocto();
 
-        let mut token: Token = self
-            .token_by_id
-            .get(&token_id)
-            .unwrap_or_else(|| env::panic_str("Token not found"))
-            .into();
+        let mut token = self.get_token_internal(&token_id);
 
         require!(
             env::predecessor_account_id() == token.owner_id,
@@ -114,11 +106,7 @@ impl NonFungibleTokenApproval for Contract {
     fn nft_revoke_all(&mut self, token_id: TokenId) {
         assert_one_yocto();
 
-        let mut token: Token = self
-            .token_by_id
-            .get(&token_id)
-            .unwrap_or_else(|| env::panic_str("Token not found"))
-            .into();
+        let mut token = self.get_token_internal(&token_id);
 
         require!(
             env::predecessor_account_id() == token.owner_id,
