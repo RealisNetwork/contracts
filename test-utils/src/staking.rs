@@ -1,5 +1,5 @@
 use crate::utils::*;
-use near_sdk::serde_json;
+use near_sdk::{serde_json, json_types::U128};
 use near_units::parse_near;
 use workspaces::{network::Sandbox, AccountId, Contract, Worker};
 
@@ -29,4 +29,18 @@ pub async fn pull(
     contract.call("update").transact().await?.into_result()?;
 
     Ok(contract)
+}
+
+pub async fn ft_total_supply(contract: &Contract) -> anyhow::Result<u128> {
+    let amount: U128 = contract
+        .view(
+            "ft_total_supply",
+            serde_json::json!({})
+                .to_string()
+                .into_bytes(),
+            )
+            .await?
+            .json()?;
+
+    Ok(amount.0)
 }

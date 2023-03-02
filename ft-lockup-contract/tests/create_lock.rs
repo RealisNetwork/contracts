@@ -10,6 +10,7 @@ async fn create_lock_with_other_token() -> anyhow::Result<()> {
         Some(user.id().clone()),
         None,
         STAKING_CONTRACT_ACCOUNT.parse()?,
+        LOCKUP_CONTRACT_ACCOUNT.parse()?,
     )
     .await?;
 
