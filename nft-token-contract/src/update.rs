@@ -27,9 +27,14 @@ impl Contract {
     #[private]
     #[init(ignore_state)]
     pub fn update() -> Self {
-        let mut contract: ContractV1 = env::state_read().unwrap_or_else(|| env::panic_str("Not initialized"));
-        
-        let tokens = contract.token_by_id.into_iter().map(|(k, v)| (k, VersionedToken::from(v))).collect::<Vec<_>>();
+        let mut contract: ContractV1 =
+            env::state_read().unwrap_or_else(|| env::panic_str("Not initialized"));
+
+        let tokens = contract
+            .token_by_id
+            .into_iter()
+            .map(|(k, v)| (k, VersionedToken::from(v)))
+            .collect::<Vec<_>>();
         contract.token_by_id.clear();
 
         let mut token_by_id = UnorderedMap::new(StorageKey::TokenById);

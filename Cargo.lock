@@ -1837,8 +1837,13 @@ dependencies = [
 name = "nft-token-contract"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "near-contract-standards",
  "near-sdk",
+ "near-units",
+ "test-utils",
+ "tokio",
+ "workspaces",
 ]
 
 [[package]]
