@@ -1,7 +1,7 @@
 pub mod lockup;
+pub mod nft;
 pub mod staking;
 pub mod token;
-pub mod nft;
 pub mod utils;
 
 use crate::utils::*;
@@ -48,12 +48,7 @@ impl SandboxEnvironment {
             vec![STAKING_CONTRACT_ACCOUNT.parse()?],
         )
         .await?;
-        let nft = nft::pull(
-            worker,
-            Some(owner.id().clone()),
-            Some(backend.id().clone()),
-        )
-        .await?;
+        let nft = nft::pull(worker, Some(owner.id().clone()), Some(backend.id().clone())).await?;
 
         owner
             .call(token.id(), "storage_deposit")
@@ -91,7 +86,7 @@ impl SandboxEnvironment {
             token,
             staking,
             lockup,
-            nft
+            nft,
         })
     }
 }

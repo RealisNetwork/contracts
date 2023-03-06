@@ -57,9 +57,7 @@ pub async fn nft_total_supply(contract: &Contract) -> anyhow::Result<u128> {
     let total_supply: U128 = contract
         .view(
             "nft_total_supply",
-            serde_json::json!({})
-            .to_string()
-            .into_bytes(),
+            serde_json::json!({}).to_string().into_bytes(),
         )
         .await?
         .json()?;
