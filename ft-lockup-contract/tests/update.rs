@@ -1,22 +1,12 @@
-use near_sdk::serde_json;
-use test_utils::SandboxEnvironment;
-
-pub const SPEC_METADATA: &str = "1.0.1";
+use test_utils::{lockup, SandboxEnvironment};
 
 #[tokio::test]
 async fn update() -> anyhow::Result<()> {
     let worker = workspaces::sandbox().await?;
     let contract = SandboxEnvironment::new(&worker).await?.lockup;
 
-    // Check new version
-    let actual: String = contract
-        .view(
-            "get_metadata",
-            serde_json::json!({}).to_string().as_bytes().to_vec(),
-        )
-        .await?
-        .json()?;
-    assert_eq!(actual, SPEC_METADATA);
+    let amount = lockup::get_num_lockups(&contract).await?;
+    assert_eq!(amount, 0_u64);
 
     Ok(())
 }

@@ -1,6 +1,7 @@
 use near_sdk::json_types::U64;
 
 pub const TOKEN_CONTRACT_ACCOUNT: &str = "token.v1.realisnetwork.near";
+pub const NFT_CONTRACT_ACCOUNT: &str = "nft.v1.realisnetwork.near";
 pub const STAKING_CONTRACT_ACCOUNT: &str = "staking.v1.realisnetwork.near";
 pub const LOCKUP_CONTRACT_ACCOUNT: &str = "lockup.v1.realisnetwork.near";
 pub const FAKE_LOCKUP_CONTRACT_ACCOUNT: &str = "fakelockup.v1.realisnetwork.near";

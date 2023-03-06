@@ -1,5 +1,5 @@
 use crate::utils::*;
-use near_sdk::serde_json;
+use near_sdk::{json_types::U64, serde_json};
 use near_units::parse_near;
 use workspaces::{network::Sandbox, AccountId, Contract, Worker};
 
@@ -29,4 +29,16 @@ pub async fn pull(
     contract.call("update").transact().await?.into_result()?;
 
     Ok(contract)
+}
+
+pub async fn get_num_lockups(contract: &Contract) -> anyhow::Result<u64> {
+    let amount: U64 = contract
+        .view(
+            "get_num_lockups",
+            serde_json::json!({}).to_string().into_bytes(),
+        )
+        .await?
+        .json()?;
+
+    Ok(amount.0)
 }

@@ -6,6 +6,25 @@ use near_sdk::{
 };
 
 #[derive(BorshDeserialize, BorshSerialize)]
+pub enum VersionedToken {
+    V1(Token),
+}
+
+impl From<VersionedToken> for Token {
+    fn from(value: VersionedToken) -> Self {
+        match value {
+            VersionedToken::V1(token) => token,
+        }
+    }
+}
+
+impl From<Token> for VersionedToken {
+    fn from(value: Token) -> Self {
+        Self::V1(value)
+    }
+}
+
+#[derive(BorshDeserialize, BorshSerialize)]
 pub struct Token {
     pub token_id: TokenId,
     pub owner_id: AccountId,

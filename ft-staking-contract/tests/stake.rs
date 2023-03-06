@@ -1,8 +1,5 @@
-pub mod utils;
-
 use near_sdk::serde_json;
 use test_utils::{token, utils::*, SandboxEnvironment};
-use utils::*;
 
 #[tokio::test]
 async fn stake() -> anyhow::Result<()> {
@@ -31,7 +28,7 @@ async fn stake() -> anyhow::Result<()> {
         .owner
         .call(sandbox.token.id(), "ft_transfer_call")
         .args_json(
-            serde_json::json!({ "receiver_id": STAKING_ACCOUNT, "amount": amount.to_string(), "msg": "\"Stake\"" })
+            serde_json::json!({ "receiver_id": STAKING_CONTRACT_ACCOUNT, "amount": amount.to_string(), "msg": "\"Stake\"" })
         )
         .deposit(YOCTO)
         .gas(300000000000000)
@@ -75,7 +72,7 @@ async fn stake_zero_amount() -> anyhow::Result<()> {
         .owner
         .call(sandbox.token.id(), "ft_transfer_call")
         .args_json(serde_json::json!({
-                "receiver_id": STAKING_ACCOUNT,
+                "receiver_id": STAKING_CONTRACT_ACCOUNT,
                 "amount": amount.to_string(),
                 "msg": "\"Stake\"",
         }))
@@ -108,6 +105,7 @@ async fn stake_other_token() -> anyhow::Result<()> {
         Some(user.id().clone()),
         None,
         STAKING_CONTRACT_ACCOUNT.parse()?,
+        LOCKUP_CONTRACT_ACCOUNT.parse()?,
     )
     .await?;
 
@@ -123,7 +121,7 @@ async fn stake_other_token() -> anyhow::Result<()> {
         .deposit(YOCTO)
         .gas(300000000000000)
         .args_json(serde_json::json!({
-            "receiver_id": STAKING_ACCOUNT,
+            "receiver_id": STAKING_CONTRACT_ACCOUNT,
             "amount": LIS.to_string(),
             "msg": "\"Stake\"",
         }))
@@ -170,7 +168,7 @@ async fn stake_for_other() -> anyhow::Result<()> {
         .owner
         .call(sandbox.token.id(), "ft_transfer_call")
         .args_json(
-            serde_json::json!({ "receiver_id": STAKING_ACCOUNT, "amount": amount.to_string(), "msg": stake_for.to_string() })
+            serde_json::json!({ "receiver_id": STAKING_CONTRACT_ACCOUNT, "amount": amount.to_string(), "msg": stake_for.to_string() })
         )
         .deposit(YOCTO)
         .gas(300000000000000)

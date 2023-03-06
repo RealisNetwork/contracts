@@ -11,7 +11,6 @@ async fn mint_success() -> anyhow::Result<()> {
     sandbox
         .owner
         .call(sandbox.token.id(), "ft_mint")
-        .gas(300000000000000)
         .args_json(serde_json::json!({}))
         .transact()
         .await?
