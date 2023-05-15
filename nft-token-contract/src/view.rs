@@ -129,4 +129,9 @@ impl Contract {
             })
             .unwrap_or_default()
     }
+
+    /// Get list of accounts that have permissions to call `nft_mint`
+    pub fn get_mint_accounts(&self) -> Vec<AccountId> {
+        self.mint_accounts.iter().collect()
+    }
 }

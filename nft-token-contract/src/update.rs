@@ -17,7 +17,7 @@ impl Ownable for Contract {
 pub struct ContractV1 {
     pub owner_id: AccountId,
     pub backend_id: AccountId,
-    pub token_by_id: UnorderedMap<TokenId, Token>,
+    pub token_by_id: UnorderedMap<TokenId, VersionedToken>,
     pub tokens_per_owner: LookupMap<AccountId, UnorderedSet<TokenId>>,
     pub locked_tokens_per_owner: LookupMap<AccountId, UnorderedSet<TokenId>>,
 }
@@ -27,29 +27,15 @@ impl Contract {
     #[private]
     #[init(ignore_state)]
     pub fn update() -> Self {
-        let mut contract: ContractV1 =
-            env::state_read().unwrap_or_else(|| env::panic_str("Not initialized"));
+        let contract: ContractV1 = env::state_read().expect("Failed to read contract data");
 
-        let tokens = contract
-            .token_by_id
-            .into_iter()
-            .map(|(k, v)| (k, VersionedToken::from(v)))
-            .collect::<Vec<_>>();
-        contract.token_by_id.clear();
-
-        let mut token_by_id = UnorderedMap::new(StorageKey::TokenById);
-        token_by_id.extend(tokens);
-
-        let mut this = Self {
+        Self {
             owner_id: contract.owner_id,
             backend_id: contract.backend_id,
-            token_by_id,
+            mint_accounts: UnorderedSet::new(StorageKey::MintAccounts),
+            token_by_id: contract.token_by_id,
             tokens_per_owner: contract.tokens_per_owner,
             locked_tokens_per_owner: contract.locked_tokens_per_owner,
-        };
-
-        this.measure_nft_storage_usage();
-
-        this
+        }
     }
 }
