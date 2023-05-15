@@ -28,6 +28,7 @@ pub enum StorageKey {
     TokenApprovals { hash: Vec<u8> },
     LockedTokens,
     AccountLockedTokens { hash: Vec<u8> },
+    MintAccounts,
 }
 
 #[near_bindgen]
@@ -35,6 +36,7 @@ pub enum StorageKey {
 pub struct Contract {
     pub owner_id: AccountId,
     pub backend_id: AccountId,
+    pub mint_accounts: UnorderedSet<AccountId>,
     pub token_by_id: UnorderedMap<TokenId, VersionedToken>,
     pub tokens_per_owner: LookupMap<AccountId, UnorderedSet<TokenId>>,
     pub locked_tokens_per_owner: LookupMap<AccountId, UnorderedSet<TokenId>>,
@@ -53,13 +55,15 @@ impl Contract {
         let owner_id = owner_id.unwrap_or_else(env::predecessor_account_id);
         let backend_id = backend_id.unwrap_or_else(env::predecessor_account_id);
         let mut this = Self {
-            owner_id,
+            owner_id: owner_id.clone(),
             backend_id,
+            mint_accounts: UnorderedSet::new(StorageKey::MintAccounts),
             token_by_id: UnorderedMap::new(StorageKey::TokenById),
             tokens_per_owner: LookupMap::new(StorageKey::TokensPerOwner),
             locked_tokens_per_owner: LookupMap::new(StorageKey::LockedTokens),
         };
         this.measure_nft_storage_usage();
+        this.mint_accounts.insert(&owner_id);
         this
     }
 
@@ -89,11 +93,11 @@ impl Contract {
         ));
     }
 
-    /// Simple burn. Create token with a given `token_id` for `owner_id`.
+    /// Simple mint. Create token with a given `token_id` for `owner_id`.
     ///
     /// Requirements
     /// * Caller of the method must attach a deposit of 1 yoctoⓃ for security purposes
-    /// * Contract MUST panic if called by someone other than `contract.owner_id`
+    /// * Contract MUST panic if called by someone other than `contract.mint_accounts`
     #[payable]
     pub fn nft_mint(
         &mut self,
@@ -104,8 +108,8 @@ impl Contract {
     ) {
         assert_one_yocto();
         require!(
-            env::predecessor_account_id() == self.owner_id,
-            "Predecessor must be contract owner"
+            self.mint_accounts.contains(&env::predecessor_account_id()),
+            "Predecessor must be one of mint_accounts"
         );
         require!(
             self.token_by_id.get(&token_id).is_none(),
@@ -299,6 +303,42 @@ impl Contract {
         self.nft_unlock(token_id.clone());
         self.nft_transfer_backend(receiver_id, token_id, None, None);
     }
+
+    /// Add new accounts that have permissions to call `nft_mint`.
+    ///
+    /// Requirements
+    /// * Caller of the method must attach a deposit of 1 yoctoⓃ for security purposes
+    /// * Contract MUST panic if called by someone other than contract owner
+    #[payable]
+    pub fn add_mint_accounts(&mut self, account_ids: Vec<AccountId>) {
+        assert_one_yocto();
+
+        require!(
+            env::predecessor_account_id() == self.owner_id,
+            "Predecessor must be contract owner"
+        );
+
+        self.mint_accounts.extend(account_ids);
+    }
+
+    /// Remove accounts that have permissions to call `nft_mint`.
+    ///
+    /// Requirements
+    /// * Caller of the method must attach a deposit of 1 yoctoⓃ for security purposes
+    /// * Contract MUST panic if called by someone other than contract owner
+    #[payable]
+    pub fn remove_mint_accounts(&mut self, account_ids: Vec<AccountId>) {
+        assert_one_yocto();
+
+        require!(
+            env::predecessor_account_id() == self.owner_id,
+            "Predecessor must be contract owner"
+        );
+
+        account_ids.iter().for_each(|account_id| {
+            self.mint_accounts.remove(account_id);
+        });
+    }
 }
 
 impl Contract {
@@ -394,7 +434,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic = "Predecessor must be contract owner"]
+    #[should_panic = "Predecessor must be one of mint_accounts"]
     fn nft_mint_should_panic_if_called_not_by_contract_owner() {
         let mut contract = Contract::new(Some(accounts(0)), None);
         let context = VMContextBuilder::new()
