@@ -238,7 +238,8 @@ impl Contract {
             .into();
 
         require!(
-            token.is_approved(&env::predecessor_account_id(), approval_id),
+            token.is_approved_or_owner(&env::predecessor_account_id(), approval_id)
+                || env::predecessor_account_id() == token.owner_id,
             "Not enough permission"
         );
 
@@ -532,6 +533,56 @@ mod tests {
         assert_eq!(contract.nft_supply_for_owner(accounts(0)), U128(0));
         let option_token = contract.nft_token("test".into());
         assert!(option_token.is_none());
+    }
+
+    #[test]
+    #[should_panic = "Requires attached deposit of exactly 1 yoctoNEAR"]
+    fn nft_lock_assert_one_yocto() {
+        let mut contract = Contract::default();
+        let context = VMContextBuilder::new().attached_deposit(0).build();
+
+        testing_env!(context);
+        contract.nft_lock("test".into(), None);
+    }
+
+    #[test]
+    #[should_panic = "Not enough permission"]
+    fn nft_lock_should_panic_if_called_not_by_token_owner() {
+        let mut contract = Contract::new(Some(accounts(0)), None);
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(0))
+            .build();
+        testing_env!(context);
+        contract.nft_mint("test".into(), accounts(1), None, None);
+
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(0))
+            .build();
+
+        testing_env!(context);
+        contract.nft_lock("test".into(), None);
+    }
+
+    #[test]
+    fn nft_lock() {
+        let mut contract = Contract::new(Some(accounts(0)), None);
+        let context = VMContextBuilder::new()
+            .attached_deposit(ONE_YOCTO)
+            .predecessor_account_id(accounts(0))
+            .build();
+
+        testing_env!(context);
+        contract.nft_mint("test".into(), accounts(0), None, None);
+        contract.nft_lock("test".into(), None);
+
+        assert_eq!(contract.nft_total_supply(), U128(1));
+        assert_eq!(contract.nft_supply_for_owner(accounts(0)), U128(0));
+        assert_eq!(contract.nft_locked_supply_per_owner(accounts(0)), U128(1));
+        let option_token = contract.nft_token("test".into());
+        assert!(option_token.is_some());
     }
 
     #[test]

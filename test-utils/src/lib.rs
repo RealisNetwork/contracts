@@ -26,19 +26,19 @@ impl SandboxEnvironment {
             .transact()
             .await?
             .into_result()?;
-        let token = token::pull(
-            worker,
-            Some(owner.id().clone()),
-            Some(vec![backend.id().clone()]),
-            STAKING_CONTRACT_ACCOUNT.parse()?,
-            LOCKUP_CONTRACT_ACCOUNT.parse()?,
-        )
-        .await?;
+        
         let staking = staking::pull(
             worker,
             Some(owner.id().clone()),
             TOKEN_CONTRACT_ACCOUNT.parse()?,
             LOCKUP_CONTRACT_ACCOUNT.parse()?,
+        )
+        .await?;
+        let token = token::pull(
+            worker,
+            Some(owner.id().clone()),
+            Some(vec![backend.id().clone()]),
+            STAKING_CONTRACT_ACCOUNT.parse()?,
         )
         .await?;
         let lockup = lockup::pull(
