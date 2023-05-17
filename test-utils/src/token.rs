@@ -32,7 +32,6 @@ pub async fn pull(
     owner_id: Option<AccountId>,
     backend_ids: Option<Vec<AccountId>>,
     staking_id: AccountId,
-    lockup_id: AccountId,
 ) -> anyhow::Result<Contract> {
     let mainnet = workspaces::mainnet_archival().await?;
     let contract_id: AccountId = TOKEN_CONTRACT_ACCOUNT.parse()?;
@@ -48,7 +47,6 @@ pub async fn pull(
             "owner_id": owner_id,
             "backend_ids": backend_ids,
             "staking_id": staking_id,
-            "lockup_id": lockup_id,
         }))
         .transact()
         .await?

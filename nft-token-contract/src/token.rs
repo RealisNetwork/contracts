@@ -64,6 +64,10 @@ impl Token {
             .unwrap_or(false)
     }
 
+    pub fn is_approved_or_owner(&self, account_id: &AccountId, approval_id: Option<u64>) -> bool {
+        self.is_approved(account_id, approval_id) || &self.owner_id == account_id
+    }
+
     pub fn check_approve_and_revoke_all(
         &mut self,
         account_id: &AccountId,
