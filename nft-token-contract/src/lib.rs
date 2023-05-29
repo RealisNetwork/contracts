@@ -159,7 +159,6 @@ impl Contract {
     #[payable]
     pub fn nft_burn(&mut self, token_id: TokenId, approval_id: Option<u64>, memo: Option<String>) {
         assert_one_yocto();
-        let owner_id = env::predecessor_account_id();
         let mut token: Token = self
             .token_by_id
             .get(&token_id)
@@ -174,10 +173,11 @@ impl Contract {
         self.token_by_id.remove(&token_id);
         let mut tokens_per_owner = self.get_tokens_per_owner_internal(&token.owner_id);
         tokens_per_owner.remove(&token_id);
-        self.tokens_per_owner.insert(&owner_id, &tokens_per_owner);
+        self.tokens_per_owner
+            .insert(&token.owner_id, &tokens_per_owner);
 
         NftBurn {
-            owner_id: &owner_id,
+            owner_id: &token.owner_id,
             token_ids: &[&token_id],
             authorized_id: None,
             memo: memo.as_deref(),
