@@ -38,14 +38,14 @@ impl NonFungibleTokenCore for Contract {
     ) {
         assert_one_yocto();
 
-        let mut token = self.get_token_internal(&token_id);
+        let token = self.get_token_internal(&token_id);
 
         require!(
-            token.check_approve_and_revoke_all(&env::predecessor_account_id(), approval_id),
+            token.is_approved_or_owner(&env::predecessor_account_id(), approval_id),
             "Not enough permission"
         );
 
-        self.nft_transfer_internal(&token_id, Some(token), receiver_id, true);
+        self.nft_transfer_internal(&token_id, Some(token), receiver_id);
     }
 
     /// Transfer token and call a method on a receiver contract. A successful
@@ -90,16 +90,16 @@ impl NonFungibleTokenCore for Contract {
     ) -> PromiseOrValue<bool> {
         assert_one_yocto();
 
-        let mut token = self.get_token_internal(&token_id);
+        let token = self.get_token_internal(&token_id);
 
         let old_approvals = token.approved_account_ids.iter().collect();
         let old_owner = token.owner_id.clone();
 
         require!(
-            token.check_approve_and_revoke_all(&env::predecessor_account_id(), approval_id),
+            token.is_approved_or_owner(&env::predecessor_account_id(), approval_id),
             "Not enough permission"
         );
-        self.nft_transfer_internal(&token_id, Some(token), receiver_id.clone(), true);
+        self.nft_transfer_internal(&token_id, Some(token), receiver_id.clone());
 
         ext_nft_receiver::ext(receiver_id.clone())
             .with_static_gas(

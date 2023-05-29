@@ -77,7 +77,7 @@ impl NonFungibleTokenResolver for Contract {
         token
             .approved_account_ids
             .extend(approvals.unwrap_or_default().into_iter());
-        self.nft_transfer_internal(&token_id, Some(token), previous_owner_id, false);
+        self.nft_transfer_internal(&token_id, Some(token), previous_owner_id);
 
         false
     }
