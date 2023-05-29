@@ -68,23 +68,6 @@ impl Token {
         self.is_approved(account_id, approval_id) || &self.owner_id == account_id
     }
 
-    pub fn check_approve_and_revoke_all(
-        &mut self,
-        account_id: &AccountId,
-        approval_id: Option<u64>,
-    ) -> bool {
-        if &self.owner_id == account_id {
-            return true;
-        }
-
-        if self.is_approved(account_id, approval_id) {
-            self.approved_account_ids.clear();
-            return true;
-        }
-
-        false
-    }
-
     pub fn clear(&mut self) {
         self.approved_account_ids.clear();
         self.metadata.remove();

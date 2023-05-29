@@ -165,7 +165,7 @@ impl Contract {
             .unwrap_or_else(|| env::panic_str("No such token"))
             .into();
         require!(
-            token.check_approve_and_revoke_all(&env::predecessor_account_id(), approval_id),
+            token.is_approved_or_owner(&env::predecessor_account_id(), approval_id),
             "Not enough permission"
         );
         token.clear();
@@ -207,18 +207,21 @@ impl Contract {
             "Predecessor must be backend account"
         );
 
-        let mut token = self.get_token_internal(&token_id);
+        let token = self.get_token_internal(&token_id);
 
         require!(
-            token.check_approve_and_revoke_all(&env::predecessor_account_id(), approval_id),
+            token.is_approved_or_owner(&env::predecessor_account_id(), approval_id),
             "Not enough permission"
         );
+        self.nft_transfer_internal(&token_id, Some(token), receiver_id);
+
+        // Save backend account as approval account for this token
+        let mut token = self.get_token_internal(&token_id);
         let approval_id = token.next_approval_id();
-        token.approved_account_ids.clear();
         token
             .approved_account_ids
             .insert(&self.backend_id, &approval_id);
-        self.nft_transfer_internal(&token_id, Some(token), receiver_id, false);
+        self.token_by_id.insert(&token_id, &token.into());
     }
 
     /// Lock token by a given `token_id`. Remove given `token_id` from
@@ -376,7 +379,6 @@ impl Contract {
         token_id: &TokenId,
         token: Option<Token>,
         receiver_id: AccountId,
-        clean_approval: bool,
     ) {
         let mut token = token.unwrap_or_else(|| self.get_token_internal(token_id));
         let old_owner_id = token.owner_id.clone();
@@ -389,9 +391,7 @@ impl Contract {
             .insert(&token.owner_id, &tokens_per_owner);
 
         token.owner_id = receiver_id.clone();
-        if clean_approval {
-            token.approved_account_ids.clear();
-        }
+        token.approved_account_ids.clear();
 
         let mut tokens_per_owner = self.get_tokens_per_owner_internal(&token.owner_id);
         tokens_per_owner.insert(token_id);
