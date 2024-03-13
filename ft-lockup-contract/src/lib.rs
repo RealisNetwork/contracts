@@ -103,6 +103,28 @@ impl Contract {
             self.deposit_whitelist.remove(&account_id);
         });
     }
+
+    #[payable]
+    pub fn remove_invalid_lockup(&mut self, account_id: AccountId, index: LockupIndex) {
+        assert_one_yocto();
+        self.assert_owner();
+
+        let mut account_lockups = self
+            .account_lockups
+            .get(&account_id)
+            .unwrap_or_else(|| env::panic_str("No lockups found"));
+
+        require!(
+            account_lockups.contains(&index),
+            "No such lockup for this account"
+        );
+
+        self.lockups.remove(&index);
+        account_lockups.remove(&index);
+
+        self.account_lockups.remove(&account_id);
+        self.account_lockups.insert(&account_id, &account_lockups);
+    }
 }
 
 impl Contract {
